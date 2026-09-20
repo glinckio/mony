@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Mony",
+    "slug": "mony",
+    "scheme": "mony",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.mony.app"
+    },
+    "android": {
+      "package": "com.mony.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F14"
+      }
+    }
+  }
+}

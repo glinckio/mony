@@ -1,0 +1,11 @@
+{
+  "extends": "@mony/config/tsconfig-rn.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@mony/ui-tokens": ["../../packages/ui-tokens/src"],
+      "@mony/shared-types": ["../../packages/shared-types/src"]
+    }
+  },
+  "include": ["index.ts", "src", "e2e"]
+}
