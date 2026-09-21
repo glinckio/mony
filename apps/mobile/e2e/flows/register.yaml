@@ -1,6 +1,8 @@
 appId: com.mony.app
 ---
 - launchApp
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
 - assertVisible: "Criar sua conta"
 - tapOn:
     id: "name-input"

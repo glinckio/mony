@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerInputSchema, type AuthTokens, type RegisterInput } from "@mony/shared-types";
+import { loginInputSchema, type AuthTokens, type LoginInput } from "@mony/shared-types";
 import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
@@ -12,7 +12,7 @@ import { ApiError, apiFetch } from "../../lib/api-client";
 import { useAuthStore } from "../../lib/auth-store";
 import type { AuthStackNavigation } from "../../navigation/RootNavigator";
 
-export function RegisterScreen() {
+export function LoginScreen() {
   const navigation = useNavigation<AuthStackNavigation>();
   const setSession = useAuthStore((state) => state.setSession);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -20,57 +20,39 @@ export function RegisterScreen() {
   const {
     control,
     handleSubmit,
-    setError,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterInput>({
-    resolver: zodResolver(registerInputSchema),
-    defaultValues: { name: "", email: "", password: "", passwordConfirmation: "", phone: "" },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginInputSchema),
+    defaultValues: { email: "", password: "" },
   });
 
-  const onSubmit = async (data: RegisterInput) => {
+  const onSubmit = async (data: LoginInput) => {
     setSubmitError(null);
     try {
-      const tokens = await apiFetch<AuthTokens>("/auth/register", {
+      const tokens = await apiFetch<AuthTokens>("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ ...data, phone: data.phone || undefined }),
+        body: JSON.stringify(data),
       });
       setSession(tokens);
     } catch (error) {
-      if (error instanceof ApiError && error.statusCode === 409) {
-        setError("email", { type: "manual", message: "Este e-mail já está cadastrado." });
+      if (error instanceof ApiError && error.statusCode === 403) {
+        setSubmitError("Sua conta está inativa. Entre em contato com o suporte.");
+      } else if (error instanceof ApiError && error.statusCode === 429) {
+        setSubmitError("Muitas tentativas. Tente novamente em alguns minutos.");
       } else {
-        setSubmitError("Algo deu errado. Tente novamente.");
+        setSubmitError("E-mail ou senha incorretos.");
       }
     }
   };
 
   return (
     <Screen>
-      <View style={styles.badge}>
-        <Ionicons name="wallet-outline" size={28} color={color.primary} />
-      </View>
-
-      <Text variant="heading">Criar sua conta</Text>
+      <Text variant="heading">Entrar</Text>
       <Text variant="caption" style={styles.subtitle}>
-        Comece a organizar suas finanças em poucos minutos.
+        Acesse sua conta para continuar organizando suas finanças.
       </Text>
 
       <View style={styles.form}>
-        <Controller
-          control={control}
-          name="name"
-          render={({ field }) => (
-            <TextField
-              testID="name-input"
-              label="Nome"
-              value={field.value}
-              onChangeText={field.onChange}
-              autoCapitalize="words"
-              error={errors.name?.message}
-            />
-          )}
-        />
-
         <Controller
           control={control}
           name="email"
@@ -89,21 +71,6 @@ export function RegisterScreen() {
 
         <Controller
           control={control}
-          name="phone"
-          render={({ field }) => (
-            <TextField
-              testID="phone-input"
-              label="Telefone (opcional)"
-              value={field.value}
-              onChangeText={field.onChange}
-              keyboardType="phone-pad"
-              error={errors.phone?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
           name="password"
           render={({ field }) => (
             <TextField
@@ -113,21 +80,6 @@ export function RegisterScreen() {
               onChangeText={field.onChange}
               secureToggle
               error={errors.password?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="passwordConfirmation"
-          render={({ field }) => (
-            <TextField
-              testID="password-confirmation-input"
-              label="Confirmar senha"
-              value={field.value}
-              onChangeText={field.onChange}
-              secureToggle
-              error={errors.passwordConfirmation?.message}
             />
           )}
         />
@@ -144,18 +96,18 @@ export function RegisterScreen() {
 
       <Button
         testID="submit-button"
-        label="Criar conta"
+        label="Entrar"
         onPress={handleSubmit(onSubmit)}
         loading={isSubmitting}
       />
 
       <TouchableOpacity
-        testID="go-to-login"
-        style={styles.loginLink}
-        onPress={() => navigation.navigate("Login")}
+        testID="go-to-register"
+        style={styles.registerLink}
+        onPress={() => navigation.navigate("Register")}
       >
         <Text variant="caption">
-          Já tem uma conta? <Text variant="bodyStrong">Entrar</Text>
+          Não tem uma conta? <Text variant="bodyStrong">Criar conta</Text>
         </Text>
       </TouchableOpacity>
     </Screen>
@@ -163,21 +115,12 @@ export function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  badge: {
-    alignSelf: "flex-start",
-    width: 56,
-    height: 56,
-    borderRadius: radius.lg,
-    backgroundColor: color.primaryMuted,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.xs,
-  },
   subtitle: {
     marginBottom: spacing.sm,
   },
   form: {
     gap: spacing.md,
+    marginBottom: spacing.md,
   },
   submitError: {
     flexDirection: "row",
@@ -186,8 +129,9 @@ const styles = StyleSheet.create({
     backgroundColor: color.dangerMuted,
     borderRadius: radius.sm,
     padding: spacing.sm,
+    marginBottom: spacing.md,
   },
-  loginLink: {
+  registerLink: {
     marginTop: spacing.lg,
     alignItems: "center",
   },
