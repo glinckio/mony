@@ -42,6 +42,15 @@ brand) hold personal data under Brazil's LGPD. Financial records
 Hard rule: never store raw card numbers. `Subscription` payment handling
 goes through Stripe (tokenizing gateway, confirmed — see `tech.md`).
 
+### Data sharing with third parties
+
+- **Stripe** — receives payment/card details for `Subscription` checkout;
+  tokenizes, never touches our DB (see above).
+- **Brevo** — receives the user's email address (plus name, once used in
+  templates) to deliver transactional email: currently the
+  `auth-password-reset` 6-digit code. See `tech.md` and `roadmap.md` for
+  the API key/config.
+
 ## Workspaces (personal vs. business)
 
 The legacy app has an in-session toggle between two "workspaces" —

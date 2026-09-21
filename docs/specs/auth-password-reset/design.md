@@ -8,6 +8,7 @@ model PasswordResetCode {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   code      String   @db.VarChar(6)
+  attempts  Int      @default(0)
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime @default(now())
@@ -15,6 +16,13 @@ model PasswordResetCode {
   @@index([userId, code])
 }
 ```
+
+`attempts` bounds brute-forcing a single active code to 5 wrong guesses
+before it's burned (`usedAt` set), independent of the per-endpoint
+IP+email throttle below — closes the gap where an attacker who knows a
+victim's email could otherwise rotate source IPs to bypass a purely
+IP-keyed rate limit and grind through the 1,000,000-value code space
+within its 1-hour lifetime.
 
 ## API surface
 
