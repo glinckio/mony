@@ -12,6 +12,86 @@
   ],
   "item": [
     {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ada Lovelace\",\n  \"email\": \"ada@example.com\",\n  \"password\": \"correcthorsebattery\",\n  \"passwordConfirmation\": \"correcthorsebattery\",\n  \"phone\": \"11987654321\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ada Lovelace\",\n  \"email\": \"ada@example.com\",\n  \"password\": \"correcthorsebattery\",\n  \"passwordConfirmation\": \"correcthorsebattery\",\n  \"phone\": \"11987654321\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "register"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4YjcwNjNmMi01YzFjLTQ3MDktYWY3Ni05NWNmMGE4OTk3ZWYiLCJpYXQiOjE3ODk5NDE1MzYsImV4cCI6MTc4OTk0MjQzNn0.uZcwpmTSemVnB0PZZAHEuQhkoNa6FNe73gGNlCb-n2A\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4YjcwNjNmMi01YzFjLTQ3MDktYWY3Ni05NWNmMGE4OTk3ZWYiLCJpYXQiOjE3ODk5NDE1MzYsImV4cCI6MTc5MjUzMzUzNn0.F1q2D7uz-8siXkhUcMvmCJTTrM1QAtQymkCVGFlSoL0\",\n  \"user\": {\n    \"id\": \"8b7063f2-5c1c-4709-af76-95cf0a8997ef\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"activeWorkspace\": \"PERSONAL\"\n  }\n}"
+            },
+            {
+              "name": "409 Conflict — email already registered",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ada Lovelace\",\n  \"email\": \"ada@example.com\",\n  \"password\": \"correcthorsebattery\",\n  \"passwordConfirmation\": \"correcthorsebattery\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "register"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"statusCode\": 409,\n  \"error\": \"CONFLICT\",\n  \"message\": [\"This email is already registered.\"],\n  \"path\": \"/auth/register\",\n  \"timestamp\": \"2026-09-20T18:58:56.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — password confirmation mismatch",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ada Lovelace\",\n  \"email\": \"ada2@example.com\",\n  \"password\": \"correcthorsebattery\",\n  \"passwordConfirmation\": \"somethingElse\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "register"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"passwordConfirmation must match password\"],\n  \"path\": \"/auth/register\",\n  \"timestamp\": \"2026-09-20T18:58:56.000Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Health",
       "item": [
         {
