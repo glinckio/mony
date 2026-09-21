@@ -76,7 +76,7 @@ Android). Spread into a `StyleSheet` entry: `{ ...shadow.md, ... }`.
 
 | Component | Purpose |
 |---|---|
-| `Screen` | Wraps `SafeAreaView` + optional `KeyboardAvoidingView` + optional `ScrollView`. Every screen renders through this — see `docs/steering/structure.md` "Mobile screen conventions" for the safe-area/keyboard reasoning. Props: `scrollable`, `keyboardAvoiding`, `edges`, `centered`, `contentStyle`. |
+| `Screen` | Wraps `SafeAreaView` + optional `KeyboardAvoidingView` + optional `ScrollView`. Every screen renders through this — see `docs/steering/structure.md` "Mobile screen conventions" for the safe-area/keyboard reasoning. Props: `scrollable`, `keyboardAvoiding`, `edges`, `centered`, `contentStyle`. **Don't pass `centered` on a screen that has text inputs** — centering makes the content's vertical position depend on available height, and that height changes when the keyboard opens, so the field you just tapped visibly jumps/lags instead of tracking the keyboard smoothly. `centered` is for static content only (e.g. `HomeScreen`, which also sets `keyboardAvoiding={false}` since it has no inputs at all). A form screen (`LoginScreen`, `RegisterScreen`) stays top-aligned, non-centered. |
 | `Text` | Typography variants: `display` `heading` `title` `body` `bodyStrong` `caption`. Optional `color` override for semantic colors (danger, secondary, etc). |
 | `Button` | Variants `primary` `secondary` `ghost`; `loading`, `disabled`, `leftIcon`, `fullWidth` props. Always meets `size.controlHeight`. |
 | `TextField` | Labeled input with inline `error` text, focus/error border states, optional `secureToggle` (adds an eye icon via `@expo/vector-icons` `Ionicons` to reveal/hide a password field). |

@@ -66,6 +66,28 @@ pnpm --filter @mony/api test:e2e      # Supertest e2e
 
 ## Known gotchas (don't re-debug these)
 
+- **React 19 doesn't guarantee a `useState` update from `fireEvent.press`
+  is flushed synchronously by the time the call returns** — under React
+  18 it reliably was. Symptom: you capture an element via
+  `screen.getByTestId(...)`, press something that should change one of
+  its props (e.g. a password-visibility toggle), and the very next
+  synchronous `expect(...)` still sees the old value. Fix: re-query the
+  element and wrap the assertion in `await waitFor(() => { expect(
+  screen.getByTestId(...).props.x).toBe(...) })` instead of asserting on
+  a props snapshot taken before the press — same pattern already needed
+  for `await render()` (see the RTL v14 entry below). Don't assume a
+  screen interaction test is "just flaky" if it fails on the very first
+  synchronous assertion after a press — check for this first.
+- **Unit-testing a screen that calls `useNavigation()` needs a real
+  `Stack.Navigator`/`Stack.Screen` around it, not a bare
+  `NavigationContainer`.** Wrapping just in `<NavigationContainer>` looks
+  reasonable but doesn't give the screen an actual route, so
+  `useNavigation()` misbehaves in ways that are hard to attribute back to
+  this cause. Pattern: `render(<NavigationContainer><Stack.Navigator><Stack.Screen
+  name="X" component={ScreenUnderTest} /></Stack.Navigator></NavigationContainer>)`.
+  Also pass `screenOptions={{ animation: "none" }}` in tests — the real
+  transition animation has no payoff in a test renderer and is one less
+  thing to rule out if a test misbehaves.
 - **`react-native-safe-area-context` needs its official jest mock wired
   in, or `SafeAreaProvider`/`SafeAreaView` hang or crash in tests.**
   `apps/mobile/jest.setup.js` does
