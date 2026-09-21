@@ -1,12 +1,23 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { ThrottlerModule } from "@nestjs/throttler";
 
 import { AuthModule } from "./auth/auth.module";
 import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./prisma/prisma.module";
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    // Provides the storage/config ThrottlerGuard subclasses read from.
+    // No global APP_GUARD here on purpose — only /auth/login applies a
+    // guard (LoginThrottlerGuard), scoped exactly to what the spec asks
+    // for. A blanket global rate limit is a separate decision to make
+    // later, not something to bundle in silently.
+    ThrottlerModule.forRoot([{ name: "default", ttl: 300_000, limit: 10 }]),
+    PrismaModule,
+    AuthModule,
+  ],
   controllers: [HealthController],
 })
 export class AppModule {}

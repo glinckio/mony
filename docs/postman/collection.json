@@ -8,6 +8,16 @@
     {
       "key": "baseUrl",
       "value": "http://localhost:3000"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "description": "Paste from a Login/Register response, or wire a test script to set this automatically."
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "description": "Paste from a Login/Register response, or wire a test script to set this automatically."
     }
   ],
   "item": [
@@ -86,6 +96,200 @@
               "status": "Bad Request",
               "code": 400,
               "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"passwordConfirmation must match password\"],\n  \"path\": \"/auth/register\",\n  \"timestamp\": \"2026-09-20T18:58:56.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ada@example.com\",\n  \"password\": \"correcthorsebattery\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ada@example.com\",\n  \"password\": \"correcthorsebattery\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiIxMDdkZmMyNy0wZDFjLTQ2NmQtYWZmNy03MmY2OTgyZTgwZjAiLCJpYXQiOjE3ODk5NTI0OTMsImV4cCI6MTc4OTk1MzM5M30.Qs3r-4JI77U_kV8YA9x7rdBw94Oq8BpydBECC_QkY7Q\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJhMTgyNmM3Ni04YmJlLTRkYmUtYTE3ZC1kNDU4ZGYzNWMzMjMiLCJpYXQiOjE3ODk5NTI0OTMsImV4cCI6MTc5MjU0NDQ5M30.K6SimvIOtdQJcBK6Y8uUayhJOdAX1udRnx2Tk_KnnYE\",\n  \"user\": {\n    \"id\": \"f64e385f-3094-4f9d-a67c-e84e5512b8a1\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"activeWorkspace\": \"PERSONAL\"\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized — incorrect email or password",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ada@example.com\",\n  \"password\": \"wrong-password\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\"Incorrect email or password.\"],\n  \"path\": \"/auth/login\",\n  \"timestamp\": \"2026-09-21T01:01:40.723Z\"\n}"
+            },
+            {
+              "name": "403 Forbidden — account inactive",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"inactive-user@example.com\",\n  \"password\": \"correcthorsebattery\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"statusCode\": 403,\n  \"error\": \"FORBIDDEN\",\n  \"message\": [\"Account inactive. Please contact support.\"],\n  \"path\": \"/auth/login\",\n  \"timestamp\": \"2026-09-21T01:01:40.723Z\"\n}"
+            },
+            {
+              "name": "429 Too Many Requests — rate limited",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ada@example.com\",\n  \"password\": \"wrong-password\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "body": "{\n  \"statusCode\": 429,\n  \"error\": \"TOO_MANY_REQUESTS\",\n  \"message\": [\"ThrottlerException: Too Many Requests\"],\n  \"path\": \"/auth/login\",\n  \"timestamp\": \"2026-09-21T01:01:40.723Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJhMTgyNmM3Ni04YmJlLTRkYmUtYTE3ZC1kNDU4ZGYzNWMzMjMiLCJpYXQiOjE3ODk5NTI0OTMsImV4cCI6MTc5MjU0NDQ5M30.K6SimvIOtdQJcBK6Y8uUayhJOdAX1udRnx2Tk_KnnYE\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/refresh",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "refresh"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJuZXctYWNjZXNzLWp0aSIsImlhdCI6MTc4OTk1MjU5MywiZXhwIjoxNzg5OTUzNDkzfQ.newAccessTokenSignature\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJuZXctcmVmcmVzaC1qdGkiLCJpYXQiOjE3ODk5NTI1OTMsImV4cCI6MTc5MjU0NDU5M30.newRefreshTokenSignature\",\n  \"user\": {\n    \"id\": \"f64e385f-3094-4f9d-a67c-e84e5512b8a1\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"activeWorkspace\": \"PERSONAL\"\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized — invalid or expired refresh token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"not-a-real-token\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/refresh",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "refresh"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\"Invalid or expired refresh token.\"],\n  \"path\": \"/auth/refresh\",\n  \"timestamp\": \"2026-09-21T01:01:40.131Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "logout"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "logout"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\"Unauthorized\"],\n  \"path\": \"/auth/logout\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
             }
           ]
         }
