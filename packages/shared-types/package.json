@@ -6,14 +6,18 @@
   "types": "src/index.ts",
   "scripts": {
     "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
   },
   "dependencies": {
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@mony/config": "workspace:*",
+    "@types/jest": "^29.5.13",
     "eslint": "^9.13.0",
-    "typescript": "^5.6.3"
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^6.0.3"
   }
 }
