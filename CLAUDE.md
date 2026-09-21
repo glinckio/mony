@@ -22,12 +22,33 @@ Full context:
 
 ## Language
 
-**Everything in the repository is English** — code, identifiers, comments,
-commit messages, spec docs, database table/column names, API error
-messages. This was an explicit client/owner decision; do not default back
-to Portuguese anywhere in `apps/`, `packages/`, or `docs/`, even when
-translating legacy PT-BR business rules. Chat replies to the human may
-stay in Portuguese; nothing written to disk does.
+Two different things, don't conflate them:
+
+1. **The codebase is English**: code, identifiers, comments, commit
+   messages, spec docs, database table/column names, API error messages
+   (`class-validator` messages, Swagger text, Postman examples). This was
+   an explicit client/owner decision; do not default back to Portuguese
+   anywhere in `apps/`, `packages/`, or `docs/`, even when translating
+   legacy PT-BR business rules.
+2. **The app's user-facing text is Portuguese (pt-BR)** — the end users
+   are Brazilian. Every string a user actually sees or hears in
+   `apps/mobile` is PT-BR: screen titles, labels, placeholders, button
+   text, toasts, and validation/error messages. This includes the zod
+   schemas in `packages/shared-types` — their `.refine()`/regex error
+   messages are consumed by the mobile UI for inline form validation, so
+   they're PT-BR too, same as any other on-screen string.
+   - **The mobile app never displays a raw API error string to the
+     user.** The API's `message` field stays English (rule 1) and is a
+     technical/developer-facing contract, not UI copy. The mobile
+     `api-client`/screen layer maps known status codes (409, specific
+     400s, etc.) to the app's own PT-BR copy; anything unmapped falls
+     back to a generic PT-BR message ("Algo deu errado. Tente
+     novamente." or equivalent) — never `error.message` interpolated
+     directly into the UI.
+
+Chat replies to the human may stay in Portuguese regardless; nothing
+written to disk is governed by that — it's governed by the two rules
+above depending on which side of the API boundary the text lives on.
 
 ## Non-negotiable rules (see `docs/steering/tech.md` for detail)
 

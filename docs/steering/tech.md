@@ -35,10 +35,19 @@
 
 ## Language policy
 
-Everything in the repository is in **English**: code, identifiers, comments,
-commit messages, specs, database table/column names, API error messages.
-Chat with the human collaborator may stay in Portuguese; nothing written to
-the repo does.
+**Codebase = English. App UI = Portuguese (pt-BR).** Full explanation and
+rationale in `CLAUDE.md` → Language — this is the short version:
+
+- English: code, identifiers, comments, commit messages, specs, DB
+  table/column names, API error messages (`class-validator`, Swagger,
+  Postman).
+- Portuguese: every string in `apps/mobile` a user sees (labels, buttons,
+  placeholders, toasts, validation messages) — including the zod
+  validation messages in `packages/shared-types`, since those render as
+  inline form errors in the app.
+- The mobile app never shows a raw API `message` string to the user —
+  it maps known error cases to its own pt-BR copy and falls back to a
+  generic pt-BR message otherwise.
 
 ## Commands
 

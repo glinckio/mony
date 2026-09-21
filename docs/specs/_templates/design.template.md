@@ -28,4 +28,6 @@ List what gets added to `packages/shared-types/src/`.
 ## Error handling
 
 Non-happy paths this feature must handle explicitly (network failure,
-validation error, 401/403, empty states).
+validation error, 401/403, empty states). Per `docs/steering/tech.md`
+language policy: map each API error case to the app's own pt-BR copy
+here — never plan to show a raw API `message` string to the user.
