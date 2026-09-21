@@ -2,13 +2,17 @@ import { NavigationContainer, type NavigationProp } from "@react-navigation/nati
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { useAuthStore } from "../lib/auth-store";
+import { ForgotPasswordScreen } from "../screens/auth/ForgotPasswordScreen";
 import { LoginScreen } from "../screens/auth/LoginScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
+import { ResetPasswordScreen } from "../screens/auth/ResetPasswordScreen";
 import { HomeScreen } from "../screens/HomeScreen";
 
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
+  ForgotPassword: undefined;
+  ResetPassword: { email?: string };
 };
 
 export type AppStackParamList = {
@@ -33,6 +37,8 @@ export function RootNavigator() {
         <AuthStack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
           <AuthStack.Screen name="Login" component={LoginScreen} />
           <AuthStack.Screen name="Register" component={RegisterScreen} />
+          <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          <AuthStack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         </AuthStack.Navigator>
       )}
     </NavigationContainer>

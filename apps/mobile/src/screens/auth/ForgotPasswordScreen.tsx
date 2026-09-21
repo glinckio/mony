@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginInputSchema, type AuthTokens, type LoginInput } from "@mony/shared-types";
+import { requestResetInputSchema, type RequestResetInput } from "@mony/shared-types";
 import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
@@ -8,48 +8,42 @@ import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { Button, Screen, Text, TextField } from "../../components/ui";
-import { ApiError, apiFetch } from "../../lib/api-client";
-import { useAuthStore } from "../../lib/auth-store";
+import { apiFetch } from "../../lib/api-client";
 import type { AuthStackNavigation } from "../../navigation/RootNavigator";
 
-export function LoginScreen() {
+export function ForgotPasswordScreen() {
   const navigation = useNavigation<AuthStackNavigation>();
-  const setSession = useAuthStore((state) => state.setSession);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
 
   const {
     control,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginInputSchema),
-    defaultValues: { email: "", password: "" },
+  } = useForm<RequestResetInput>({
+    resolver: zodResolver(requestResetInputSchema),
+    defaultValues: { email: "" },
   });
 
-  const onSubmit = async (data: LoginInput) => {
+  const onSubmit = async (data: RequestResetInput) => {
     setSubmitError(null);
     try {
-      const tokens = await apiFetch<AuthTokens>("/auth/login", {
+      await apiFetch<{ message: string }>("/auth/password-reset/request", {
         method: "POST",
         body: JSON.stringify(data),
       });
-      setSession(tokens);
-    } catch (error) {
-      if (error instanceof ApiError && error.statusCode === 403) {
-        setSubmitError("Sua conta está inativa. Entre em contato com o suporte.");
-      } else if (error instanceof ApiError && error.statusCode === 429) {
-        setSubmitError("Muitas tentativas. Tente novamente em alguns minutos.");
-      } else {
-        setSubmitError("E-mail ou senha incorretos.");
-      }
+      setSent(true);
+    } catch {
+      setSubmitError("Algo deu errado. Tente novamente.");
     }
   };
 
   return (
     <Screen>
-      <Text variant="heading">Entrar</Text>
+      <Text variant="heading">Esqueceu sua senha?</Text>
       <Text variant="caption" style={styles.subtitle}>
-        Acesse sua conta para continuar organizando suas finanças.
+        Informe seu e-mail e enviaremos um código para redefinir sua senha.
       </Text>
 
       <View style={styles.form}>
@@ -64,34 +58,21 @@ export function LoginScreen() {
               onChangeText={field.onChange}
               autoCapitalize="none"
               keyboardType="email-address"
+              editable={!sent}
               error={errors.email?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="password"
-          render={({ field }) => (
-            <TextField
-              testID="password-input"
-              label="Senha"
-              value={field.value}
-              onChangeText={field.onChange}
-              secureToggle
-              error={errors.password?.message}
             />
           )}
         />
       </View>
 
-      <TouchableOpacity
-        testID="go-to-forgot-password"
-        style={styles.forgotPasswordLink}
-        onPress={() => navigation.navigate("ForgotPassword")}
-      >
-        <Text variant="caption">Esqueceu sua senha?</Text>
-      </TouchableOpacity>
+      {sent && (
+        <View style={styles.confirmation}>
+          <Ionicons name="checkmark-circle-outline" size={sizeTokens.iconSm} color={color.primary} />
+          <Text variant="caption" style={styles.confirmationText}>
+            Se este e-mail estiver cadastrado, você receberá um código em instantes.
+          </Text>
+        </View>
+      )}
 
       {submitError && (
         <View style={styles.submitError}>
@@ -102,20 +83,28 @@ export function LoginScreen() {
         </View>
       )}
 
-      <Button
-        testID="submit-button"
-        label="Entrar"
-        onPress={handleSubmit(onSubmit)}
-        loading={isSubmitting}
-      />
+      {sent ? (
+        <Button
+          testID="go-to-reset"
+          label="Já tenho um código"
+          onPress={() => navigation.navigate("ResetPassword", { email: getValues("email") })}
+        />
+      ) : (
+        <Button
+          testID="submit-button"
+          label="Enviar código"
+          onPress={handleSubmit(onSubmit)}
+          loading={isSubmitting}
+        />
+      )}
 
       <TouchableOpacity
-        testID="go-to-register"
-        style={styles.registerLink}
-        onPress={() => navigation.navigate("Register")}
+        testID="go-to-login"
+        style={styles.loginLink}
+        onPress={() => navigation.navigate("Login")}
       >
         <Text variant="caption">
-          Não tem uma conta? <Text variant="bodyStrong">Criar conta</Text>
+          Lembrou a senha? <Text variant="bodyStrong">Entrar</Text>
         </Text>
       </TouchableOpacity>
     </Screen>
@@ -130,9 +119,17 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     marginBottom: spacing.md,
   },
-  forgotPasswordLink: {
-    alignSelf: "flex-end",
+  confirmation: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    backgroundColor: color.primaryMuted,
+    borderRadius: radius.sm,
+    padding: spacing.sm,
     marginBottom: spacing.md,
+  },
+  confirmationText: {
+    flex: 1,
   },
   submitError: {
     flexDirection: "row",
@@ -143,7 +140,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     marginBottom: spacing.md,
   },
-  registerLink: {
+  loginLink: {
     marginTop: spacing.lg,
     alignItems: "center",
   },
