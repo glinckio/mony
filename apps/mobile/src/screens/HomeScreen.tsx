@@ -44,6 +44,14 @@ export function HomeScreen() {
         <Text variant="caption" style={styles.centerText}>
           O painel chega numa próxima etapa.
         </Text>
+        <View style={styles.categoriesButton}>
+          <Button
+            testID="go-to-categories"
+            label="Categorias"
+            variant="secondary"
+            onPress={() => navigation.navigate("Categories")}
+          />
+        </View>
         <View style={styles.logoutButton}>
           <Button
             testID="logout-button"
@@ -66,7 +74,10 @@ const styles = StyleSheet.create({
   centerText: {
     textAlign: "center",
   },
-  logoutButton: {
+  categoriesButton: {
     marginTop: spacing.lg,
+  },
+  logoutButton: {
+    marginTop: spacing.md,
   },
 });

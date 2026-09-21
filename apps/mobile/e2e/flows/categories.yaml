@@ -1,0 +1,56 @@
+appId: com.mony.app
+---
+# Registers a fresh account, then creates, edits, and deletes a category
+# with no transactions attached (delete-with-replacement is covered once
+# the `transactions` feature lands, per tasks.md) — exercises the
+# Categories list + form screens against the real API. Edit/delete
+# buttons carry a dynamic (UUID) testID, so this flow selects them by
+# their accessibilityLabel ("Editar <nome>"/"Excluir <nome>") instead.
+- launchApp
+- evalScript: ${output.testEmail = 'maestro-categories-' + Date.now() + '@example.com'}
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Categories Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Bem-vindo, Maestro Categories Tester"
+- tapOn:
+    id: "go-to-categories"
+- assertVisible: "Categorias"
+- assertVisible: "Nenhuma categoria ainda."
+- tapOn:
+    id: "add-category-button"
+- assertVisible: "Nova categoria"
+- tapOn:
+    id: "name-input"
+- inputText: "Alimentação"
+- tapOn:
+    id: "icon-picker-restaurant-outline"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Categorias"
+- assertVisible: "Alimentação"
+- tapOn: "Editar Alimentação"
+- assertVisible: "Editar categoria"
+- tapOn:
+    id: "name-input"
+- eraseText
+- inputText: "Alimentação Fora"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Alimentação Fora"
+- tapOn: "Excluir Alimentação Fora"
+- tapOn: "Excluir"
+- assertVisible: "Nenhuma categoria ainda."

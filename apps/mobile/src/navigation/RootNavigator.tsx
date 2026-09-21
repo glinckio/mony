@@ -1,4 +1,4 @@
-import type { Profile } from "@mony/shared-types";
+import type { Category, Profile } from "@mony/shared-types";
 import { NavigationContainer, type NavigationProp } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect } from "react";
@@ -10,6 +10,8 @@ import { ForgotPasswordScreen } from "../screens/auth/ForgotPasswordScreen";
 import { LoginScreen } from "../screens/auth/LoginScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
 import { ResetPasswordScreen } from "../screens/auth/ResetPasswordScreen";
+import { CategoriesScreen } from "../screens/categories/CategoriesScreen";
+import { CategoryFormScreen } from "../screens/categories/CategoryFormScreen";
 import { HomeScreen } from "../screens/HomeScreen";
 import { ChangePasswordScreen } from "../screens/profile/ChangePasswordScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
@@ -25,6 +27,8 @@ export type AppStackParamList = {
   Home: undefined;
   Profile: undefined;
   ChangePassword: undefined;
+  Categories: undefined;
+  CategoryForm: { category?: Category } | undefined;
 };
 
 export type AuthStackNavigation = NavigationProp<AuthStackParamList>;
@@ -60,6 +64,12 @@ export function RootNavigator() {
           <AppStack.Screen name="Home" component={HomeScreen} />
           <AppStack.Screen name="Profile" component={ProfileScreen} />
           <AppStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+          <AppStack.Screen name="Categories" component={CategoriesScreen} />
+          <AppStack.Screen
+            name="CategoryForm"
+            component={CategoryFormScreen}
+            options={{ presentation: "modal" }}
+          />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
