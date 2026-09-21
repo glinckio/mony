@@ -27,6 +27,16 @@ enum CategoryType {
   EXPENSE
 }
 
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionStatus {
+  PAID
+  PENDING
+}
+
 model User {
   id                 String              @id @default(uuid())
   name               String              @db.VarChar(100)
@@ -42,6 +52,7 @@ model User {
   updatedAt          DateTime            @updatedAt
   passwordResetCodes PasswordResetCode[]
   categories         Category[]
+  transactions       Transaction[]
 }
 
 model PasswordResetCode {
@@ -67,5 +78,28 @@ model Category {
   icon      String       @db.VarChar(50) // key into the app's icon set
   createdAt DateTime     @default(now())
 
+  transactions Transaction[]
+
   @@index([userId])
+}
+
+model Transaction {
+  id          String             @id @default(uuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category           @relation(fields: [categoryId], references: [id])
+  workspace   WorkspaceType
+  type        TransactionType
+  status      TransactionStatus  @default(PENDING)
+  description String             @db.VarChar(255)
+  amount      Decimal            @db.Decimal(12, 2)
+  date        DateTime           @db.Date
+  recurring   Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([userId, workspace, date])
+  @@index([userId, workspace, type, status])
+  @@index([categoryId])
 }

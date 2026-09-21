@@ -1013,6 +1013,21 @@
               "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"replacementCategoryId must be a UUID\"],\n  \"path\": \"/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
             },
             {
+              "name": "400 Bad Request — category has transactions, no replacement given",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"This category has transactions — provide replacementCategoryId to reassign them first.\"],\n  \"path\": \"/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
               "name": "404 Not Found — not owner",
               "originalRequest": {
                 "method": "DELETE",
@@ -1026,6 +1041,481 @@
               "status": "Not Found",
               "code": 404,
               "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Category not found.\"],\n  \"path\": \"/categories/a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/transactions?type=EXPENSE&page=1&perPage=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"],
+              "query": [
+                { "key": "type", "value": "EXPENSE" },
+                { "key": "page", "value": "1" },
+                { "key": "perPage", "value": "20" }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions?type=EXPENSE&page=1&perPage=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions"],
+                  "query": [
+                    { "key": "type", "value": "EXPENSE" },
+                    { "key": "page", "value": "1" },
+                    { "key": "perPage", "value": "20" }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n      \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n      \"workspace\": \"PERSONAL\",\n      \"type\": \"EXPENSE\",\n      \"status\": \"PENDING\",\n      \"description\": \"Aluguel\",\n      \"amount\": \"1500.50\",\n      \"date\": \"2026-01-15\",\n      \"recurring\": false,\n      \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n      \"updatedAt\": \"2026-01-15T12:00:00.000Z\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"perPage\": 20\n}"
+            },
+            {
+              "name": "400 Bad Request — invalid sortBy",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions?sortBy=userId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions"],
+                  "query": [{ "key": "sortBy", "value": "userId" }]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"sortBy must be one of the following values: date, amount, description\"],\n  \"path\": \"/transactions\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\"Unauthorized\"],\n  \"path\": \"/transactions\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Transactions Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/summary?dateFrom=2026-01-01&dateTo=2026-01-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "summary"],
+              "query": [
+                { "key": "dateFrom", "value": "2026-01-01" },
+                { "key": "dateTo", "value": "2026-01-31" }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/summary?dateFrom=2026-01-01&dateTo=2026-01-31",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "summary"],
+                  "query": [
+                    { "key": "dateFrom", "value": "2026-01-01" },
+                    { "key": "dateTo", "value": "2026-01-31" }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"totalIncome\": \"5000.00\",\n  \"totalExpensesPaid\": \"3200.00\",\n  \"totalExpensesPending\": \"450.00\",\n  \"balance\": \"1800.00\"\n}"
+            },
+            {
+              "name": "400 Bad Request — missing dateFrom/dateTo",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/summary",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "summary"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"dateFrom must be a valid ISO 8601 date string\", \"dateTo must be a valid ISO 8601 date string\"],\n  \"path\": \"/transactions/summary\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"type\": \"EXPENSE\",\n  \"description\": \"Aluguel\",\n  \"amount\": 1500.50,\n  \"date\": \"2026-01-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"type\": \"EXPENSE\",\n  \"description\": \"Aluguel\",\n  \"amount\": 1500.50,\n  \"date\": \"2026-01-15\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"workspace\": \"PERSONAL\",\n  \"type\": \"EXPENSE\",\n  \"status\": \"PENDING\",\n  \"description\": \"Aluguel\",\n  \"amount\": \"1500.50\",\n  \"date\": \"2026-01-15\",\n  \"recurring\": false,\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n  \"updatedAt\": \"2026-01-15T12:00:00.000Z\"\n}"
+            },
+            {
+              "name": "201 Created — recurring (array response)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"type\": \"EXPENSE\",\n  \"description\": \"Internet\",\n  \"amount\": 100,\n  \"date\": \"2026-02-01\",\n  \"recurring\": true,\n  \"recurringMonths\": 3\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "[\n  {\n    \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n    \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n    \"workspace\": \"PERSONAL\",\n    \"type\": \"EXPENSE\",\n    \"status\": \"PENDING\",\n    \"description\": \"Internet\",\n    \"amount\": \"100.00\",\n    \"date\": \"2026-02-01\",\n    \"recurring\": true,\n    \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n    \"updatedAt\": \"2026-01-15T12:00:00.000Z\"\n  },\n  {\n    \"id\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n    \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n    \"workspace\": \"PERSONAL\",\n    \"type\": \"EXPENSE\",\n    \"status\": \"PENDING\",\n    \"description\": \"Internet (2/3)\",\n    \"amount\": \"100.00\",\n    \"date\": \"2026-03-01\",\n    \"recurring\": false,\n    \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n    \"updatedAt\": \"2026-01-15T12:00:00.000Z\"\n  },\n  {\n    \"id\": \"c2937d87-9ccf-5ecf-b28e-e569e046d434\",\n    \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n    \"workspace\": \"PERSONAL\",\n    \"type\": \"EXPENSE\",\n    \"status\": \"PENDING\",\n    \"description\": \"Internet (3/3)\",\n    \"amount\": \"100.00\",\n    \"date\": \"2026-04-01\",\n    \"recurring\": false,\n    \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n    \"updatedAt\": \"2026-01-15T12:00:00.000Z\"\n  }\n]"
+            },
+            {
+              "name": "400 Bad Request — categoryId type mismatch",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"type\": \"INCOME\",\n  \"description\": \"Mismatch\",\n  \"amount\": 10,\n  \"date\": \"2026-01-15\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"categoryId must match the transaction's type.\"],\n  \"path\": \"/transactions\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — category doesn't exist",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"categoryId\": \"00000000-0000-0000-0000-000000000000\",\n  \"type\": \"EXPENSE\",\n  \"description\": \"Aluguel\",\n  \"amount\": 1500.50,\n  \"date\": \"2026-01-15\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Category not found.\"],\n  \"path\": \"/transactions\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Transaction",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Aluguel (reajustado)\",\n  \"amount\": 1600.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"Aluguel (reajustado)\",\n  \"amount\": 1600.00\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"workspace\": \"PERSONAL\",\n  \"type\": \"EXPENSE\",\n  \"status\": \"PENDING\",\n  \"description\": \"Aluguel (reajustado)\",\n  \"amount\": \"1600.00\",\n  \"date\": \"2026-01-15\",\n  \"recurring\": false,\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n  \"updatedAt\": \"2026-01-15T13:00:00.000Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — not owner",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"Hijacked\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/a1826c76-8bbe-4dbe-a17d-d458df35c323",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "a1826c76-8bbe-4dbe-a17d-d458df35c323"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Transaction not found.\"],\n  \"path\": \"/transactions/a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Transaction Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PAID\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c", "status"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PAID\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c", "status"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"categoryId\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"workspace\": \"PERSONAL\",\n  \"type\": \"EXPENSE\",\n  \"status\": \"PAID\",\n  \"description\": \"Aluguel\",\n  \"amount\": \"1500.50\",\n  \"date\": \"2026-01-15\",\n  \"recurring\": false,\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n  \"updatedAt\": \"2026-01-15T13:00:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — not an expense",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PENDING\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/c2937d87-9ccf-5ecf-b28e-e569e046d434/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "c2937d87-9ccf-5ecf-b28e-e569e046d434", "status"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"Only expenses can have their status changed.\"],\n  \"path\": \"/transactions/c2937d87-9ccf-5ecf-b28e-e569e046d434/status\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "404 Not Found — not owner",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/a1826c76-8bbe-4dbe-a17d-d458df35c323",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "a1826c76-8bbe-4dbe-a17d-d458df35c323"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Transaction not found.\"],\n  \"path\": \"/transactions/a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Bulk Delete Transactions",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\", \"a1826c76-8bbe-4dbe-a17d-d458df35c323\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/bulk-delete",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "bulk-delete"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ids\": [\"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\", \"a1826c76-8bbe-4dbe-a17d-d458df35c323\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/bulk-delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "bulk-delete"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "400 Bad Request — one or more ids not owned",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ids\": [\"00000000-0000-0000-0000-000000000000\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/bulk-delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "bulk-delete"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"One or more transactions not found or not owned by you.\"],\n  \"path\": \"/transactions/bulk-delete\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
             }
           ]
         }
