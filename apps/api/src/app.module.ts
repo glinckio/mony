@@ -3,6 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { ThrottlerModule } from "@nestjs/throttler";
 
 import { AuthModule } from "./auth/auth.module";
+import { CategoriesModule } from "./categories/categories.module";
 import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./prisma/prisma.module";
 import { UsersModule } from "./users/users.module";
@@ -20,6 +21,7 @@ import { UsersModule } from "./users/users.module";
     PrismaModule,
     AuthModule,
     UsersModule,
+    CategoriesModule,
   ],
   controllers: [HealthController],
 })

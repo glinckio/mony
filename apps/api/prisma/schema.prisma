@@ -22,6 +22,11 @@ enum WorkspaceType {
   BUSINESS
 }
 
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
 model User {
   id                 String              @id @default(uuid())
   name               String              @db.VarChar(100)
@@ -36,6 +41,7 @@ model User {
   lastAccessAt       DateTime?
   updatedAt          DateTime            @updatedAt
   passwordResetCodes PasswordResetCode[]
+  categories         Category[]
 }
 
 model PasswordResetCode {
@@ -49,4 +55,17 @@ model PasswordResetCode {
   createdAt DateTime  @default(now())
 
   @@index([userId, code])
+}
+
+model Category {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String       @db.VarChar(50)
+  type      CategoryType
+  color     String       @db.VarChar(7) // hex, e.g. "#3B82F6"
+  icon      String       @db.VarChar(50) // key into the app's icon set
+  createdAt DateTime     @default(now())
+
+  @@index([userId])
 }

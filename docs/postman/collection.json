@@ -753,6 +753,285 @@
       ]
     },
     {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/categories?type=EXPENSE",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"],
+              "query": [{ "key": "type", "value": "EXPENSE" }]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/categories?type=EXPENSE",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories"],
+                  "query": [{ "key": "type", "value": "EXPENSE" }]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n    \"name\": \"Alimentação\",\n    \"type\": \"EXPENSE\",\n    \"color\": \"#3B82F6\",\n    \"icon\": \"restaurant-outline\",\n    \"createdAt\": \"2026-01-15T12:00:00.000Z\"\n  },\n  {\n    \"id\": \"a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n    \"name\": \"Transporte\",\n    \"type\": \"EXPENSE\",\n    \"color\": \"#EF4444\",\n    \"icon\": \"car-outline\",\n    \"createdAt\": \"2026-01-15T12:05:00.000Z\"\n  }\n]"
+            },
+            {
+              "name": "400 Bad Request — invalid type filter",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/categories?type=FOO",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories"],
+                  "query": [{ "key": "type", "value": "FOO" }]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"type must be one of the following values: INCOME, EXPENSE\"],\n  \"path\": \"/categories\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/categories",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\"Unauthorized\"],\n  \"path\": \"/categories\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alimentação\",\n  \"type\": \"EXPENSE\",\n  \"color\": \"#3B82F6\",\n  \"icon\": \"restaurant-outline\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Alimentação\",\n  \"type\": \"EXPENSE\",\n  \"color\": \"#3B82F6\",\n  \"icon\": \"restaurant-outline\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/categories",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"name\": \"Alimentação\",\n  \"type\": \"EXPENSE\",\n  \"color\": \"#3B82F6\",\n  \"icon\": \"restaurant-outline\",\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — invalid icon",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Teste\",\n  \"type\": \"EXPENSE\",\n  \"icon\": \"not-a-real-icon\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/categories",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"icon must be one of the following values: cash-outline, trending-up-outline, heart-outline, gift-outline, wallet-outline, save-outline, card-outline, storefront-outline, restaurant-outline, home-outline, car-outline, pulse-outline, school-outline, game-controller-outline, bag-outline, shirt-outline, airplane-outline, bus-outline, car-sport-outline, medkit-outline, bandage-outline, book-outline, laptop-outline, phone-portrait-outline, barbell-outline, wine-outline, cafe-outline, happy-outline, paw-outline, construct-outline, bulb-outline, pricetag-outline, briefcase-outline, receipt-outline, ellipsis-horizontal-outline\"],\n  \"path\": \"/categories\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Transporte Público\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Transporte Público\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"name\": \"Transporte Público\",\n  \"type\": \"EXPENSE\",\n  \"color\": \"#3B82F6\",\n  \"icon\": \"restaurant-outline\",\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — malformed color",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"color\": \"blue\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"color must be a hex string like #3B82F6\"],\n  \"path\": \"/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — not owner",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Hijacked\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/categories/a1826c76-8bbe-4dbe-a17d-d458df35c323",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories", "a1826c76-8bbe-4dbe-a17d-d458df35c323"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Category not found.\"],\n  \"path\": \"/categories/a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "400 Bad Request — malformed replacementCategoryId",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c?replacementCategoryId=not-a-uuid",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"],
+                  "query": [{ "key": "replacementCategoryId", "value": "not-a-uuid" }]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"replacementCategoryId must be a UUID\"],\n  \"path\": \"/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — not owner",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/categories/a1826c76-8bbe-4dbe-a17d-d458df35c323",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["categories", "a1826c76-8bbe-4dbe-a17d-d458df35c323"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Category not found.\"],\n  \"path\": \"/categories/a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Health",
       "item": [
         {
