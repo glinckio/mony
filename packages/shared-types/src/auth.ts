@@ -32,6 +32,13 @@ export const registerInputSchema = z
 
 export type RegisterInput = z.infer<typeof registerInputSchema>;
 
+export const loginInputSchema = z.object({
+  email: z.string().email("E-mail inválido"),
+  password: z.string().min(1, "Senha é obrigatória"),
+});
+
+export type LoginInput = z.infer<typeof loginInputSchema>;
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;

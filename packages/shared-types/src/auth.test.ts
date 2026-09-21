@@ -1,4 +1,4 @@
-import { registerInputSchema } from "./auth";
+import { loginInputSchema, registerInputSchema } from "./auth";
 
 const base = {
   name: "Ada Lovelace",
@@ -37,5 +37,22 @@ describe("registerInputSchema", () => {
     if (!result.success) {
       expect(result.error.issues[0]?.message).toBe("As senhas não coincidem");
     }
+  });
+});
+
+describe("loginInputSchema", () => {
+  it("accepts a valid email and non-empty password", () => {
+    const result = loginInputSchema.safeParse({ email: "ada@example.com", password: "x" });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an invalid email", () => {
+    const result = loginInputSchema.safeParse({ email: "not-an-email", password: "x" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an empty password", () => {
+    const result = loginInputSchema.safeParse({ email: "ada@example.com", password: "" });
+    expect(result.success).toBe(false);
   });
 });
