@@ -16,11 +16,15 @@ import { Throttle } from "@nestjs/throttler";
 
 import { AuthService } from "./auth.service";
 import { AuthTokensDto } from "./dto/auth-tokens.dto";
+import { ConfirmResetDto } from "./dto/confirm-reset.dto";
 import { LoginDto } from "./dto/login.dto";
+import { MessageDto } from "./dto/message.dto";
 import { RefreshDto } from "./dto/refresh.dto";
 import { RegisterDto } from "./dto/register.dto";
+import { RequestResetDto } from "./dto/request-reset.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { LoginThrottlerGuard } from "./guards/login-throttler.guard";
+import { ResetThrottlerGuard } from "./guards/reset-throttler.guard";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -62,6 +66,35 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: "Invalid or expired refresh token" })
   refresh(@Body() dto: RefreshDto): Promise<AuthTokensDto> {
     return this.authService.refresh(dto);
+  }
+
+  @Post("password-reset/request")
+  @UseGuards(ResetThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 300_000 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Request a password reset code by email" })
+  @ApiOkResponse({
+    type: MessageDto,
+    description: "Generic success — same response whether or not the email is registered",
+  })
+  @ApiBadRequestResponse({ description: "Validation failed" })
+  @ApiTooManyRequestsResponse({ description: "Too many reset requests, try again later" })
+  requestPasswordReset(@Body() dto: RequestResetDto): Promise<MessageDto> {
+    return this.authService.requestPasswordReset(dto);
+  }
+
+  @Post("password-reset/confirm")
+  @UseGuards(ResetThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 300_000 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Confirm a password reset code and set a new password" })
+  @ApiOkResponse({ type: MessageDto })
+  @ApiBadRequestResponse({
+    description: "Validation failed, or invalid/expired/already-used code",
+  })
+  @ApiTooManyRequestsResponse({ description: "Too many reset attempts, try again later" })
+  confirmPasswordReset(@Body() dto: ConfirmResetDto): Promise<MessageDto> {
+    return this.authService.confirmPasswordReset(dto);
   }
 
   @Post("logout")

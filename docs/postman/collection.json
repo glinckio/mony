@@ -292,6 +292,175 @@
               "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\"Unauthorized\"],\n  \"path\": \"/auth/logout\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
             }
           ]
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ada@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/password-reset/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "password-reset", "request"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — generic response (same whether or not the email is registered)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ada@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password-reset/request",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "password-reset", "request"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"If this email is registered, you'll receive a reset code shortly.\"\n}"
+            },
+            {
+              "name": "400 Bad Request — validation failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"not-an-email\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password-reset/request",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "password-reset", "request"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"email must be an email\"],\n  \"path\": \"/auth/password-reset/request\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "429 Too Many Requests — rate limited",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ada@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password-reset/request",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "password-reset", "request"]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "body": "{\n  \"statusCode\": 429,\n  \"error\": \"TOO_MANY_REQUESTS\",\n  \"message\": [\"ThrottlerException: Too Many Requests\"],\n  \"path\": \"/auth/password-reset/request\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Confirm Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ada@example.com\",\n  \"code\": \"123456\",\n  \"newPassword\": \"brandNewPassword1\",\n  \"newPasswordConfirmation\": \"brandNewPassword1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/password-reset/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "password-reset", "confirm"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ada@example.com\",\n  \"code\": \"123456\",\n  \"newPassword\": \"brandNewPassword1\",\n  \"newPasswordConfirmation\": \"brandNewPassword1\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password-reset/confirm",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "password-reset", "confirm"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"Password updated successfully.\"\n}"
+            },
+            {
+              "name": "400 Bad Request — invalid or expired code",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ada@example.com\",\n  \"code\": \"000000\",\n  \"newPassword\": \"brandNewPassword1\",\n  \"newPasswordConfirmation\": \"brandNewPassword1\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password-reset/confirm",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "password-reset", "confirm"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"Invalid or expired code.\"],\n  \"path\": \"/auth/password-reset/confirm\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — password confirmation mismatch",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ada@example.com\",\n  \"code\": \"123456\",\n  \"newPassword\": \"brandNewPassword1\",\n  \"newPasswordConfirmation\": \"somethingElse\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password-reset/confirm",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "password-reset", "confirm"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"newPasswordConfirmation must match newPassword\"],\n  \"path\": \"/auth/password-reset/confirm\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "429 Too Many Requests — rate limited",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ada@example.com\",\n  \"code\": \"123456\",\n  \"newPassword\": \"brandNewPassword1\",\n  \"newPasswordConfirmation\": \"brandNewPassword1\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/password-reset/confirm",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "password-reset", "confirm"]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "body": "{\n  \"statusCode\": 429,\n  \"error\": \"TOO_MANY_REQUESTS\",\n  \"message\": [\"ThrottlerException: Too Many Requests\"],\n  \"path\": \"/auth/password-reset/confirm\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
         }
       ]
     },
