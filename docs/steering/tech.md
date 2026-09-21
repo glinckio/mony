@@ -144,6 +144,21 @@ pnpm --filter @mony/api test:e2e      # Supertest e2e
   and `screen.getByText(...)` throws `` `render` function has not been
   called `` even though render clearly ran. Fix: `await render(<X />)`
   in every test, and make sure `test-renderer` is installed.
+- **TanStack Query (`@tanstack/react-query`) registers global
+  online/focus-manager listeners at module load, not per `QueryClient`
+  instance** — unmounting a test's `QueryClientProvider` doesn't tear
+  them down, so `jest` hangs after all tests report passing instead of
+  exiting. `apps/mobile/package.json`'s `test` script runs with
+  `--forceExit` for this reason; it's a real leak in the test
+  environment only; the app itself is unaffected. Screens that use
+  `useInfiniteQuery`/`useQuery` and render in a loop within one test
+  file (see `TransactionFormScreen.test.tsx`) can also bleed a pending
+  react-hook-form/react-query microtask into whichever test runs right
+  after one that fires a submit — same class of issue as the
+  `render()`-is-async note above. Mitigate by capturing the `render()`
+  result and calling `.unmount()` at the end of each test, and by
+  ordering tests so nothing that drives a submit/mutation runs
+  immediately before a test asserting on fresh render state.
 - **TypeScript 6 deprecates `baseUrl`-based path mapping and
   `moduleResolution: "Node"`.** Workspace package resolution (`@mony/*`)
   doesn't need `baseUrl`/`paths` at all — pnpm's own `node_modules`

@@ -14,7 +14,7 @@ building the whole API first and the whole app after.
 | 3 | `auth-password-reset` | ✅ Done | Forgot-password → code → new password, end to end | 2 |
 | 4 | `user-profile` | ✅ Done | View/edit profile, change password, switch workspace | 2 |
 | 5 | `categories` | ✅ Done | Manage income/expense categories | 2 |
-| 6 | `transactions` | ⬜ Not started | Create/list/edit income & expense entries, recurring batches | 5 |
+| 6 | `transactions` | ✅ Done | Create/list/edit income & expense entries, recurring batches | 5 |
 | 7 | `goals` | ⬜ Not started | Savings goals with progress tracking | 4 |
 | 8 | `dashboard` | ⬜ Not started | Home screen: totals, balance, monthly chart, goals preview | 6, 7 |
 | 9 | `debts` | ⬜ Not started | Debts with auto-generated installments, payment tracking | 5, 6 |
