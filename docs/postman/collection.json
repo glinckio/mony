@@ -465,6 +465,294 @@
       ]
     },
     {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"f64e385f-3094-4f9d-a67c-e84e5512b8a1\",\n  \"name\": \"Ada Lovelace\",\n  \"email\": \"ada@example.com\",\n  \"phone\": \"11987654321\",\n  \"phone2\": null,\n  \"activeWorkspace\": \"PERSONAL\",\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n  \"lastAccessAt\": \"2026-09-20T08:30:00.000Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\"Unauthorized\"],\n  \"path\": \"/users/me\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ada L. Byron\",\n  \"phone\": \"11987654321\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ada L. Byron\",\n  \"phone\": \"11987654321\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"f64e385f-3094-4f9d-a67c-e84e5512b8a1\",\n  \"name\": \"Ada L. Byron\",\n  \"email\": \"ada@example.com\",\n  \"phone\": \"11987654321\",\n  \"phone2\": null,\n  \"activeWorkspace\": \"PERSONAL\",\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n  \"lastAccessAt\": \"2026-09-20T08:30:00.000Z\"\n}"
+            },
+            {
+              "name": "409 Conflict — email already used by another account",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"taken@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"statusCode\": 409,\n  \"error\": \"CONFLICT\",\n  \"message\": [\"This email is already registered.\"],\n  \"path\": \"/users/me\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — malformed phone",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"phone must be 10-11 digits\"],\n  \"path\": \"/users/me\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"correcthorsebattery\",\n  \"newPassword\": \"brandNewPassword1\",\n  \"newPasswordConfirmation\": \"brandNewPassword1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "change-password"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"correcthorsebattery\",\n  \"newPassword\": \"brandNewPassword1\",\n  \"newPasswordConfirmation\": \"brandNewPassword1\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/me/change-password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me", "change-password"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "400 Bad Request — current password is incorrect",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"wrong-password\",\n  \"newPassword\": \"brandNewPassword1\",\n  \"newPasswordConfirmation\": \"brandNewPassword1\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/me/change-password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me", "change-password"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"Current password is incorrect.\"],\n  \"path\": \"/users/me/change-password\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — password confirmation mismatch",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"correcthorsebattery\",\n  \"newPassword\": \"brandNewPassword1\",\n  \"newPasswordConfirmation\": \"somethingElse\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/me/change-password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me", "change-password"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"newPasswordConfirmation must match newPassword\"],\n  \"path\": \"/users/me/change-password\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Switch Workspace",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workspace\": \"BUSINESS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me/workspace",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "workspace"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"workspace\": \"BUSINESS\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/me/workspace",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me", "workspace"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"f64e385f-3094-4f9d-a67c-e84e5512b8a1\",\n  \"name\": \"Ada Lovelace\",\n  \"email\": \"ada@example.com\",\n  \"phone\": \"11987654321\",\n  \"phone2\": null,\n  \"activeWorkspace\": \"BUSINESS\",\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n  \"lastAccessAt\": \"2026-09-20T08:30:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — invalid workspace value",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"workspace\": \"FAMILY\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/me/workspace",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "me", "workspace"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"workspace must be one of the following values: PERSONAL, BUSINESS\"],\n  \"path\": \"/users/me/workspace\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Health",
       "item": [
         {
