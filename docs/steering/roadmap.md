@@ -7,25 +7,28 @@ rule 4 and every `tasks.md` template. This lets you verify each screen
 against a real, working endpoint before moving to the next one, instead of
 building the whole API first and the whole app after.
 
-| # | Feature | What it unlocks to test | Depends on |
-|---|---|---|---|
-| 1 | `auth-register` | Sign-up screen creates a real account | — |
-| 2 | `auth-login` | Login screen authenticates, gets a session | 1 |
-| 3 | `auth-password-reset` | Forgot-password → code → new password, end to end | 2 |
-| 4 | `user-profile` | View/edit profile, change password, switch workspace | 2 |
-| 5 | `categories` | Manage income/expense categories | 2 |
-| 6 | `transactions` | Create/list/edit income & expense entries, recurring batches | 5 |
-| 7 | `goals` | Savings goals with progress tracking | 4 |
-| 8 | `dashboard` | Home screen: totals, balance, monthly chart, goals preview | 6, 7 |
-| 9 | `debts` | Debts with auto-generated installments, payment tracking | 5, 6 |
-| 10 | `grocery` | Household grocery list + informational budget | 2 |
-| 11 | `vehicles` | Vehicle registry, mileage tracking | 2 |
-| 12 | `vehicle-maintenance` | Maintenance types, history, km/date-based alerts | 11 |
-| 13 | `subscriptions` | Plan display + Stripe checkout, status sync | 4 |
-| 14 | `reports` | Charts/aggregations over a date range | 6 |
-| 15 | `changelog` | In-app changelog banner + admin CRUD + read tracking | 4 |
+| # | Feature | Status | What it unlocks to test | Depends on |
+|---|---|---|---|---|
+| 1 | `auth-register` | ✅ Done | Sign-up screen creates a real account | — |
+| 2 | `auth-login` | ✅ Done | Login screen authenticates, gets a session | 1 |
+| 3 | `auth-password-reset` | ⬜ Next up | Forgot-password → code → new password, end to end | 2 |
+| 4 | `user-profile` | ⬜ Not started | View/edit profile, change password, switch workspace | 2 |
+| 5 | `categories` | ⬜ Not started | Manage income/expense categories | 2 |
+| 6 | `transactions` | ⬜ Not started | Create/list/edit income & expense entries, recurring batches | 5 |
+| 7 | `goals` | ⬜ Not started | Savings goals with progress tracking | 4 |
+| 8 | `dashboard` | ⬜ Not started | Home screen: totals, balance, monthly chart, goals preview | 6, 7 |
+| 9 | `debts` | ⬜ Not started | Debts with auto-generated installments, payment tracking | 5, 6 |
+| 10 | `grocery` | ⬜ Not started | Household grocery list + informational budget | 2 |
+| 11 | `vehicles` | ⬜ Not started | Vehicle registry, mileage tracking | 2 |
+| 12 | `vehicle-maintenance` | ⬜ Not started | Maintenance types, history, km/date-based alerts | 11 |
+| 13 | `subscriptions` | ⬜ Not started | Plan display + Stripe checkout, status sync | 4 |
+| 14 | `reports` | ⬜ Not started | Charts/aggregations over a date range | 6 |
+| 15 | `changelog` | ⬜ Not started | In-app changelog banner + admin CRUD + read tracking | 4 |
 
-Phase 0 (monorepo scaffold) is already done. Phase "9"/"10" from the
+Phase 0 (monorepo scaffold) is done. Status detail per feature lives in
+that feature's `docs/specs/<feature>/tasks.md` (checkboxes) — this table
+is just the at-a-glance summary; update the row here whenever a
+feature's tasks.md gets fully checked off. Phase "9"/"10" from the
 earlier version of this roadmap (LGPD hardening, full E2E pass, store
 submission) still apply **after feature 15** — see "Release hardening"
 below.
