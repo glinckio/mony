@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { workspaceTypeSchema } from "./auth";
+import { positiveAmountSchema } from "./money";
 
 export const transactionTypeSchema = z.enum(["INCOME", "EXPENSE"]);
 export type TransactionType = z.infer<typeof transactionTypeSchema>;
@@ -43,16 +44,7 @@ export const createTransactionInputSchema = z.object({
     .string()
     .min(1, "Descrição é obrigatória")
     .max(255, "Descrição deve ter no máximo 255 caracteres"),
-  amount: z
-    .number({ invalid_type_error: "Valor é obrigatório" })
-    .positive("Valor deve ser maior que zero")
-    // String-based check, not `value * 100` — floating-point
-    // multiplication loses precision for ordinary amounts (e.g.
-    // 1.15 * 100 === 114.99999999999999), which would reject valid
-    // to-the-cent values essentially at random.
-    .refine((value) => /^\d+(\.\d{1,2})?$/.test(value.toString()), {
-      message: "Valor deve ter no máximo 2 casas decimais",
-    }),
+  amount: positiveAmountSchema,
   date: z.string().min(1, "Data é obrigatória"),
   recurring: z.boolean().optional(),
   recurringMonths: z
@@ -75,17 +67,7 @@ export const updateTransactionInputSchema = z.object({
     .min(1, "Descrição é obrigatória")
     .max(255, "Descrição deve ter no máximo 255 caracteres")
     .optional(),
-  amount: z
-    .number()
-    .positive("Valor deve ser maior que zero")
-    // String-based check, not `value * 100` — floating-point
-    // multiplication loses precision for ordinary amounts (e.g.
-    // 1.15 * 100 === 114.99999999999999), which would reject valid
-    // to-the-cent values essentially at random.
-    .refine((value) => /^\d+(\.\d{1,2})?$/.test(value.toString()), {
-      message: "Valor deve ter no máximo 2 casas decimais",
-    })
-    .optional(),
+  amount: positiveAmountSchema.optional(),
   date: z.string().min(1, "Data é obrigatória").optional(),
 });
 
