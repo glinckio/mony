@@ -145,7 +145,23 @@ pnpm --filter @mony/api test:e2e      # Supertest e2e
   `dist/src/main.js` instead of `dist/main.js` — so a separate
   `tsconfig.build.json` (rootDir `./src`, excludes `test/`+`*.spec.ts`)
   is what `nest build` actually uses, keeping `dist/main.js` flat. This
-  is the standard Nest CLI convention, not a one-off hack.
+  is the standard Nest CLI convention, not a one-off hack. **`nest start
+  --watch` doesn't pick `tsconfig.build.json` up automatically the way
+  `nest build` does** — it needs `nest-cli.json`'s
+  `compilerOptions.tsConfigPath` set explicitly, or `nest start --watch`
+  compiles against the main `tsconfig.json` (rootDir `.`) and then tries
+  to run the nonexistent `dist/main.js`, crashing with
+  `Cannot find module '.../dist/main'` even though compilation itself
+  reported zero errors.
+- **`tsconfig.build.tsbuildinfo` (incremental build cache) can go stale
+  if you delete `dist/` without also deleting it** — TS's incremental
+  compiler trusts the cache and silently skips re-emitting files it
+  thinks are already built, so `nest build`/`nest start` exit clean with
+  zero output and produce no `dist/` at all. Symptom looks identical to
+  the `tsConfigPath` issue above (missing `dist/main.js`) but the fix is
+  different: delete `apps/api/tsconfig.build.tsbuildinfo` too, not just
+  `dist/`. Already gitignored (`*.tsbuildinfo`), but remember it exists
+  locally whenever you clean build output by hand.
 
 ## Non-negotiable rules
 
