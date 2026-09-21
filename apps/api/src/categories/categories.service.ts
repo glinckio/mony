@@ -49,12 +49,6 @@ export class CategoriesService {
     return this.toDto(category);
   }
 
-  // No transaction-in-use / reassign check yet — the `transactions`
-  // feature (which owns the FK to Category) hasn't landed, so nothing
-  // can reference a category yet. `replacementCategoryId` is accepted
-  // and validated for ownership below so the API contract is stable,
-  // but it's a no-op until that feature adds the usage check ahead of
-  // this delete, per docs/specs/categories/design.md.
   async delete(userId: string, id: string, replacementCategoryId?: string): Promise<void> {
     const category = await this.findOwned(userId, id);
 
@@ -68,6 +62,22 @@ export class CategoriesService {
       if (replacement.type !== category.type) {
         throw new BadRequestException("replacementCategoryId must have the same type.");
       }
+
+      await this.prisma.$transaction([
+        this.prisma.transaction.updateMany({
+          where: { categoryId: id, userId },
+          data: { categoryId: replacementCategoryId },
+        }),
+        this.prisma.category.delete({ where: { id } }),
+      ]);
+      return;
+    }
+
+    const inUse = await this.prisma.transaction.count({ where: { categoryId: id } });
+    if (inUse > 0) {
+      throw new BadRequestException(
+        "This category has transactions — provide replacementCategoryId to reassign them first.",
+      );
     }
 
     await this.prisma.category.delete({ where: { id } });

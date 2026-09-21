@@ -17,6 +17,11 @@ describe("CategoriesService", () => {
       delete: jest.Mock;
       findFirst: jest.Mock;
     };
+    transaction: {
+      count: jest.Mock;
+      updateMany: jest.Mock;
+    };
+    $transaction: jest.Mock;
   };
 
   const buildCategory = (overrides: Partial<Record<string, unknown>> = {}) => ({
@@ -39,6 +44,11 @@ describe("CategoriesService", () => {
         delete: jest.fn(),
         findFirst: jest.fn(),
       },
+      transaction: {
+        count: jest.fn().mockResolvedValue(0),
+        updateMany: jest.fn(),
+      },
+      $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -137,7 +147,7 @@ describe("CategoriesService", () => {
       expect(prisma.category.delete).toHaveBeenCalledWith({ where: { id: "cat-1" } });
     });
 
-    it("validates the replacement category is owned by the user before deleting", async () => {
+    it("validates the replacement category is owned by the user, reassigns transactions, then deletes", async () => {
       prisma.category.findFirst
         .mockResolvedValueOnce(buildCategory({ id: "cat-1" }))
         .mockResolvedValueOnce(buildCategory({ id: "cat-2" }));
@@ -150,7 +160,22 @@ describe("CategoriesService", () => {
       expect(prisma.category.findFirst).toHaveBeenNthCalledWith(2, {
         where: { id: "cat-2", userId: "user-1" },
       });
+      expect(prisma.transaction.updateMany).toHaveBeenCalledWith({
+        where: { categoryId: "cat-1", userId: "user-1" },
+        data: { categoryId: "cat-2" },
+      });
       expect(prisma.category.delete).toHaveBeenCalledWith({ where: { id: "cat-1" } });
+      expect(prisma.$transaction).toHaveBeenCalled();
+    });
+
+    it("rejects with 400 when the category has transactions and no replacement is given", async () => {
+      prisma.category.findFirst.mockResolvedValue(buildCategory());
+      prisma.transaction.count.mockResolvedValue(3);
+
+      await expect(service.delete("user-1", "cat-1")).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(prisma.category.delete).not.toHaveBeenCalled();
     });
 
     it("rejects with 404 when the category doesn't belong to the user", async () => {
