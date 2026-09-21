@@ -17,6 +17,7 @@ import {
   ColorSwatchPicker,
   IconGridPicker,
   Screen,
+  SegmentedToggle,
   Text,
   TextField,
 } from "../../components/ui";
@@ -105,33 +106,13 @@ export function CategoryFormScreen() {
           <Text variant="caption" style={styles.fieldLabel}>
             Tipo
           </Text>
-          <View style={styles.typeRow}>
-            {TYPE_OPTIONS.map((option) => {
-              const selected = option.value === type;
-              return (
-                <TouchableOpacity
-                  key={option.value}
-                  testID={`type-option-${option.value}`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected, disabled: !!editing }}
-                  disabled={!!editing}
-                  style={[
-                    styles.typeOption,
-                    selected && styles.typeOptionSelected,
-                    !!editing && styles.typeOptionDisabled,
-                  ]}
-                  onPress={() => setValue("type", option.value, { shouldValidate: true })}
-                >
-                  <Text
-                    variant="bodyStrong"
-                    color={selected ? color.onPrimary : color.textSecondary}
-                  >
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          <SegmentedToggle
+            testID="type-option"
+            options={TYPE_OPTIONS}
+            value={type}
+            disabled={!!editing}
+            onChange={(value) => setValue("type", value, { shouldValidate: true })}
+          />
         </View>
 
         <View>
@@ -203,24 +184,6 @@ const styles = StyleSheet.create({
   fieldError: {
     marginTop: spacing.xs,
     marginLeft: spacing.xxs,
-  },
-  typeRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  typeOption: {
-    flex: 1,
-    minHeight: sizeTokens.controlHeight,
-    borderRadius: radius.md,
-    backgroundColor: color.surfaceAlt,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  typeOptionSelected: {
-    backgroundColor: color.primary,
-  },
-  typeOptionDisabled: {
-    opacity: 0.6,
   },
   submitError: {
     flexDirection: "row",

@@ -46,6 +46,13 @@ export function HomeScreen() {
         </Text>
         <View style={styles.categoriesButton}>
           <Button
+            testID="go-to-transactions"
+            label="Transações"
+            onPress={() => navigation.navigate("Transactions")}
+          />
+        </View>
+        <View style={styles.categoriesButton}>
+          <Button
             testID="go-to-categories"
             label="Categorias"
             variant="secondary"

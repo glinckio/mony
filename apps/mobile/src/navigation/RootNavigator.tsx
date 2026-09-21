@@ -1,4 +1,4 @@
-import type { Category, Profile } from "@mony/shared-types";
+import type { Category, Profile, Transaction } from "@mony/shared-types";
 import { NavigationContainer, type NavigationProp } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect } from "react";
@@ -15,6 +15,8 @@ import { CategoryFormScreen } from "../screens/categories/CategoryFormScreen";
 import { HomeScreen } from "../screens/HomeScreen";
 import { ChangePasswordScreen } from "../screens/profile/ChangePasswordScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
+import { TransactionFormScreen } from "../screens/transactions/TransactionFormScreen";
+import { TransactionsListScreen } from "../screens/transactions/TransactionsListScreen";
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -29,6 +31,8 @@ export type AppStackParamList = {
   ChangePassword: undefined;
   Categories: undefined;
   CategoryForm: { category?: Category } | undefined;
+  Transactions: undefined;
+  TransactionForm: { transaction?: Transaction } | undefined;
 };
 
 export type AuthStackNavigation = NavigationProp<AuthStackParamList>;
@@ -68,6 +72,12 @@ export function RootNavigator() {
           <AppStack.Screen
             name="CategoryForm"
             component={CategoryFormScreen}
+            options={{ presentation: "modal" }}
+          />
+          <AppStack.Screen name="Transactions" component={TransactionsListScreen} />
+          <AppStack.Screen
+            name="TransactionForm"
+            component={TransactionFormScreen}
             options={{ presentation: "modal" }}
           />
         </AppStack.Navigator>

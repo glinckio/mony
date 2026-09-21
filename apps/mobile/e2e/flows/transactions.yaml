@@ -1,0 +1,120 @@
+appId: com.mony.app
+---
+# Registers a fresh account, creates an expense and income category, then
+# exercises the Transactions list + form screens against the real API:
+# create an expense, mark it paid, create a recurring income (verifying
+# every generated row shows up), delete one transaction, then bulk-delete
+# two more via multi-select (long-press to enter selection mode).
+- launchApp
+- evalScript: ${output.testEmail = 'maestro-transactions-' + Date.now() + '@example.com'}
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Transactions Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Bem-vindo, Maestro Transactions Tester"
+
+# Set up one expense and one income category to use in the form below.
+- tapOn:
+    id: "go-to-categories"
+- tapOn:
+    id: "add-category-button"
+- tapOn:
+    id: "name-input"
+- inputText: "Contas"
+- tapOn:
+    id: "icon-picker-receipt-outline"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Contas"
+- tapOn:
+    id: "add-category-button"
+- tapOn:
+    id: "name-input"
+- inputText: "Salário"
+- tapOn:
+    id: "type-option-INCOME"
+- tapOn:
+    id: "icon-picker-cash-outline"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Salário"
+- tapOn:
+    id: "go-to-home"
+
+# Create a one-off expense and mark it paid.
+- tapOn:
+    id: "go-to-transactions"
+- tapOn:
+    id: "add-transaction-button"
+- tapOn: "Contas"
+- tapOn:
+    id: "description-input"
+- inputText: "Conta de luz"
+- tapOn:
+    id: "amount-input"
+- inputText: "15000"
+- tapOn:
+    id: "date-input"
+- inputText: "10012026"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Conta de luz"
+- tapOn: "Pendente"
+- assertVisible: "Pago"
+
+# Create a recurring income and verify every generated row shows up.
+- tapOn:
+    id: "add-transaction-button"
+- tapOn:
+    id: "type-option-INCOME"
+- tapOn: "Salário"
+- tapOn:
+    id: "description-input"
+- inputText: "Salário mensal"
+- tapOn:
+    id: "amount-input"
+- inputText: "5000"
+- tapOn:
+    id: "date-input"
+- inputText: "2026-02-01"
+- tapOn:
+    id: "recurring-toggle"
+- tapOn:
+    id: "recurring-months-input"
+- inputText: "3"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Salário mensal"
+- assertVisible: "Salário mensal (2/3)"
+- assertVisible: "Salário mensal (3/3)"
+
+# Delete a single transaction via long-press multi-select.
+- longPressOn: "Conta de luz"
+- assertVisible: "1 selecionada(s)"
+- tapOn:
+    id: "bulk-delete-button"
+- tapOn: "Excluir"
+- assertNotVisible: "Conta de luz"
+
+# Bulk-delete two of the recurring income rows the same way.
+- longPressOn: "Salário mensal (2/3)"
+- tapOn: "Salário mensal (3/3)"
+- assertVisible: "2 selecionada(s)"
+- tapOn:
+    id: "bulk-delete-button"
+- tapOn: "Excluir"
+- assertNotVisible: "Salário mensal (2/3)"
+- assertNotVisible: "Salário mensal (3/3)"

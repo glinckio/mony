@@ -10,7 +10,7 @@
     "build": "expo export --platform ios --platform android",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "jest",
+    "test": "jest --forceExit",
     "test:watch": "jest --watch",
     "test:e2e": "maestro test e2e/flows"
   },
