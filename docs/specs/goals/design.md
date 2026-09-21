@@ -35,6 +35,12 @@ model Goal {
 `GoalDto` includes a computed `progressPercent: number` field alongside
 the stored fields — computed in the service layer, not stored in the DB.
 
+`PATCH /goals/:id`: when the request body sets `completed: true`, the
+service forces `currentAmount` to `targetAmount` (using the
+newly-submitted `targetAmount` if both are sent in the same request) —
+this happens even if `currentAmount` was omitted from the body. See
+`requirements.md` for why this deviates from legacy.
+
 ## Mobile screens
 
 | Screen | Route | Reads | Writes | Notes |

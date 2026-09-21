@@ -1522,6 +1522,275 @@
       ]
     },
     {
+      "name": "Goals",
+      "item": [
+        {
+          "name": "List Goals",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/goals?completed=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["goals"],
+              "query": [{ "key": "completed", "value": "false" }]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/goals?completed=false",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals"],
+                  "query": [{ "key": "completed", "value": "false" }]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n    \"workspace\": \"PERSONAL\",\n    \"categoryId\": null,\n    \"title\": \"Viagem para a praia\",\n    \"description\": \"Economizar para as férias de julho\",\n    \"targetAmount\": \"5000.00\",\n    \"currentAmount\": \"1500.00\",\n    \"targetDate\": \"2026-07-01\",\n    \"completed\": false,\n    \"progressPercent\": 30,\n    \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n    \"updatedAt\": \"2026-01-15T12:00:00.000Z\"\n  }\n]"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/goals",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\"Unauthorized\"],\n  \"path\": \"/goals\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Viagem para a praia\",\n  \"description\": \"Economizar para as férias de julho\",\n  \"targetAmount\": 5000,\n  \"targetDate\": \"2026-07-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/goals",
+              "host": ["{{baseUrl}}"],
+              "path": ["goals"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Viagem para a praia\",\n  \"description\": \"Economizar para as férias de julho\",\n  \"targetAmount\": 5000,\n  \"targetDate\": \"2026-07-01\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/goals",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"workspace\": \"PERSONAL\",\n  \"categoryId\": null,\n  \"title\": \"Viagem para a praia\",\n  \"description\": \"Economizar para as férias de julho\",\n  \"targetAmount\": \"5000.00\",\n  \"currentAmount\": \"0.00\",\n  \"targetDate\": \"2026-07-01\",\n  \"completed\": false,\n  \"progressPercent\": 0,\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n  \"updatedAt\": \"2026-01-15T12:00:00.000Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — non-positive targetAmount",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Teste\",\n  \"targetAmount\": 0\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/goals",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"targetAmount must be a positive number\"],\n  \"path\": \"/goals\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — category doesn't exist",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Teste\",\n  \"targetAmount\": 100,\n  \"categoryId\": \"00000000-0000-0000-0000-000000000000\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/goals",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Category not found.\"],\n  \"path\": \"/goals\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Goal",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentAmount\": 3000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/goals/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+              "host": ["{{baseUrl}}"],
+              "path": ["goals", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — progress update",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentAmount\": 3000\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/goals/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"workspace\": \"PERSONAL\",\n  \"categoryId\": null,\n  \"title\": \"Viagem para a praia\",\n  \"description\": \"Economizar para as férias de julho\",\n  \"targetAmount\": \"5000.00\",\n  \"currentAmount\": \"3000.00\",\n  \"targetDate\": \"2026-07-01\",\n  \"completed\": false,\n  \"progressPercent\": 60,\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n  \"updatedAt\": \"2026-01-15T13:00:00.000Z\"\n}"
+            },
+            {
+              "name": "200 OK — mark completed (forces currentAmount to targetAmount)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"completed\": true\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/goals/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n  \"workspace\": \"PERSONAL\",\n  \"categoryId\": null,\n  \"title\": \"Viagem para a praia\",\n  \"description\": \"Economizar para as férias de julho\",\n  \"targetAmount\": \"5000.00\",\n  \"currentAmount\": \"5000.00\",\n  \"targetDate\": \"2026-07-01\",\n  \"completed\": true,\n  \"progressPercent\": 100,\n  \"createdAt\": \"2026-01-15T12:00:00.000Z\",\n  \"updatedAt\": \"2026-01-15T13:05:00.000Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — not owner",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Hijacked\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/goals/a1826c76-8bbe-4dbe-a17d-d458df35c323",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals", "a1826c76-8bbe-4dbe-a17d-d458df35c323"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Goal not found.\"],\n  \"path\": \"/goals/a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Goal",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/goals/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+              "host": ["{{baseUrl}}"],
+              "path": ["goals", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/goals/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals", "5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "404 Not Found — not owner",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/goals/a1826c76-8bbe-4dbe-a17d-d458df35c323",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["goals", "a1826c76-8bbe-4dbe-a17d-d458df35c323"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Goal not found.\"],\n  \"path\": \"/goals/a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Health",
       "item": [
         {

@@ -15,7 +15,7 @@ building the whole API first and the whole app after.
 | 4 | `user-profile` | ✅ Done | View/edit profile, change password, switch workspace | 2 |
 | 5 | `categories` | ✅ Done | Manage income/expense categories | 2 |
 | 6 | `transactions` | ✅ Done | Create/list/edit income & expense entries, recurring batches | 5 |
-| 7 | `goals` | ⬜ Not started | Savings goals with progress tracking | 4 |
+| 7 | `goals` | ✅ Done | Savings goals with progress tracking | 4 |
 | 8 | `dashboard` | ⬜ Not started | Home screen: totals, balance, monthly chart, goals preview | 6, 7 |
 | 9 | `debts` | ⬜ Not started | Debts with auto-generated installments, payment tracking | 5, 6 |
 | 10 | `grocery` | ⬜ Not started | Household grocery list + informational budget | 2 |

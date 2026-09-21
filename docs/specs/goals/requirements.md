@@ -24,8 +24,16 @@ goal progress, the user directly edits `currentAmount`.
 - THE SYSTEM SHALL compute `progressPercent = min(100, max(0,
   currentAmount / targetAmount * 100))` for display; this is a derived
   value, not stored.
-- `completed` is a manual boolean flag the user sets — it is NOT
-  auto-derived from `currentAmount >= targetAmount` (matches legacy).
+- `completed` is a manual boolean flag the user sets — `currentAmount`
+  is NOT auto-derived from it reaching `targetAmount` on its own
+  (matches legacy). The reverse direction is a deliberate deviation
+  from legacy, requested by the product owner after launch: WHEN a
+  user sets `completed = true`, THE SYSTEM SHALL force `currentAmount`
+  to `targetAmount` (100% progress) in the same update, even if the
+  request didn't also send `currentAmount`. Legacy `metas.php` kept
+  `concluida` fully independent of `valor_atual` in both directions;
+  this product explicitly wants a completed goal to always read as
+  fully funded.
 - WHEN a user deletes a goal, THE SYSTEM SHALL delete it directly — no
   dependency checks (nothing else references a Goal).
 
