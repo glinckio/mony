@@ -2,4 +2,5 @@
 // Populated feature by feature as specs land in docs/specs/<feature>/design.md.
 export * from "./auth";
 export * from "./category";
+export * from "./transaction";
 export * from "./user";
