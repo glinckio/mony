@@ -2,7 +2,6 @@ import { color, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import type { ReactNode } from "react";
 import {
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -32,10 +31,21 @@ export function Screen({
   contentStyle,
   centered = false,
 }: ScreenProps) {
+  // Deliberately not `KeyboardAvoidingView` — its manual padding/height
+  // math repeatedly came out misaligned in practice (content ending up
+  // half-behind/half-above the keyboard), including nested inside a
+  // native-stack modal presentation. `automaticallyAdjustKeyboardInsets`
+  // hands the whole thing to UIKit's own keyboard-avoidance instead,
+  // which is what the OS's native inset animation actually uses — no
+  // manual measurement to get wrong. iOS-only (RN 0.71+); on Android the
+  // window already resizes natively (Expo's default
+  // `windowSoftInputMode`/`softwareKeyboardLayoutMode` is "resize"), so
+  // neither platform needs `KeyboardAvoidingView` here at all.
   const content = scrollable ? (
     <ScrollView
       contentContainerStyle={[styles.content, centered && styles.centered, contentStyle]}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets={keyboardAvoiding && Platform.OS === "ios"}
     >
       {children}
     </ScrollView>
@@ -49,24 +59,11 @@ export function Screen({
   // etc. — those still claim the touch first) dismisses the keyboard.
   // `keyboardShouldPersistTaps="handled"` above is what lets a tap on an
   // actual input/button inside the ScrollView still register normally.
-  const dismissible = (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      {content}
-    </TouchableWithoutFeedback>
-  );
-
   return (
     <SafeAreaView style={styles.safeArea} edges={edges}>
-      {keyboardAvoiding ? (
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
-          {dismissible}
-        </KeyboardAvoidingView>
-      ) : (
-        dismissible
-      )}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        {content}
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }

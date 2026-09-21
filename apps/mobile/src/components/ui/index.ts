@@ -2,6 +2,7 @@ export { AppHeader } from "./AppHeader";
 export { Button } from "./Button";
 export { ColorSwatchPicker } from "./ColorSwatchPicker";
 export { IconGridPicker } from "./IconGridPicker";
+export { ProgressBar } from "./ProgressBar";
 export { Screen } from "./Screen";
 export { SegmentedToggle } from "./SegmentedToggle";
 export { Text } from "./Text";

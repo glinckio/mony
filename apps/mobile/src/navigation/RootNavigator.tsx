@@ -1,4 +1,4 @@
-import type { Category, Profile, Transaction } from "@mony/shared-types";
+import type { Category, Goal, Profile, Transaction } from "@mony/shared-types";
 import { NavigationContainer, type NavigationProp } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect } from "react";
@@ -12,6 +12,8 @@ import { RegisterScreen } from "../screens/auth/RegisterScreen";
 import { ResetPasswordScreen } from "../screens/auth/ResetPasswordScreen";
 import { CategoriesScreen } from "../screens/categories/CategoriesScreen";
 import { CategoryFormScreen } from "../screens/categories/CategoryFormScreen";
+import { GoalFormScreen } from "../screens/goals/GoalFormScreen";
+import { GoalsScreen } from "../screens/goals/GoalsScreen";
 import { HomeScreen } from "../screens/HomeScreen";
 import { ChangePasswordScreen } from "../screens/profile/ChangePasswordScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
@@ -33,6 +35,8 @@ export type AppStackParamList = {
   CategoryForm: { category?: Category } | undefined;
   Transactions: undefined;
   TransactionForm: { transaction?: Transaction } | undefined;
+  Goals: undefined;
+  GoalForm: { goal?: Goal } | undefined;
 };
 
 export type AuthStackNavigation = NavigationProp<AuthStackParamList>;
@@ -78,6 +82,12 @@ export function RootNavigator() {
           <AppStack.Screen
             name="TransactionForm"
             component={TransactionFormScreen}
+            options={{ presentation: "modal" }}
+          />
+          <AppStack.Screen name="Goals" component={GoalsScreen} />
+          <AppStack.Screen
+            name="GoalForm"
+            component={GoalFormScreen}
             options={{ presentation: "modal" }}
           />
         </AppStack.Navigator>

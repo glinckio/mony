@@ -59,6 +59,14 @@ export function HomeScreen() {
             onPress={() => navigation.navigate("Categories")}
           />
         </View>
+        <View style={styles.categoriesButton}>
+          <Button
+            testID="go-to-goals"
+            label="Metas"
+            variant="secondary"
+            onPress={() => navigation.navigate("Goals")}
+          />
+        </View>
         <View style={styles.logoutButton}>
           <Button
             testID="logout-button"
