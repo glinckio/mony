@@ -1,0 +1,20 @@
+appId: com.mony.app
+---
+- launchApp
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Tester"
+- tapOn:
+    id: "email-input"
+- inputRandomEmail
+
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Bem-vindo, Maestro Tester"

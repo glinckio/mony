@@ -65,6 +65,17 @@ pnpm --filter @mony/api test:e2e      # Supertest e2e
 
 ## Known gotchas (don't re-debug these)
 
+- **`react-native-safe-area-context` needs its official jest mock wired
+  in, or `SafeAreaProvider`/`SafeAreaView` hang or crash in tests.**
+  `apps/mobile/jest.setup.js` does
+  `jest.mock("react-native-safe-area-context", () =>
+  require("react-native-safe-area-context/jest/mock").default)` — the
+  trailing `.default` is required (the mock file is a TS `export
+  default`, and a raw `require()` inside a `jest.mock` factory doesn't
+  get ESM interop, so without `.default` every named export, including
+  `SafeAreaProvider`, resolves to `undefined` and React throws "Element
+  type is invalid"). Registered via `setupFiles` in
+  `apps/mobile/jest.config.js`, not `setupFilesAfterEach`.
 - **Metro's Metro config (`unstable_enablePackageExports`) can misresolve
   packages in a pnpm monorepo**, surfacing as a generic
   `Cannot read property 'default' of undefined` at runtime (native only —

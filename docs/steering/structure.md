@@ -24,6 +24,23 @@ mony/
 └── legacy_php_reference/            # old PHP app + SQL dump, read-only reference only
 ```
 
+## Mobile screen conventions
+
+- `App.tsx` wraps everything in a single root-level `SafeAreaProvider`
+  (from `react-native-safe-area-context`) — screens don't each create
+  their own.
+- Every screen navigated to with `headerShown: false` (all of them, so
+  far) wraps its own content in `SafeAreaView` (also from
+  `react-native-safe-area-context`, not the older core-RN one) — there's
+  no navigation header to already account for the notch/home-indicator
+  insets.
+- Screens with text inputs additionally wrap in `KeyboardAvoidingView`
+  (`behavior="padding"` on iOS, `undefined` on Android — Android usually
+  handles this via `windowSoftInputMode` instead) so the keyboard doesn't
+  cover the focused field. Screens with no inputs (e.g. a pure display
+  screen) skip it — this is a per-screen judgment call, not a blanket
+  rule.
+
 ## Module boundary rules
 
 - A mobile screen never imports directly from `apps/api` — only from

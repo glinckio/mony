@@ -5,6 +5,7 @@ module.exports = {
   // tree), so react-native's own Flow-typed internals end up un-transformed and throw
   // a syntax error. Transforming everything is the reliable fix in a pnpm monorepo.
   transformIgnorePatterns: [],
+  setupFiles: ["<rootDir>/jest.setup.js"],
   collectCoverageFrom: ["src/**/*.{ts,tsx}"],
   coverageDirectory: "coverage",
 };

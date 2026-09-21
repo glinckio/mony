@@ -83,8 +83,15 @@ PHP's `password_hash` — equivalent algorithm, new implementation).
 
 ## Error handling
 
-- Duplicate email → inline field error under the email input, not a toast
-  (matches how a user would expect to correct it).
-- Network failure → retry-able error banner, form state preserved.
-- Password/confirmation mismatch → caught client-side by zod before the
-  request is even sent, in addition to the server-side check.
+All user-facing text is pt-BR (see `docs/steering/tech.md` language
+policy) — the API's `message` string is never shown directly.
+
+- Duplicate email (API 409) → mapped client-side to an inline field error
+  under the email input via `setError("email", ...)`, not a toast —
+  matches how a user would expect to correct it. Message: "Este e-mail
+  já está cadastrado."
+- Any other/unmapped API error → generic banner: "Algo deu errado. Tente
+  novamente."
+- Password/confirmation mismatch, invalid email, bad phone format →
+  caught client-side by the zod schema (pt-BR messages baked into
+  `registerInputSchema` itself) before the request is even sent.

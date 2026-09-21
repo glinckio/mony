@@ -7,4 +7,7 @@ export default [
       "@typescript-eslint/no-var-requires": "off",
     },
   },
+  {
+    ignores: ["jest.setup.js"],
+  },
 ];
