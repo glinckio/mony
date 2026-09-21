@@ -1,12 +1,16 @@
-import { spacing } from "@mony/ui-tokens";
+import { Ionicons } from "@expo/vector-icons";
+import { color, size as sizeTokens, spacing } from "@mony/ui-tokens";
+import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { Button, Screen, Text } from "../components/ui";
+import { AppHeader, Button, Screen, Text } from "../components/ui";
 import { logout } from "../lib/api-client";
 import { useAuthStore } from "../lib/auth-store";
+import type { AppStackNavigation } from "../navigation/RootNavigator";
 
 export function HomeScreen() {
+  const navigation = useNavigation<AppStackNavigation>();
   const user = useAuthStore((state) => state.user);
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -18,27 +22,47 @@ export function HomeScreen() {
   };
 
   return (
-    <Screen scrollable={false} keyboardAvoiding={false} centered>
-      <Text variant="heading" style={styles.centerText}>
-        Bem-vindo, {user?.name}
-      </Text>
-      <Text variant="caption" style={styles.centerText}>
-        O painel chega numa próxima etapa.
-      </Text>
-      <View style={styles.logoutButton}>
-        <Button
-          testID="logout-button"
-          label="Sair"
-          variant="secondary"
-          loading={loggingOut}
-          onPress={handleLogout}
-        />
+    <Screen scrollable={false} keyboardAvoiding={false}>
+      <AppHeader
+        title="Início"
+        rightAccessory={
+          <TouchableOpacity
+            testID="header-profile-button"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => navigation.navigate("Profile")}
+          >
+            <Ionicons name="person-circle-outline" size={sizeTokens.iconLg} color={color.primary} />
+          </TouchableOpacity>
+        }
+      />
+
+      <View style={styles.content}>
+        <Text variant="heading" style={styles.centerText}>
+          Bem-vindo, {user?.name}
+        </Text>
+        <Text variant="caption" style={styles.centerText}>
+          O painel chega numa próxima etapa.
+        </Text>
+        <View style={styles.logoutButton}>
+          <Button
+            testID="logout-button"
+            label="Sair"
+            variant="secondary"
+            loading={loggingOut}
+            onPress={handleLogout}
+          />
+        </View>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  content: {
+    flex: 1,
+    justifyContent: "center",
+  },
   centerText: {
     textAlign: "center",
   },

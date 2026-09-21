@@ -1,0 +1,66 @@
+appId: com.mony.app
+---
+# Registers a fresh account, edits the profile name, changes the
+# password from the Profile screen, logs out, then logs back in with the
+# new password — exercises the full profile-edit + change-password loop
+# against the real API.
+- launchApp
+- evalScript: ${output.testEmail = 'maestro-profile-' + Date.now() + '@example.com'}
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Profile Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Bem-vindo, Maestro Profile Tester"
+- tapOn:
+    id: "header-profile-button"
+- assertVisible: "Meu perfil"
+- tapOn:
+    id: "name-input"
+- eraseText
+- inputText: "Maestro Profile Tester Edited"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Perfil atualizado com sucesso."
+- tapOn:
+    id: "go-to-change-password"
+- assertVisible: "Alterar senha"
+- tapOn:
+    id: "current-password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "new-password-input"
+- inputText: "brandNewPassword1"
+- tapOn:
+    id: "new-password-confirmation-input"
+- inputText: "brandNewPassword1"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Meu perfil"
+- tapOn:
+    id: "go-to-home"
+- assertVisible: "Bem-vindo, Maestro Profile Tester Edited"
+- tapOn:
+    id: "logout-button"
+- assertVisible: "Entrar"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "brandNewPassword1"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Bem-vindo, Maestro Profile Tester Edited"
