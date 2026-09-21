@@ -1,21 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerInputSchema, type AuthTokens, type RegisterInput } from "@mony/shared-types";
-import { color, spacing, typography } from "@mony/ui-tokens";
+import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet, View } from "react-native";
 
+import { Button, Screen, Text, TextField } from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
 import { useAuthStore } from "../../lib/auth-store";
 
@@ -51,187 +42,136 @@ export function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Criar sua conta</Text>
+    <Screen>
+      <View style={styles.badge}>
+        <Ionicons name="wallet-outline" size={28} color={color.primary} />
+      </View>
 
-          <Controller
-            control={control}
-            name="name"
-            render={({ field }) => (
-              <View style={styles.field}>
-                <Text style={styles.label}>Nome</Text>
-                <TextInput
-                  testID="name-input"
-                  style={styles.input}
-                  placeholderTextColor={color.textSecondary}
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  autoCapitalize="words"
-                />
-                {errors.name && <Text style={styles.error}>{errors.name.message}</Text>}
-              </View>
-            )}
-          />
+      <Text variant="heading">Criar sua conta</Text>
+      <Text variant="caption" style={styles.subtitle}>
+        Comece a organizar suas finanças em poucos minutos.
+      </Text>
 
-          <Controller
-            control={control}
-            name="email"
-            render={({ field }) => (
-              <View style={styles.field}>
-                <Text style={styles.label}>E-mail</Text>
-                <TextInput
-                  testID="email-input"
-                  style={styles.input}
-                  placeholderTextColor={color.textSecondary}
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                />
-                {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
-              </View>
-            )}
-          />
+      <View style={styles.form}>
+        <Controller
+          control={control}
+          name="name"
+          render={({ field }) => (
+            <TextField
+              testID="name-input"
+              label="Nome"
+              value={field.value}
+              onChangeText={field.onChange}
+              autoCapitalize="words"
+              error={errors.name?.message}
+            />
+          )}
+        />
 
-          <Controller
-            control={control}
-            name="phone"
-            render={({ field }) => (
-              <View style={styles.field}>
-                <Text style={styles.label}>Telefone (opcional)</Text>
-                <TextInput
-                  testID="phone-input"
-                  style={styles.input}
-                  placeholderTextColor={color.textSecondary}
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  keyboardType="phone-pad"
-                />
-                {errors.phone && <Text style={styles.error}>{errors.phone.message}</Text>}
-              </View>
-            )}
-          />
+        <Controller
+          control={control}
+          name="email"
+          render={({ field }) => (
+            <TextField
+              testID="email-input"
+              label="E-mail"
+              value={field.value}
+              onChangeText={field.onChange}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              error={errors.email?.message}
+            />
+          )}
+        />
 
-          <Controller
-            control={control}
-            name="password"
-            render={({ field }) => (
-              <View style={styles.field}>
-                <Text style={styles.label}>Senha</Text>
-                <TextInput
-                  testID="password-input"
-                  style={styles.input}
-                  placeholderTextColor={color.textSecondary}
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  secureTextEntry
-                />
-                {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
-              </View>
-            )}
-          />
+        <Controller
+          control={control}
+          name="phone"
+          render={({ field }) => (
+            <TextField
+              testID="phone-input"
+              label="Telefone (opcional)"
+              value={field.value}
+              onChangeText={field.onChange}
+              keyboardType="phone-pad"
+              error={errors.phone?.message}
+            />
+          )}
+        />
 
-          <Controller
-            control={control}
-            name="passwordConfirmation"
-            render={({ field }) => (
-              <View style={styles.field}>
-                <Text style={styles.label}>Confirmar senha</Text>
-                <TextInput
-                  testID="password-confirmation-input"
-                  style={styles.input}
-                  placeholderTextColor={color.textSecondary}
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  secureTextEntry
-                />
-                {errors.passwordConfirmation && (
-                  <Text style={styles.error}>{errors.passwordConfirmation.message}</Text>
-                )}
-              </View>
-            )}
-          />
+        <Controller
+          control={control}
+          name="password"
+          render={({ field }) => (
+            <TextField
+              testID="password-input"
+              label="Senha"
+              value={field.value}
+              onChangeText={field.onChange}
+              secureToggle
+              error={errors.password?.message}
+            />
+          )}
+        />
 
-          {submitError && <Text style={styles.submitError}>{submitError}</Text>}
+        <Controller
+          control={control}
+          name="passwordConfirmation"
+          render={({ field }) => (
+            <TextField
+              testID="password-confirmation-input"
+              label="Confirmar senha"
+              value={field.value}
+              onChangeText={field.onChange}
+              secureToggle
+              error={errors.passwordConfirmation?.message}
+            />
+          )}
+        />
+      </View>
 
-          <TouchableOpacity
-            testID="submit-button"
-            style={styles.button}
-            onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color={color.textPrimary} />
-            ) : (
-              <Text style={styles.buttonText}>Criar conta</Text>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      {submitError && (
+        <View style={styles.submitError}>
+          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
+          <Text variant="caption" color={color.danger}>
+            {submitError}
+          </Text>
+        </View>
+      )}
+
+      <Button
+        testID="submit-button"
+        label="Criar conta"
+        onPress={handleSubmit(onSubmit)}
+        loading={isSubmitting}
+      />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: color.background,
+  badge: {
+    alignSelf: "flex-start",
+    width: 56,
+    height: 56,
+    borderRadius: radius.lg,
+    backgroundColor: color.primaryMuted,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.xs,
   },
-  flex: {
-    flex: 1,
-  },
-  container: {
-    flexGrow: 1,
-    backgroundColor: color.background,
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
-  title: {
-    color: color.textPrimary,
-    fontSize: typography.size.xl,
-    fontWeight: typography.weight.bold,
+  subtitle: {
     marginBottom: spacing.sm,
   },
-  field: {
-    gap: spacing.xs,
-  },
-  label: {
-    color: color.textSecondary,
-    fontSize: typography.size.sm,
-  },
-  input: {
-    backgroundColor: color.surface,
-    borderColor: color.border,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: spacing.sm,
-    color: color.textPrimary,
-    fontSize: typography.size.md,
-  },
-  error: {
-    color: color.danger,
-    fontSize: typography.size.xs,
+  form: {
+    gap: spacing.md,
   },
   submitError: {
-    color: color.danger,
-    fontSize: typography.size.sm,
-    textAlign: "center",
-  },
-  button: {
-    backgroundColor: color.primary,
-    borderRadius: 8,
-    padding: spacing.md,
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: spacing.sm,
-  },
-  buttonText: {
-    color: color.textPrimary,
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.medium,
+    gap: spacing.xs,
+    backgroundColor: color.dangerMuted,
+    borderRadius: radius.sm,
+    padding: spacing.sm,
   },
 });

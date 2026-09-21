@@ -25,8 +25,9 @@
 | Object storage | **MinIO** (S3-compatible, self-hosted) | Vehicle photos (`vehicles`) and maintenance receipts (`vehicle-maintenance`), via the AWS S3 SDK (`@aws-sdk/client-s3`) pointed at MinIO's S3-compatible endpoint |
 | Transactional email | **Brevo** (`@getbrevo/brevo` Node SDK) | Password reset codes (`auth-password-reset`) — same provider as legacy |
 | Mobile charting | TBD — see roadmap open decisions | `dashboard` yearly chart, reused by `reports` |
-| UI tokens | `@mony/ui-tokens` (neutral placeholder palette) | No client design yet; swap token values
-  only, not component structure, once design assets arrive |
+| UI tokens | `@mony/ui-tokens` — client's real brand palette | Extracted from the legacy app's
+  built Tailwind/shadcn CSS + logo (see `docs/steering/design-system.md`) — not a placeholder.
+  Component library in `apps/mobile/src/components/ui/` built on top of it; every screen uses both. |
 | Unit tests | Jest (both apps) | |
 | API integration tests | Jest + Supertest | |
 | Mobile E2E | Maestro | Lighter to maintain than Detox, YAML flows |
@@ -158,3 +159,7 @@ pnpm --filter @mony/api test:e2e      # Supertest e2e
    implementation starts (see `_templates/`).
 5. Commits are proposed as text (Conventional Commits) — Claude never runs
    `git commit` / `git push` in this repo; the human applies them.
+6. Every mobile screen is built from `@mony/ui-tokens` +
+   `apps/mobile/src/components/ui/` — see `docs/steering/design-system.md`.
+   No inline hex colors, no raw spacing/radius numbers, no hand-rolled
+   `SafeAreaView`/buttons/inputs in a screen file.

@@ -72,6 +72,11 @@ PHP's `password_hash` — equivalent algorithm, new implementation).
 
 ## Mobile screens
 
+Built from `docs/steering/design-system.md`'s component library
+(`Screen`, `Text`, `Button`, `TextField` — see that doc's "Example: how
+`auth-register`'s `RegisterScreen` uses this" section for the concrete
+layout).
+
 | Screen | Route | Reads | Writes | Notes |
 |---|---|---|---|---|
 | `RegisterScreen` | `/register` | — | `POST /auth/register` | Name, email, password, confirm password, optional phone. On success, store tokens via `expo-secure-store`, navigate to the authenticated stack (dashboard placeholder is fine until feature 7 lands). |

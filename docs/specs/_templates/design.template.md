@@ -17,6 +17,11 @@ For each endpoint above, list the DTO fields and validation rules
 
 ## Mobile screens
 
+Build from `@mony/ui-tokens` + `apps/mobile/src/components/ui/`
+(`Screen`, `Text`, `Button`, `TextField`, ...) per
+`docs/steering/design-system.md` — add a new component there if the
+screen needs one that doesn't exist yet, don't one-off it inline.
+
 | Screen | Route | Reads | Writes | Notes |
 |---|---|---|---|---|
 | `ExampleScreen` | `/example` | `GET /example` | — | |

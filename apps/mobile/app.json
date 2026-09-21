@@ -14,7 +14,7 @@
     "android": {
       "package": "com.mony.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0B0F14"
+        "backgroundColor": "#166FE3"
       }
     },
     "plugins": [

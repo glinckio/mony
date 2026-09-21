@@ -17,6 +17,7 @@ Full context:
 - Domain, entities, LGPD scope → `docs/steering/product.md`
 - Stack, commands, non-negotiable rules → `docs/steering/tech.md`
 - Repo layout, module boundaries → `docs/steering/structure.md`
+- Colors, spacing, typography, UI components → `docs/steering/design-system.md`
 - Feature specs (SDD) → `docs/specs/<feature>/`
 - Roadmap/phases → `docs/steering/roadmap.md`
 
@@ -69,6 +70,13 @@ above depending on which side of the API boundary the text lives on.
 6. iOS is tested via Expo Go / EAS Build (no local Xcode available).
    Android is tested via the already-configured Android Studio ADB setup.
    Don't suggest bare React Native CLI workflows that assume a local Mac.
+7. Every mobile screen is built from `@mony/ui-tokens` and
+   `apps/mobile/src/components/ui/` — no inline hex colors, no raw
+   pixel spacing/radius, no hand-rolled `SafeAreaView`/
+   `KeyboardAvoidingView`/buttons/inputs. See
+   `docs/steering/design-system.md`. Missing a component the design
+   needs? Add it to `components/ui/` properly, don't one-off it in the
+   screen file.
 
 ## Common commands
 
