@@ -16,4 +16,10 @@ config.resolver.nodeModulesPaths = [
 config.resolver.disableHierarchicalLookup = true;
 config.resolver.unstable_enableSymlinks = true;
 
+// Metro's "package exports" resolution (default on since Expo SDK 52) trips
+// up on packages with incomplete/ambiguous "exports" maps in pnpm monorepos —
+// manifests as "Cannot read property 'default' of undefined" at runtime.
+// Disable it until every dependency's exports map is verified clean.
+config.resolver.unstable_enablePackageExports = false;
+
 module.exports = config;
