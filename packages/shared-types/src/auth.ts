@@ -39,6 +39,29 @@ export const loginInputSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginInputSchema>;
 
+export const requestResetInputSchema = z.object({
+  email: z.string().email("E-mail inválido"),
+});
+
+export type RequestResetInput = z.infer<typeof requestResetInputSchema>;
+
+export const confirmResetInputSchema = z
+  .object({
+    email: z.string().email("E-mail inválido"),
+    code: z.string().regex(/^\d{6}$/, "Código deve ter 6 dígitos"),
+    newPassword: z
+      .string()
+      .min(8, "Senha deve ter no mínimo 8 caracteres")
+      .max(72, "Senha muito longa"),
+    newPasswordConfirmation: z.string(),
+  })
+  .refine((data) => data.newPassword === data.newPasswordConfirmation, {
+    message: "As senhas não coincidem",
+    path: ["newPasswordConfirmation"],
+  });
+
+export type ConfirmResetInput = z.infer<typeof confirmResetInputSchema>;
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;

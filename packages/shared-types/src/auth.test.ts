@@ -1,4 +1,9 @@
-import { loginInputSchema, registerInputSchema } from "./auth";
+import {
+  confirmResetInputSchema,
+  loginInputSchema,
+  registerInputSchema,
+  requestResetInputSchema,
+} from "./auth";
 
 const base = {
   name: "Ada Lovelace",
@@ -53,6 +58,57 @@ describe("loginInputSchema", () => {
 
   it("rejects an empty password", () => {
     const result = loginInputSchema.safeParse({ email: "ada@example.com", password: "" });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("requestResetInputSchema", () => {
+  it("accepts a valid email", () => {
+    const result = requestResetInputSchema.safeParse({ email: "ada@example.com" });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an invalid email", () => {
+    const result = requestResetInputSchema.safeParse({ email: "not-an-email" });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("confirmResetInputSchema", () => {
+  const base = {
+    email: "ada@example.com",
+    code: "123456",
+    newPassword: "correcthorsebattery",
+    newPasswordConfirmation: "correcthorsebattery",
+  };
+
+  it("accepts a valid payload", () => {
+    const result = confirmResetInputSchema.safeParse(base);
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a code that isn't 6 digits", () => {
+    const result = confirmResetInputSchema.safeParse({ ...base, code: "123" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a mismatched password confirmation with a pt-BR message", () => {
+    const result = confirmResetInputSchema.safeParse({
+      ...base,
+      newPasswordConfirmation: "different",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toBe("As senhas não coincidem");
+    }
+  });
+
+  it("rejects a new password shorter than 8 characters", () => {
+    const result = confirmResetInputSchema.safeParse({
+      ...base,
+      newPassword: "short",
+      newPasswordConfirmation: "short",
+    });
     expect(result.success).toBe(false);
   });
 });
