@@ -1,10 +1,12 @@
 import { color, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import type { ReactNode } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
+  TouchableWithoutFeedback,
   View,
   type ViewStyle,
 } from "react-native";
@@ -43,17 +45,27 @@ export function Screen({
     </View>
   );
 
+  // Tapping anywhere that isn't itself a touchable (a button, an input,
+  // etc. — those still claim the touch first) dismisses the keyboard.
+  // `keyboardShouldPersistTaps="handled"` above is what lets a tap on an
+  // actual input/button inside the ScrollView still register normally.
+  const dismissible = (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      {content}
+    </TouchableWithoutFeedback>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea} edges={edges}>
       {keyboardAvoiding ? (
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          {content}
+          {dismissible}
         </KeyboardAvoidingView>
       ) : (
-        content
+        dismissible
       )}
     </SafeAreaView>
   );
