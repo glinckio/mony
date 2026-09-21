@@ -53,6 +53,7 @@ model User {
   passwordResetCodes PasswordResetCode[]
   categories         Category[]
   transactions       Transaction[]
+  goals              Goal[]
 }
 
 model PasswordResetCode {
@@ -79,6 +80,7 @@ model Category {
   createdAt DateTime     @default(now())
 
   transactions Transaction[]
+  goals        Goal[]
 
   @@index([userId])
 }
@@ -101,5 +103,25 @@ model Transaction {
 
   @@index([userId, workspace, date])
   @@index([userId, workspace, type, status])
+  @@index([categoryId])
+}
+
+model Goal {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace     WorkspaceType
+  categoryId    String?
+  category      Category?     @relation(fields: [categoryId], references: [id])
+  title         String        @db.VarChar(100)
+  description   String?       @db.VarChar(500)
+  targetAmount  Decimal       @db.Decimal(12, 2)
+  currentAmount Decimal       @default(0) @db.Decimal(12, 2)
+  targetDate    DateTime?     @db.Date
+  completed     Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId, workspace, completed])
   @@index([categoryId])
 }
