@@ -25,7 +25,7 @@ appId: com.mony.app
     id: "submit-button"
 - assertVisible: "Bem-vindo, Maestro Profile Tester"
 - tapOn:
-    id: "header-profile-button"
+    id: "tab-profile"
 - assertVisible: "Meu perfil"
 - tapOn:
     id: "name-input"
@@ -50,7 +50,7 @@ appId: com.mony.app
     id: "submit-button"
 - assertVisible: "Meu perfil"
 - tapOn:
-    id: "go-to-home"
+    id: "tab-home"
 - assertVisible: "Bem-vindo, Maestro Profile Tester Edited"
 - tapOn:
     id: "logout-button"

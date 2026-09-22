@@ -26,7 +26,7 @@ appId: com.mony.app
 
 # A category to optionally attach to the goal below.
 - tapOn:
-    id: "go-to-categories"
+    id: "tab-categories"
 - tapOn:
     id: "add-category-button"
 - tapOn:
@@ -37,11 +37,9 @@ appId: com.mony.app
 - tapOn:
     id: "submit-button"
 - assertVisible: "Viagens"
-- tapOn:
-    id: "go-to-home"
 
 - tapOn:
-    id: "go-to-goals"
+    id: "tab-goals"
 - assertVisible: "Nenhuma meta ainda."
 - tapOn:
     id: "add-goal-button"

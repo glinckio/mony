@@ -7,20 +7,23 @@ import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { AppHeader, ProgressBar, Screen, Text } from "../../components/ui";
 import { apiFetch } from "../../lib/api-client";
-import type { AppStackNavigation } from "../../navigation/RootNavigator";
+import { useRefetchOnFocus } from "../../lib/use-refetch-on-focus";
+import type { MainTabNavigation } from "../../navigation/RootNavigator";
 
 export function GoalsScreen() {
-  const navigation = useNavigation<AppStackNavigation>();
+  const navigation = useNavigation<MainTabNavigation>();
   const queryClient = useQueryClient();
 
   const {
     data: goals,
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: ["goals"],
     queryFn: () => apiFetch<Goal[]>("/goals"),
   });
+  useRefetchOnFocus(refetch);
 
   const handleDelete = (goal: Goal) => {
     Alert.alert("Excluir meta", `Excluir "${goal.title}"?`, [

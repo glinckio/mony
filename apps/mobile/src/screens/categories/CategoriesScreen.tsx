@@ -7,7 +7,7 @@ import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { AppHeader, Button, Screen, Text } from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
-import type { AppStackNavigation } from "../../navigation/RootNavigator";
+import type { MainTabNavigation } from "../../navigation/RootNavigator";
 
 interface ReplacementPrompt {
   categoryId: string;
@@ -16,7 +16,7 @@ interface ReplacementPrompt {
 }
 
 export function CategoriesScreen() {
-  const navigation = useNavigation<AppStackNavigation>();
+  const navigation = useNavigation<MainTabNavigation>();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,19 +83,7 @@ export function CategoriesScreen() {
 
   return (
     <Screen>
-      <AppHeader
-        title="Categorias"
-        rightAccessory={
-          <TouchableOpacity
-            testID="go-to-home"
-            accessibilityRole="button"
-            hitSlop={8}
-            onPress={() => navigation.navigate("Home")}
-          >
-            <Ionicons name="close-outline" size={sizeTokens.iconLg} color={color.textPrimary} />
-          </TouchableOpacity>
-        }
-      />
+      <AppHeader title="Categorias" />
 
       {error && (
         <View style={styles.errorBanner}>

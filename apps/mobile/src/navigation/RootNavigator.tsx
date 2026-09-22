@@ -1,5 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
 import type { Category, Goal, Profile, Transaction } from "@mony/shared-types";
-import { NavigationContainer, type NavigationProp } from "@react-navigation/native";
+import { color } from "@mony/ui-tokens";
+import { createBottomTabNavigator, type BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import {
+  NavigationContainer,
+  type CompositeNavigationProp,
+  type NavigationProp,
+} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect } from "react";
 
@@ -12,9 +19,9 @@ import { RegisterScreen } from "../screens/auth/RegisterScreen";
 import { ResetPasswordScreen } from "../screens/auth/ResetPasswordScreen";
 import { CategoriesScreen } from "../screens/categories/CategoriesScreen";
 import { CategoryFormScreen } from "../screens/categories/CategoryFormScreen";
+import { DashboardScreen } from "../screens/dashboard/DashboardScreen";
 import { GoalFormScreen } from "../screens/goals/GoalFormScreen";
 import { GoalsScreen } from "../screens/goals/GoalsScreen";
-import { HomeScreen } from "../screens/HomeScreen";
 import { ChangePasswordScreen } from "../screens/profile/ChangePasswordScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { TransactionFormScreen } from "../screens/transactions/TransactionFormScreen";
@@ -27,23 +34,88 @@ export type AuthStackParamList = {
   ResetPassword: { email?: string };
 };
 
-export type AppStackParamList = {
+export type MainTabParamList = {
   Home: undefined;
-  Profile: undefined;
-  ChangePassword: undefined;
-  Categories: undefined;
-  CategoryForm: { category?: Category } | undefined;
   Transactions: undefined;
-  TransactionForm: { transaction?: Transaction } | undefined;
+  Categories: undefined;
   Goals: undefined;
+  Profile: undefined;
+};
+
+export type AppStackParamList = {
+  MainTabs: undefined;
+  ChangePassword: undefined;
+  CategoryForm: { category?: Category } | undefined;
+  TransactionForm: { transaction?: Transaction } | undefined;
   GoalForm: { goal?: Goal } | undefined;
 };
 
 export type AuthStackNavigation = NavigationProp<AuthStackParamList>;
 export type AppStackNavigation = NavigationProp<AppStackParamList>;
 
+// Screens living inside the tab navigator need to reach both sibling
+// tabs and the stack-level modal routes (e.g. Categories -> CategoryForm)
+// — React Navigation resolves an unmatched route name by searching up
+// the navigator tree at runtime, but the type needs to know about both
+// param lists for that to type-check.
+export type MainTabNavigation = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList>,
+  NavigationProp<AppStackParamList>
+>;
+
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
+const MainTab = createBottomTabNavigator<MainTabParamList>();
+
+const TAB_ICONS: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
+  Home: "home-outline",
+  Transactions: "swap-horizontal-outline",
+  Categories: "pricetags-outline",
+  Goals: "flag-outline",
+  Profile: "person-outline",
+};
+
+function MainTabs() {
+  return (
+    <MainTab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: color.primary,
+        tabBarInactiveTintColor: color.textSecondary,
+        tabBarStyle: { backgroundColor: color.surface, borderTopColor: color.border },
+        tabBarIcon: ({ color: tintColor, size }) => (
+          <Ionicons name={TAB_ICONS[route.name as keyof MainTabParamList]} size={size} color={tintColor} />
+        ),
+      })}
+    >
+      <MainTab.Screen
+        name="Home"
+        component={DashboardScreen}
+        options={{ title: "Início", tabBarButtonTestID: "tab-home" }}
+      />
+      <MainTab.Screen
+        name="Transactions"
+        component={TransactionsListScreen}
+        options={{ title: "Transações", tabBarButtonTestID: "tab-transactions" }}
+      />
+      <MainTab.Screen
+        name="Categories"
+        component={CategoriesScreen}
+        options={{ title: "Categorias", tabBarButtonTestID: "tab-categories" }}
+      />
+      <MainTab.Screen
+        name="Goals"
+        component={GoalsScreen}
+        options={{ title: "Metas", tabBarButtonTestID: "tab-goals" }}
+      />
+      <MainTab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ title: "Perfil", tabBarButtonTestID: "tab-profile" }}
+      />
+    </MainTab.Navigator>
+  );
+}
 
 export function RootNavigator() {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -69,22 +141,18 @@ export function RootNavigator() {
     <NavigationContainer>
       {accessToken ? (
         <AppStack.Navigator screenOptions={{ headerShown: false }}>
-          <AppStack.Screen name="Home" component={HomeScreen} />
-          <AppStack.Screen name="Profile" component={ProfileScreen} />
+          <AppStack.Screen name="MainTabs" component={MainTabs} />
           <AppStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-          <AppStack.Screen name="Categories" component={CategoriesScreen} />
           <AppStack.Screen
             name="CategoryForm"
             component={CategoryFormScreen}
             options={{ presentation: "modal" }}
           />
-          <AppStack.Screen name="Transactions" component={TransactionsListScreen} />
           <AppStack.Screen
             name="TransactionForm"
             component={TransactionFormScreen}
             options={{ presentation: "modal" }}
           />
-          <AppStack.Screen name="Goals" component={GoalsScreen} />
           <AppStack.Screen
             name="GoalForm"
             component={GoalFormScreen}

@@ -14,10 +14,10 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { AppHeader, Button, Screen, Text, TextField } from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
 import { formatPhone, unformatPhone } from "../../lib/phone";
-import type { AppStackNavigation } from "../../navigation/RootNavigator";
+import type { MainTabNavigation } from "../../navigation/RootNavigator";
 
 export function ProfileScreen() {
-  const navigation = useNavigation<AppStackNavigation>();
+  const navigation = useNavigation<MainTabNavigation>();
   const [loading, setLoading] = useState(true);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -90,19 +90,7 @@ export function ProfileScreen() {
 
   return (
     <Screen>
-      <AppHeader
-        title="Meu perfil"
-        rightAccessory={
-          <TouchableOpacity
-            testID="go-to-home"
-            accessibilityRole="button"
-            hitSlop={8}
-            onPress={() => navigation.navigate("Home")}
-          >
-            <Ionicons name="close-outline" size={sizeTokens.iconLg} color={color.textPrimary} />
-          </TouchableOpacity>
-        }
-      />
+      <AppHeader title="Meu perfil" />
 
       <View style={styles.form}>
         <Controller

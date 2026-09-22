@@ -1,0 +1,129 @@
+appId: com.mony.app
+---
+# Registers a fresh account, creates an income and a paid expense this
+# month plus a goal, then verifies the home-screen dashboard reflects
+# them: summary figures, the goal preview, and the period toggle.
+- launchApp
+- evalScript: ${output.testEmail = 'maestro-dashboard-' + Date.now() + '@example.com'}
+- evalScript: |
+    ${
+      const d = new Date();
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      output.todayDigits = dd + mm + d.getFullYear();
+    }
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Dashboard Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Bem-vindo, Maestro Dashboard Tester"
+
+# Set up one expense and one income category.
+- tapOn:
+    id: "tab-categories"
+- tapOn:
+    id: "add-category-button"
+- tapOn:
+    id: "name-input"
+- inputText: "Contas"
+- tapOn:
+    id: "icon-picker-receipt-outline"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Contas"
+- tapOn:
+    id: "add-category-button"
+- tapOn:
+    id: "name-input"
+- inputText: "Salário"
+- tapOn:
+    id: "type-option-INCOME"
+- tapOn:
+    id: "icon-picker-cash-outline"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Salário"
+
+# A paid expense and an income transaction, both dated today so they
+# land inside the dashboard's default "this month" period.
+- tapOn:
+    id: "tab-transactions"
+- tapOn:
+    id: "add-transaction-button"
+- tapOn: "Contas"
+- tapOn:
+    id: "description-input"
+- inputText: "Conta de luz"
+- tapOn:
+    id: "amount-input"
+- inputText: "40000"
+- tapOn:
+    id: "date-input"
+- inputText: "${output.todayDigits}"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Conta de luz"
+- tapOn: "Pendente"
+- assertVisible: "Pago"
+
+- tapOn:
+    id: "add-transaction-button"
+- tapOn:
+    id: "type-option-INCOME"
+- tapOn: "Salário"
+- tapOn:
+    id: "description-input"
+- inputText: "Salário mensal"
+- tapOn:
+    id: "amount-input"
+- inputText: "100000"
+- tapOn:
+    id: "date-input"
+- inputText: "${output.todayDigits}"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Salário mensal"
+
+# A goal, so the dashboard's preview section has something to show.
+- tapOn:
+    id: "tab-goals"
+- tapOn:
+    id: "add-goal-button"
+- tapOn:
+    id: "title-input"
+- inputText: "Viagem para a praia"
+- tapOn:
+    id: "target-amount-input"
+- inputText: "500000"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Viagem para a praia"
+
+# Dashboard reflects the month's transactions and the goal.
+- tapOn:
+    id: "tab-home"
+- assertVisible:
+    id: "dashboard-summary-card"
+- assertVisible: "R$ 1.000,00"
+- assertVisible: "R$ 400,00"
+- assertVisible: "R$ 600,00"
+- assertVisible: "Viagem para a praia"
+
+# The period toggle re-fetches without crashing.
+- tapOn:
+    id: "dashboard-period-toggle-day"
+- assertVisible:
+    id: "dashboard-summary-card"

@@ -8,7 +8,8 @@ import { ActivityIndicator, Alert, FlatList, StyleSheet, TouchableOpacity, View 
 
 import { AppHeader, Button, Screen, SegmentedToggle, Text, TextField } from "../../components/ui";
 import { apiFetch } from "../../lib/api-client";
-import type { AppStackNavigation } from "../../navigation/RootNavigator";
+import { useRefetchOnFocus } from "../../lib/use-refetch-on-focus";
+import type { MainTabNavigation } from "../../navigation/RootNavigator";
 
 const TYPE_FILTER_OPTIONS = [
   { value: "ALL", label: "Todos" },
@@ -29,7 +30,7 @@ const PER_PAGE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
 export function TransactionsListScreen() {
-  const navigation = useNavigation<AppStackNavigation>();
+  const navigation = useNavigation<MainTabNavigation>();
   const queryClient = useQueryClient();
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
   const [searchInput, setSearchInput] = useState("");
@@ -67,6 +68,7 @@ export function TransactionsListScreen() {
       getNextPageParam: (lastPage) =>
         lastPage.page * lastPage.perPage < lastPage.total ? lastPage.page + 1 : undefined,
     });
+  useRefetchOnFocus(refetch);
 
   const transactions = data?.pages.flatMap((page) => page.items) ?? [];
   const selectionMode = selectedIds.size > 0;
