@@ -1791,6 +1791,71 @@
       ]
     },
     {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard (current month)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["dashboard"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"summary\": {\n    \"totalIncome\": \"5000.00\",\n    \"totalExpensesPaid\": \"3200.00\",\n    \"totalExpensesPending\": \"450.00\",\n    \"balance\": \"1800.00\",\n    \"expenseRatio\": 0.64\n  },\n  \"previousPeriodIncomeChangePercent\": 12.5,\n  \"averageDailyExpense\": \"106.67\",\n  \"incompleteGoals\": [\n    {\n      \"id\": \"5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c\",\n      \"title\": \"Viagem para a praia\",\n      \"targetAmount\": \"5000.00\",\n      \"currentAmount\": \"1500.00\",\n      \"targetDate\": \"2026-07-01\"\n    }\n  ],\n  \"yearlyBreakdown\": [\n    { \"month\": 1, \"income\": \"5000.00\", \"expensesPaid\": \"3200.00\" },\n    { \"month\": 2, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 3, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 4, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 5, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 6, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 7, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 8, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 9, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 10, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 11, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" },\n    { \"month\": 12, \"income\": \"0.00\", \"expensesPaid\": \"0.00\" }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — period=custom without a valid range",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard?period=custom",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["dashboard"],
+                  "query": [{ "key": "period", "value": "custom" }]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\"dateFrom and dateTo are required when period=custom.\"],\n  \"path\": \"/dashboard\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/dashboard",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["dashboard"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\"Unauthorized\"],\n  \"path\": \"/dashboard\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Health",
       "item": [
         {
