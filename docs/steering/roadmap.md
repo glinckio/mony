@@ -16,7 +16,7 @@ building the whole API first and the whole app after.
 | 5 | `categories` | ✅ Done | Manage income/expense categories | 2 |
 | 6 | `transactions` | ✅ Done | Create/list/edit income & expense entries, recurring batches | 5 |
 | 7 | `goals` | ✅ Done | Savings goals with progress tracking | 4 |
-| 8 | `dashboard` | ⬜ Not started | Home screen: totals, balance, monthly chart, goals preview | 6, 7 |
+| 8 | `dashboard` | ✅ Done | Home screen: totals, balance, monthly chart, goals preview | 6, 7 |
 | 9 | `debts` | ⬜ Not started | Debts with auto-generated installments, payment tracking | 5, 6 |
 | 10 | `grocery` | ⬜ Not started | Household grocery list + informational budget | 2 |
 | 11 | `vehicles` | ⬜ Not started | Vehicle registry, mileage tracking | 2 |
@@ -73,7 +73,5 @@ below.
 
 - **Apple Developer Program membership** — not required for Expo Go dev
   testing, only before the TestFlight step in Release hardening.
-- **Mobile charting library** for #8 (`dashboard`) and #14 (`reports`) —
-  not chosen yet (candidates: `victory-native`, `react-native-gifted-charts`).
-  Pick during `dashboard` implementation, record the choice in `tech.md`,
-  `reports` just reuses it.
+- ~~**Mobile charting library** for #8 (`dashboard`) and #14 (`reports`)~~
+  — decided: `react-native-gifted-charts`, recorded in `tech.md`.

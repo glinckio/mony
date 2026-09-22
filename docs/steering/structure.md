@@ -48,5 +48,12 @@ mony/
 - A Nest module for one domain entity (e.g. `debts`) does not import
   another feature module's service directly; go through a shared
   service in `src/common` if cross-feature logic is needed.
+  Exception: a composition/read-model feature that has no entity or
+  business logic of its own — it only aggregates other features' data
+  for display (e.g. `dashboard`, and `reports` when it lands) — may
+  import and call other feature modules' services directly, read-only.
+  The point of the rule is to stop domain logic from leaking sideways
+  between entity modules; an aggregator that owns no domain logic of
+  its own isn't that.
 - `legacy_php_reference/` is never imported or executed — read-only
   reference for porting business rules.

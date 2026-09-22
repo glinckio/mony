@@ -24,7 +24,7 @@
 | Payment gateway | **Stripe** (confirmed) | Checkout + webhooks for `subscriptions` feature only |
 | Object storage | **MinIO** (S3-compatible, self-hosted) | Vehicle photos (`vehicles`) and maintenance receipts (`vehicle-maintenance`), via the AWS S3 SDK (`@aws-sdk/client-s3`) pointed at MinIO's S3-compatible endpoint |
 | Transactional email | **Brevo** (`@getbrevo/brevo` Node SDK) | Password reset codes (`auth-password-reset`) — same provider as legacy |
-| Mobile charting | TBD — see roadmap open decisions | `dashboard` yearly chart, reused by `reports` |
+| Mobile charting | `react-native-gifted-charts` | `dashboard` yearly chart, reused by `reports` |
 | UI tokens | `@mony/ui-tokens` — client's real brand palette | Extracted from the legacy app's
   built Tailwind/shadcn CSS + logo (see `docs/steering/design-system.md`) — not a placeholder.
   Component library in `apps/mobile/src/components/ui/` built on top of it; every screen uses both. |
