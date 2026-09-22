@@ -13,8 +13,13 @@ import { UpdateGoalDto } from "./dto/update-goal.dto";
 export class GoalsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(userId: string, completed?: boolean): Promise<GoalDto[]> {
-    const workspace = await this.getActiveWorkspace(userId);
+  // `workspace` is optional and only meant for a caller (e.g.
+  // DashboardService) that already resolved it this request — avoids a
+  // redundant `user.findUniqueOrThrow` round trip. Callers outside a
+  // single request (e.g. the controller) omit it and get it fetched
+  // fresh, same as before.
+  async list(userId: string, completed?: boolean, workspace?: WorkspaceType): Promise<GoalDto[]> {
+    workspace ??= await this.getActiveWorkspace(userId);
     const goals = await this.prisma.goal.findMany({
       where: { userId, workspace, ...(completed !== undefined ? { completed } : {}) },
       orderBy: { createdAt: "desc" },

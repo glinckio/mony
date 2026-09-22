@@ -248,6 +248,18 @@ describe("TransactionsService", () => {
         balance: "0.00",
       });
     });
+
+    it("skips the activeWorkspace lookup when a workspace is already given", async () => {
+      prisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: null } });
+      prisma.user.findUniqueOrThrow.mockClear();
+
+      await service.summary("user-1", "2026-01-01", "2026-01-31", "BUSINESS");
+
+      expect(prisma.user.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(prisma.transaction.aggregate).toHaveBeenCalledWith(
+        expect.objectContaining({ where: expect.objectContaining({ workspace: "BUSINESS" }) }),
+      );
+    });
   });
 
   describe("bulkDelete", () => {

@@ -158,8 +158,18 @@ export class TransactionsService {
     await this.prisma.transaction.deleteMany({ where: { id: { in: dto.ids }, userId } });
   }
 
-  async summary(userId: string, dateFrom: string, dateTo: string): Promise<TransactionSummaryDto> {
-    const workspace = await this.getActiveWorkspace(userId);
+  // `workspace` is optional and only meant for a caller (e.g.
+  // DashboardService) that already resolved it this request — avoids a
+  // redundant `user.findUniqueOrThrow` round trip. Callers outside a
+  // single request (e.g. the controller) omit it and get it fetched
+  // fresh, same as before.
+  async summary(
+    userId: string,
+    dateFrom: string,
+    dateTo: string,
+    workspace?: WorkspaceType,
+  ): Promise<TransactionSummaryDto> {
+    workspace ??= await this.getActiveWorkspace(userId);
     const date = { gte: parseDateOnly(dateFrom), lte: parseDateOnly(dateTo) };
 
     const [incomeAgg, expensesPaidAgg, expensesPendingAgg] = await Promise.all([

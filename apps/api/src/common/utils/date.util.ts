@@ -25,3 +25,31 @@ export function addMonthsToDateString(dateStr: string, months: number): string {
   const date = new Date(Date.UTC(year!, month! - 1 + months, day));
   return toDateOnlyString(date);
 }
+
+// "Today" as a date-only string, read from UTC fields — same rationale
+// as the rest of this file: never let server-local timezone leak in.
+export function todayDateOnlyString(): string {
+  return toDateOnlyString(new Date());
+}
+
+export function addDaysToDateString(dateStr: string, days: number): string {
+  const date = parseDateOnly(dateStr);
+  date.setUTCDate(date.getUTCDate() + days);
+  return toDateOnlyString(date);
+}
+
+// Inclusive day count between two date-only strings (dateTo - dateFrom + 1).
+export function daysBetweenInclusive(dateFromStr: string, dateToStr: string): number {
+  const msPerDay = 24 * 60 * 60 * 1000;
+  return Math.round((parseDateOnly(dateToStr).getTime() - parseDateOnly(dateFromStr).getTime()) / msPerDay) + 1;
+}
+
+export function startOfMonthDateString(dateStr: string): string {
+  const [year, month] = dateStr.split("-").map(Number);
+  return toDateOnlyString(new Date(Date.UTC(year!, month! - 1, 1)));
+}
+
+export function endOfMonthDateString(dateStr: string): string {
+  const [year, month] = dateStr.split("-").map(Number);
+  return toDateOnlyString(new Date(Date.UTC(year!, month!, 0)));
+}

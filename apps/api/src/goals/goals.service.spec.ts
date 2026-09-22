@@ -81,6 +81,19 @@ describe("GoalsService", () => {
         orderBy: { createdAt: "desc" },
       });
     });
+
+    it("skips the activeWorkspace lookup when a workspace is already given", async () => {
+      prisma.goal.findMany.mockResolvedValue([]);
+      prisma.user.findUniqueOrThrow.mockClear();
+
+      await service.list("user-1", false, "BUSINESS");
+
+      expect(prisma.user.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(prisma.goal.findMany).toHaveBeenCalledWith({
+        where: { userId: "user-1", workspace: "BUSINESS", completed: false },
+        orderBy: { createdAt: "desc" },
+      });
+    });
   });
 
   describe("create", () => {
