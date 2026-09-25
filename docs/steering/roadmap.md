@@ -18,7 +18,7 @@ building the whole API first and the whole app after.
 | 7 | `goals` | ✅ Done | Savings goals with progress tracking | 4 |
 | 8 | `dashboard` | ✅ Done | Home screen: totals, balance, monthly chart, goals preview | 6, 7 |
 | 9 | `debts` | ✅ Done | Debts with auto-generated installments, payment tracking | 5, 6 |
-| 10 | `grocery` | ⬜ Not started | Household grocery list + informational budget | 2 |
+| 10 | `grocery` | ✅ Done | Household grocery list + informational budget | 2 |
 | 11 | `vehicles` | ⬜ Not started | Vehicle registry, mileage tracking | 2 |
 | 12 | `vehicle-maintenance` | ⬜ Not started | Maintenance types, history, km/date-based alerts | 11 |
 | 13 | `subscriptions` | ⬜ Not started | Plan display + Stripe checkout, status sync | 4 |

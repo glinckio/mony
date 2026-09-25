@@ -81,6 +81,8 @@ Android). Spread into a `StyleSheet` entry: `{ ...shadow.md, ... }`.
 | `Button` | Variants `primary` `secondary` `ghost`; `loading`, `disabled`, `leftIcon`, `fullWidth` props. Always meets `size.controlHeight`. |
 | `TextField` | Labeled input with inline `error` text, focus/error border states, optional `secureToggle` (adds an eye icon via `@expo/vector-icons` `Ionicons` to reveal/hide a password field). `editable={false}` renders the disabled look (`surfaceAlt` fill, `textDisabled` text). |
 | `AppHeader` | Screen title + workspace switcher + optional `rightAccessory`. `onBack` adds a back chevron (`testID="header-back"`) for screens pushed on the app stack, which have no native header. |
+| `ProgressBar` | Thin track + fill; `percent` clamped 0–100, optional `tone` (`primary` default, `success` `warning` `danger`) — e.g. the grocery budget bar colored by legacy thresholds. Exposes `accessibilityRole="progressbar"` + `accessibilityValue`. |
+| `IconButton` | Touch-target-sized square icon control on a `primaryMuted` fill (`icon`, required `accessibilityLabel`, `disabled`) — e.g. the grocery −/+ stepper. Bare header icons keep using `TouchableOpacity` + `hitSlop`. |
 | `Badge` | Small status pill; `tone` = `success` `danger` `warning` `info` `neutral`, each a muted background + matching foreground from the palette. |
 | `ListRow` | Tappable menu row (icon badge + label + optional description + chevron) — the `Mais` tab's entries. |
 | `BottomSheet` | Bottom-anchored modal sheet over the `overlay` backdrop, for short forms that belong to the screen underneath (e.g. paying a debt installment). Owns its own `KeyboardAvoidingView` — a RN `Modal` is a separate native window with no `Screen` ScrollView to hand keyboard insets to. |
