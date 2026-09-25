@@ -6,6 +6,7 @@ export * from "./dashboard";
 export * from "./date";
 export * from "./debt";
 export * from "./goal";
+export * from "./grocery";
 export * from "./money";
 export * from "./transaction";
 export * from "./user";
