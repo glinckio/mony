@@ -29,6 +29,13 @@ export function MoreScreen() {
           description="Parcelas, pagamentos e saldo devedor"
           onPress={() => navigation.navigate("Debts")}
         />
+        <ListRow
+          testID="more-grocery"
+          icon="cart-outline"
+          label="Mercado"
+          description="Lista de compras e orçamento do mês"
+          onPress={() => navigation.navigate("Grocery")}
+        />
       </View>
     </Screen>
   );

@@ -1,0 +1,116 @@
+appId: com.mony.app
+---
+# Registers a fresh account, adds two grocery items, sets a budget, and
+# checks the summary numbers; then bumps an item to its ideal quantity
+# with the quick + stepper and checks it drops out of the "Faltando"
+# filter — exercises the Mais → Mercado screens against the real API.
+- launchApp
+- evalScript: ${output.testEmail = 'maestro-grocery-' + Date.now() + '@example.com'}
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Grocery Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Bem-vindo, Maestro Grocery Tester"
+
+- tapOn:
+    id: "tab-more"
+- tapOn:
+    id: "more-grocery"
+- assertVisible: "Nenhum item ainda."
+- assertVisible: "Não definido"
+
+# Arroz: 1 of 5 kg at R$ 6,49 → 4 x 6,49 = 25,96 to buy.
+- tapOn:
+    id: "add-grocery-item-button"
+- assertVisible: "Novo item"
+- tapOn:
+    id: "name-input"
+- inputText: "Arroz"
+- tapOn:
+    id: "unit-input"
+- inputText: "kg"
+- tapOn:
+    id: "ideal-quantity-input"
+- inputText: "5"
+- tapOn:
+    id: "current-quantity-input"
+- eraseText
+- inputText: "1"
+- tapOn:
+    id: "estimated-price-input"
+- inputText: "649"
+- hideKeyboard
+- tapOn:
+    id: "grocery-category-PANTRY"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Arroz"
+- assertVisible: "Mercearia"
+
+# Sabonete: 0 of 4 un at R$ 2,50 → 10,00 to buy.
+- tapOn:
+    id: "add-grocery-item-button"
+- tapOn:
+    id: "name-input"
+- inputText: "Sabonete"
+- tapOn:
+    id: "unit-input"
+- inputText: "un"
+- tapOn:
+    id: "ideal-quantity-input"
+- inputText: "4"
+- tapOn:
+    id: "estimated-price-input"
+- inputText: "250"
+- hideKeyboard
+- tapOn:
+    id: "grocery-category-PERSONAL_CARE"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Sabonete"
+- assertVisible: "2 itens · 2 faltando"
+# Regex, not literals: Intl may put a non-breaking space after "R$".
+- assertVisible: 'R.*35,96'
+
+# Budget R$ 40,00 → R$ 4,04 left.
+- tapOn:
+    id: "edit-grocery-budget"
+- assertVisible: "Orçamento mensal"
+- tapOn:
+    id: "grocery-budget-input"
+- inputText: "4000"
+- hideKeyboard
+- tapOn:
+    id: "save-grocery-budget"
+- assertVisible: 'R.*40,00'
+- assertVisible: 'R.*4,04'
+
+# Quick + four times brings Arroz to its ideal 5 kg — no longer missing.
+- tapOn: "Aumentar Arroz"
+- assertVisible: "2 de 5 kg.*"
+- tapOn: "Aumentar Arroz"
+- assertVisible: "3 de 5 kg.*"
+- tapOn: "Aumentar Arroz"
+- assertVisible: "4 de 5 kg.*"
+- tapOn: "Aumentar Arroz"
+- assertVisible: "5 de 5 kg.*"
+- assertVisible: "2 itens · 1 faltando"
+
+# By id: the text "Faltando" also matches the row badges.
+- tapOn:
+    id: "grocery-filter-MISSING"
+- assertVisible: "Sabonete"
+- assertNotVisible: "Arroz"

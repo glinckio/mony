@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { Category, Debt, Goal, Profile, Transaction } from "@mony/shared-types";
+import type { Category, Debt, Goal, GroceryItem, Profile, Transaction } from "@mony/shared-types";
 import { color } from "@mony/ui-tokens";
 import {
   createBottomTabNavigator,
@@ -28,6 +28,8 @@ import { DebtFormScreen } from "../screens/debts/DebtFormScreen";
 import { DebtsListScreen } from "../screens/debts/DebtsListScreen";
 import { GoalFormScreen } from "../screens/goals/GoalFormScreen";
 import { GoalsScreen } from "../screens/goals/GoalsScreen";
+import { GroceryItemFormScreen } from "../screens/grocery/GroceryItemFormScreen";
+import { GroceryScreen } from "../screens/grocery/GroceryScreen";
 import { MoreScreen } from "../screens/more/MoreScreen";
 import { ChangePasswordScreen } from "../screens/profile/ChangePasswordScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
@@ -56,6 +58,8 @@ export type AppStackParamList = {
   Debts: undefined;
   DebtDetail: { debtId: string };
   DebtForm: { debt?: Debt } | undefined;
+  Grocery: undefined;
+  GroceryItemForm: { item?: GroceryItem } | undefined;
   CategoryForm: { category?: Category } | undefined;
   TransactionForm: { transaction?: Transaction } | undefined;
   GoalForm: { goal?: Goal } | undefined;
@@ -161,6 +165,7 @@ export function RootNavigator() {
           <AppStack.Screen name="Categories" component={CategoriesScreen} />
           <AppStack.Screen name="Debts" component={DebtsListScreen} />
           <AppStack.Screen name="DebtDetail" component={DebtDetailScreen} />
+          <AppStack.Screen name="Grocery" component={GroceryScreen} />
           <AppStack.Screen
             name="CategoryForm"
             component={CategoryFormScreen}
@@ -179,6 +184,11 @@ export function RootNavigator() {
           <AppStack.Screen
             name="DebtForm"
             component={DebtFormScreen}
+            options={{ presentation: "modal" }}
+          />
+          <AppStack.Screen
+            name="GroceryItemForm"
+            component={GroceryItemFormScreen}
             options={{ presentation: "modal" }}
           />
         </AppStack.Navigator>
