@@ -4,6 +4,7 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 
@@ -19,6 +20,8 @@ interface ErrorBody {
 // Kept intentionally simple (no stack traces) so it is safe to show to clients.
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AllExceptionsFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -38,6 +41,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
       path: request.url,
       timestamp: new Date().toISOString(),
     };
+
+    // The client only ever gets the generic message for a 500, so the real
+    // cause (e.g. storage or image-processing failure) must reach the log.
+    if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.logger.error(
+        `${request.method} ${request.path} failed`,
+        exception instanceof Error ? exception.stack : String(exception),
+      );
+    }
+    // Picked up by the request logger so the reason shows on its line.
+    response.locals.errorMessage = message.join("; ");
 
     response.status(statusCode).json(body);
   }

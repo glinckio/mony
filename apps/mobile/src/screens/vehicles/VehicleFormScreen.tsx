@@ -143,7 +143,10 @@ export function VehicleFormScreen() {
     if (photo) {
       try {
         saved = await uploadVehiclePhoto(created.id, photo);
-      } catch {
+      } catch (error) {
+        // Dev-only: the toast is deliberately generic, so surface the real
+        // cause (status + API message, or a network failure) in Metro.
+        if (__DEV__) console.warn("Vehicle photo upload failed:", error);
         useToastStore
           .getState()
           .show(
@@ -159,7 +162,8 @@ export function VehicleFormScreen() {
     try {
       const picked = await pickVehiclePhoto();
       if (picked) setPhoto(picked);
-    } catch {
+    } catch (error) {
+      if (__DEV__) console.warn("Vehicle photo pick failed:", error);
       useToastStore.getState().show("Não foi possível abrir suas fotos.");
     }
   };

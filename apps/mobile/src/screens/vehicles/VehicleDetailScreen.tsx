@@ -55,17 +55,20 @@ export function VehicleDetailScreen() {
   const photoMutation = useMutation({
     mutationFn: (photo: PickedPhoto) => uploadVehiclePhoto(vehicleId, photo),
     onSuccess: applyVehicle,
-    onError: (error) =>
+    onError: (error) => {
+      if (__DEV__) console.warn("Vehicle photo upload failed:", error);
       useToastStore
         .getState()
-        .show(photoErrorMessage(error, "Não foi possível enviar a foto. Tente novamente.")),
+        .show(photoErrorMessage(error, "Não foi possível enviar a foto. Tente novamente."));
+    },
   });
 
   const changePhoto = async () => {
     let photo: PickedPhoto | null;
     try {
       photo = await pickVehiclePhoto();
-    } catch {
+    } catch (error) {
+      if (__DEV__) console.warn("Vehicle photo pick failed:", error);
       useToastStore.getState().show("Não foi possível abrir suas fotos.");
       return;
     }

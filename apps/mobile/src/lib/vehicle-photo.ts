@@ -1,4 +1,5 @@
 import type { Vehicle } from "@mony/shared-types";
+import { File } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 
@@ -6,7 +7,6 @@ import { apiFetch } from "./api-client";
 
 export interface PickedPhoto {
   uri: string;
-  mimeType: string;
 }
 
 // Longest side we keep. The picker's `quality` only re-compresses — it
@@ -39,19 +39,17 @@ export async function pickVehiclePhoto(): Promise<PickedPhoto | null> {
   }
   const image = await context.renderAsync();
   const saved = await image.saveAsync({ compress: 0.7, format: SaveFormat.JPEG });
-  return { uri: saved.uri, mimeType: "image/jpeg" };
+  return { uri: saved.uri };
 }
 
-// `PUT /vehicles/:id/photo` as multipart. React Native's FormData takes
-// a `{ uri, name, type }` descriptor for a local file instead of a Blob
-// (streamed from disk, never loaded into the JS heap). The API detects
-// the real type from the bytes; `type`/`name` are hints.
+// `PUT /vehicles/:id/photo` as multipart. The global fetch is Expo's
+// (`expo/fetch`), which only accepts Blob-like parts: React Native's
+// `{ uri, name, type }` descriptor throws "Unsupported FormDataPart
+// implementation". expo-file-system's File is one — its name becomes the
+// part's filename (Multer needs it to treat the part as a file). The API
+// detects the real type from the bytes.
 export function uploadVehiclePhoto(vehicleId: string, photo: PickedPhoto): Promise<Vehicle> {
   const form = new FormData();
-  form.append("photo", {
-    uri: photo.uri,
-    name: "vehicle.jpg",
-    type: photo.mimeType,
-  } as unknown as Blob);
+  form.append("photo", new File(photo.uri));
   return apiFetch<Vehicle>(`/vehicles/${vehicleId}/photo`, { method: "PUT", body: form });
 }
