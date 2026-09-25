@@ -22,6 +22,9 @@ describe("TransactionsService", () => {
     };
     category: { findFirst: jest.Mock };
     user: { findUniqueOrThrow: jest.Mock };
+    debtInstallment: { findUnique: jest.Mock; findMany: jest.Mock; update: jest.Mock };
+    debt: { update: jest.Mock };
+    $queryRaw: jest.Mock;
     $transaction: jest.Mock;
   };
 
@@ -67,8 +70,21 @@ describe("TransactionsService", () => {
       user: {
         findUniqueOrThrow: jest.fn().mockResolvedValue({ activeWorkspace: "PERSONAL" }),
       },
+      debtInstallment: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        findMany: jest.fn(),
+        update: jest.fn(),
+      },
+      debt: { update: jest.fn() },
+      $queryRaw: jest.fn().mockResolvedValue([{ id: "debt-1" }]),
+      // Array form (batched ops) and interactive-callback form — the
+      // callback gets this same mock as its transaction client.
       $transaction: jest.fn((ops: unknown) =>
-        Array.isArray(ops) ? Promise.all(ops) : ops,
+        Array.isArray(ops)
+          ? Promise.all(ops)
+          : typeof ops === "function"
+            ? (ops as (tx: unknown) => unknown)(prisma)
+            : ops,
       ),
     };
 
@@ -186,6 +202,11 @@ describe("TransactionsService", () => {
   });
 
   describe("updateStatus", () => {
+    const linkedTransaction = (overrides: Partial<Record<string, unknown>> = {}) => ({
+      ...buildTransaction(overrides),
+      debtInstallment: { id: "inst-1" },
+    });
+
     it("rejects with 400 when the transaction isn't an expense", async () => {
       const income = buildTransaction({ type: "INCOME" });
       prisma.transaction.findFirst.mockResolvedValue(income);
@@ -216,6 +237,83 @@ describe("TransactionsService", () => {
       await expect(
         service.updateStatus("user-1", "tx-1", { status: "PAID" }),
       ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it("leaves debts alone (no interactive transaction) when the transaction isn't linked to an installment", async () => {
+      prisma.transaction.findFirst.mockResolvedValue({ ...buildTransaction(), debtInstallment: null });
+      prisma.transaction.update.mockResolvedValue(buildTransaction({ status: "PAID" }));
+
+      await service.updateStatus("user-1", "tx-1", { status: "PAID" });
+
+      expect(prisma.transaction.findFirst).toHaveBeenCalledWith({
+        where: { id: "tx-1", userId: "user-1" },
+        include: { debtInstallment: { select: { id: true } } },
+      });
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
+      expect(prisma.debtInstallment.update).not.toHaveBeenCalled();
+      expect(prisma.debt.update).not.toHaveBeenCalled();
+    });
+
+    it("pays the linked installment and recomputes its debt when marked PAID", async () => {
+      prisma.transaction.findFirst.mockResolvedValue(linkedTransaction());
+      prisma.transaction.update.mockResolvedValue(buildTransaction({ status: "PAID" }));
+      prisma.debtInstallment.findUnique
+        .mockResolvedValueOnce({ debtId: "debt-1" })
+        .mockResolvedValueOnce({ id: "inst-1", debtId: "debt-1", status: "PENDING" });
+      prisma.debtInstallment.findMany.mockResolvedValue([
+        { status: "PAID", amount: new Prisma.Decimal("500"), dueDate: new Date("2099-01-10") },
+        { status: "PENDING", amount: new Prisma.Decimal("500"), dueDate: new Date("2099-02-10") },
+      ]);
+
+      await service.updateStatus("user-1", "tx-1", { status: "PAID" });
+
+      expect(prisma.$queryRaw).toHaveBeenCalled(); // debt row lock
+      // Debt locked before the transaction row is written — same order as
+      // DebtsService, so the two can't deadlock.
+      expect(prisma.$queryRaw.mock.invocationCallOrder[0]!).toBeLessThan(
+        prisma.transaction.update.mock.invocationCallOrder[0]!,
+      );
+      expect(prisma.debtInstallment.update).toHaveBeenCalledWith({
+        where: { id: "inst-1" },
+        data: { status: "PAID", paymentDate: expect.any(Date) },
+      });
+      expect(prisma.debt.update).toHaveBeenCalledWith({
+        where: { id: "debt-1" },
+        data: { paidAmount: new Prisma.Decimal("500"), paidInstallments: 1, status: "ACTIVE" },
+      });
+    });
+
+    it("reverts the linked installment to PENDING when marked PENDING", async () => {
+      prisma.transaction.findFirst.mockResolvedValue(linkedTransaction({ status: "PAID" }));
+      prisma.transaction.update.mockResolvedValue(buildTransaction({ status: "PENDING" }));
+      prisma.debtInstallment.findUnique
+        .mockResolvedValueOnce({ debtId: "debt-1" })
+        .mockResolvedValueOnce({ id: "inst-1", debtId: "debt-1", status: "PAID" });
+      prisma.debtInstallment.findMany.mockResolvedValue([
+        { status: "PENDING", amount: new Prisma.Decimal("500"), dueDate: new Date("2099-01-10") },
+      ]);
+
+      await service.updateStatus("user-1", "tx-1", { status: "PENDING" });
+
+      expect(prisma.debtInstallment.update).toHaveBeenCalledWith({
+        where: { id: "inst-1" },
+        data: { status: "PENDING", paymentDate: null },
+      });
+      expect(prisma.debt.update).toHaveBeenCalled();
+    });
+
+    it("doesn't touch an installment that already has the target status", async () => {
+      prisma.transaction.findFirst.mockResolvedValue(linkedTransaction({ status: "PAID" }));
+      prisma.transaction.update.mockResolvedValue(buildTransaction({ status: "PAID" }));
+      prisma.debtInstallment.findUnique
+        .mockResolvedValueOnce({ debtId: "debt-1" })
+        .mockResolvedValueOnce({ id: "inst-1", debtId: "debt-1", status: "PAID" });
+
+      await service.updateStatus("user-1", "tx-1", { status: "PAID" });
+
+      expect(prisma.debtInstallment.update).not.toHaveBeenCalled();
+      expect(prisma.debt.update).not.toHaveBeenCalled();
     });
   });
 

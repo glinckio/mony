@@ -63,8 +63,14 @@ export class CategoriesService {
         throw new BadRequestException("replacementCategoryId must have the same type.");
       }
 
+      // Debts ride along with their linked transactions, so the debt's
+      // own category keeps matching what its installments' expenses use.
       await this.prisma.$transaction([
         this.prisma.transaction.updateMany({
+          where: { categoryId: id, userId },
+          data: { categoryId: replacementCategoryId },
+        }),
+        this.prisma.debt.updateMany({
           where: { categoryId: id, userId },
           data: { categoryId: replacementCategoryId },
         }),

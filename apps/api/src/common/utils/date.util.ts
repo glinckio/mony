@@ -53,3 +53,9 @@ export function endOfMonthDateString(dateStr: string): string {
   const [year, month] = dateStr.split("-").map(Number);
   return toDateOnlyString(new Date(Date.UTC(year!, month!, 0)));
 }
+
+// Strict "YYYY-MM-DD" — for DTOs whose value feeds straight into the
+// string-based month arithmetic above (`addMonthsToDateString` splits on
+// "-"), where `@IsDateString()` alone would also let a full ISO
+// timestamp through.
+export const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;

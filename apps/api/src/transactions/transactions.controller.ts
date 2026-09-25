@@ -101,7 +101,11 @@ export class TransactionsController {
   }
 
   @Patch(":id/status")
-  @ApiOperation({ summary: "Change an expense's paid/pending status" })
+  @ApiOperation({
+    summary: "Change an expense's paid/pending status",
+    description:
+      "If the transaction was generated for a debt installment, that installment is paid (paymentDate = today) or unpaid to match, and its debt's totals/status are recomputed, atomically. The response is still just the transaction.",
+  })
   @ApiOkResponse({ type: TransactionDto })
   @ApiBadRequestResponse({ description: "Validation failed, or the transaction isn't an expense" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid access token" })
@@ -116,7 +120,11 @@ export class TransactionsController {
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: "Delete a transaction the current user owns" })
+  @ApiOperation({
+    summary: "Delete a transaction the current user owns",
+    description:
+      "If the transaction is linked to a debt installment, the installment is kept and its transactionId becomes null; paying it later creates a fresh linked transaction.",
+  })
   @ApiNoContentResponse()
   @ApiUnauthorizedResponse({ description: "Missing or invalid access token" })
   @ApiNotFoundResponse({ description: "Transaction not found" })
@@ -126,7 +134,11 @@ export class TransactionsController {
 
   @Post("bulk-delete")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: "Delete several transactions the current user owns, all-or-nothing" })
+  @ApiOperation({
+    summary: "Delete several transactions the current user owns, all-or-nothing",
+    description:
+      "Debt installments linked to any deleted transaction are kept with transactionId = null (same as the single delete).",
+  })
   @ApiNoContentResponse()
   @ApiBadRequestResponse({
     description: "Validation failed, or one or more ids aren't owned by this user",

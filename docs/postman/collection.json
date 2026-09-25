@@ -973,6 +973,7 @@
           "name": "Delete Category",
           "request": {
             "method": "DELETE",
+            "description": "With ?replacementCategoryId=<same-type category>, the category's transactions AND debts are reassigned to the replacement before it's deleted. Without it, the request is rejected (400) if any transaction still uses the category; debts alone don't block it — they keep existing with categoryId = null.",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
             "url": {
               "raw": "{{baseUrl}}/categories/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
@@ -1349,6 +1350,7 @@
           "name": "Update Transaction Status",
           "request": {
             "method": "PATCH",
+            "description": "If the transaction was generated for a debt installment (description \"Parcela n/N - <debt name>\"), that installment is paid (paymentDate = today) or unpaid to match and its debt's totals/status are recomputed, atomically. The response is still just the transaction — refetch GET /debts/:id to see the installment.",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{accessToken}}" }
@@ -1414,6 +1416,7 @@
           "name": "Delete Transaction",
           "request": {
             "method": "DELETE",
+            "description": "If the transaction is linked to a debt installment, the installment is kept and its transactionId becomes null; paying it later (POST /debts/:id/installments/:installmentId/pay) creates a fresh linked transaction.",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
             "url": {
               "raw": "{{baseUrl}}/transactions/5f8d0d55-6c3a-4b8e-9c2a-3f1e2d4b5a6c",
@@ -1458,6 +1461,7 @@
           "name": "Bulk Delete Transactions",
           "request": {
             "method": "POST",
+            "description": "Debt installments linked to any deleted transaction are kept with transactionId = null (same as Delete Transaction).",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{accessToken}}" }
@@ -1785,6 +1789,543 @@
               "status": "Not Found",
               "code": 404,
               "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\"Goal not found.\"],\n  \"path\": \"/goals/a1826c76-8bbe-4dbe-a17d-d458df35c323\",\n  \"timestamp\": \"2026-09-21T01:01:40.193Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debts",
+      "item": [
+        {
+          "name": "List Debts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/debts?status=ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["debts"],
+              "query": [{ "key": "status", "value": "ACTIVE" }]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/debts?status=ACTIVE",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts"],
+                  "query": [{ "key": "status", "value": "ACTIVE" }]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": \"9c1be367-4d5b-49f9-be70-e9ef24e0f668\",\n    \"workspace\": \"PERSONAL\",\n    \"categoryId\": \"2fe59d0f-f51a-40f2-9b93-04d772af3790\",\n    \"name\": \"Geladeira nova\",\n    \"totalAmount\": \"3500.00\",\n    \"paidAmount\": \"0.00\",\n    \"remainingAmount\": \"3500.00\",\n    \"startDate\": \"2026-10-10\",\n    \"endDate\": \"2026-12-10\",\n    \"interestRate\": \"1.99\",\n    \"totalInstallments\": 3,\n    \"paidInstallments\": 0,\n    \"notes\": \"Loja X, boleto todo dia 10\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"2026-09-23T19:01:21.496Z\",\n    \"updatedAt\": \"2026-09-23T19:01:21.541Z\"\n  }\n]"
+            },
+            {
+              "name": "400 Bad Request — invalid status filter",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/debts?status=CANCELLED",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts"],
+                  "query": [{ "key": "status", "value": "CANCELLED" }]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"status must be one of the following values: ACTIVE, PAID_OFF, OVERDUE\"\n  ],\n  \"path\": \"/debts?status=CANCELLED\",\n  \"timestamp\": \"2026-09-23T19:29:15.055Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/debts", "host": ["{{baseUrl}}"], "path": ["debts"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\n    \"Unauthorized\"\n  ],\n  \"path\": \"/debts\",\n  \"timestamp\": \"2026-09-23T19:01:21.618Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Debt",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+              "host": ["{{baseUrl}}"],
+              "path": ["debts", "9c1be367-4d5b-49f9-be70-e9ef24e0f668"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts", "9c1be367-4d5b-49f9-be70-e9ef24e0f668"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"9c1be367-4d5b-49f9-be70-e9ef24e0f668\",\n  \"workspace\": \"PERSONAL\",\n  \"categoryId\": \"2fe59d0f-f51a-40f2-9b93-04d772af3790\",\n  \"name\": \"Geladeira nova\",\n  \"totalAmount\": \"3500.00\",\n  \"paidAmount\": \"0.00\",\n  \"remainingAmount\": \"3500.00\",\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": \"1.99\",\n  \"totalInstallments\": 3,\n  \"paidInstallments\": 0,\n  \"notes\": \"Loja X, boleto todo dia 10\",\n  \"status\": \"ACTIVE\",\n  \"createdAt\": \"2026-09-23T19:01:21.496Z\",\n  \"updatedAt\": \"2026-09-23T19:01:21.541Z\",\n  \"installments\": [\n    {\n      \"id\": \"01278f40-292a-491c-94b6-c790412adb8f\",\n      \"installmentNo\": 1,\n      \"amount\": \"1166.66\",\n      \"dueDate\": \"2026-10-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"ef88ae21-a5e9-4e24-9197-862b39e6b3dd\"\n    },\n    {\n      \"id\": \"6f71f2b4-397e-4d93-93d0-66a0ff057b9e\",\n      \"installmentNo\": 2,\n      \"amount\": \"1166.66\",\n      \"dueDate\": \"2026-11-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"010b3e97-2995-42f0-9912-d654300f3b65\"\n    },\n    {\n      \"id\": \"ad49503b-bf8b-49e3-8016-9c9fa9c52b36\",\n      \"installmentNo\": 3,\n      \"amount\": \"1166.68\",\n      \"dueDate\": \"2026-12-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"37b8fe59-604a-43c6-a927-54c1842bdef7\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "404 Not Found — not this user's debt",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/debts/00000000-0000-4000-8000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts", "00000000-0000-4000-8000-000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Debt not found.\"\n  ],\n  \"path\": \"/debts/00000000-0000-4000-8000-000000000000\",\n  \"timestamp\": \"2026-09-23T19:01:21.649Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Debt",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Geladeira nova\",\n  \"totalAmount\": 3500,\n  \"totalInstallments\": 3,\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": 1.99,\n  \"categoryId\": \"2fe59d0f-f51a-40f2-9b93-04d772af3790\",\n  \"notes\": \"Loja X, boleto todo dia 10\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/debts", "host": ["{{baseUrl}}"], "path": ["debts"] }
+          },
+          "response": [
+            {
+              "name": "201 Created — 3500.00 / 3, last installment absorbs the cent remainder",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Geladeira nova\",\n  \"totalAmount\": 3500,\n  \"totalInstallments\": 3,\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": 1.99,\n  \"categoryId\": \"2fe59d0f-f51a-40f2-9b93-04d772af3790\",\n  \"notes\": \"Loja X, boleto todo dia 10\"\n}"
+                },
+                "url": { "raw": "{{baseUrl}}/debts", "host": ["{{baseUrl}}"], "path": ["debts"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"9c1be367-4d5b-49f9-be70-e9ef24e0f668\",\n  \"workspace\": \"PERSONAL\",\n  \"categoryId\": \"2fe59d0f-f51a-40f2-9b93-04d772af3790\",\n  \"name\": \"Geladeira nova\",\n  \"totalAmount\": \"3500.00\",\n  \"paidAmount\": \"0.00\",\n  \"remainingAmount\": \"3500.00\",\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": \"1.99\",\n  \"totalInstallments\": 3,\n  \"paidInstallments\": 0,\n  \"notes\": \"Loja X, boleto todo dia 10\",\n  \"status\": \"ACTIVE\",\n  \"createdAt\": \"2026-09-23T19:01:21.496Z\",\n  \"updatedAt\": \"2026-09-23T19:01:21.541Z\",\n  \"installments\": [\n    {\n      \"id\": \"01278f40-292a-491c-94b6-c790412adb8f\",\n      \"installmentNo\": 1,\n      \"amount\": \"1166.66\",\n      \"dueDate\": \"2026-10-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"ef88ae21-a5e9-4e24-9197-862b39e6b3dd\"\n    },\n    {\n      \"id\": \"6f71f2b4-397e-4d93-93d0-66a0ff057b9e\",\n      \"installmentNo\": 2,\n      \"amount\": \"1166.66\",\n      \"dueDate\": \"2026-11-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"010b3e97-2995-42f0-9912-d654300f3b65\"\n    },\n    {\n      \"id\": \"ad49503b-bf8b-49e3-8016-9c9fa9c52b36\",\n      \"installmentNo\": 3,\n      \"amount\": \"1166.68\",\n      \"dueDate\": \"2026-12-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"37b8fe59-604a-43c6-a927-54c1842bdef7\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — totalInstallments out of range",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Geladeira nova\",\n  \"totalAmount\": 3500,\n  \"totalInstallments\": 0,\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": 1.99,\n  \"categoryId\": \"2fe59d0f-f51a-40f2-9b93-04d772af3790\",\n  \"notes\": \"Loja X, boleto todo dia 10\"\n}"
+                },
+                "url": { "raw": "{{baseUrl}}/debts", "host": ["{{baseUrl}}"], "path": ["debts"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"totalInstallments must not be less than 1\"\n  ],\n  \"path\": \"/debts\",\n  \"timestamp\": \"2026-09-23T19:01:21.554Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — category doesn't exist",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Geladeira nova\",\n  \"totalAmount\": 3500,\n  \"totalInstallments\": 3,\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": 1.99,\n  \"categoryId\": \"00000000-0000-4000-8000-000000000000\",\n  \"notes\": \"Loja X, boleto todo dia 10\"\n}"
+                },
+                "url": { "raw": "{{baseUrl}}/debts", "host": ["{{baseUrl}}"], "path": ["debts"] }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Category not found.\"\n  ],\n  \"path\": \"/debts\",\n  \"timestamp\": \"2026-09-23T19:01:21.576Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — categoryId is an income category",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Geladeira nova\",\n  \"totalAmount\": 3500,\n  \"totalInstallments\": 3,\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": 1.99,\n  \"categoryId\": \"9605412b-43b5-47fa-9397-296c12f0f7df\",\n  \"notes\": \"Loja X, boleto todo dia 10\"\n}"
+                },
+                "url": { "raw": "{{baseUrl}}/debts", "host": ["{{baseUrl}}"], "path": ["debts"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"categoryId must be an EXPENSE category.\"\n  ],\n  \"path\": \"/debts\",\n  \"timestamp\": \"2026-09-24T23:01:25.763Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Pay Installment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentDate\": \"2026-10-08\",\n  \"paidAmount\": 1166.66\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668/installments/01278f40-292a-491c-94b6-c790412adb8f/pay",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "debts",
+                "9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                "installments",
+                "01278f40-292a-491c-94b6-c790412adb8f",
+                "pay"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"paymentDate\": \"2026-10-08\",\n  \"paidAmount\": 1166.66\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668/installments/01278f40-292a-491c-94b6-c790412adb8f/pay",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "debts",
+                    "9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                    "installments",
+                    "01278f40-292a-491c-94b6-c790412adb8f",
+                    "pay"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"9c1be367-4d5b-49f9-be70-e9ef24e0f668\",\n  \"workspace\": \"PERSONAL\",\n  \"categoryId\": \"2fe59d0f-f51a-40f2-9b93-04d772af3790\",\n  \"name\": \"Geladeira nova\",\n  \"totalAmount\": \"3500.00\",\n  \"paidAmount\": \"1166.66\",\n  \"remainingAmount\": \"2333.34\",\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": \"1.99\",\n  \"totalInstallments\": 3,\n  \"paidInstallments\": 1,\n  \"notes\": \"Loja X, boleto todo dia 10\",\n  \"status\": \"ACTIVE\",\n  \"createdAt\": \"2026-09-23T19:01:21.496Z\",\n  \"updatedAt\": \"2026-09-23T19:01:21.680Z\",\n  \"installments\": [\n    {\n      \"id\": \"01278f40-292a-491c-94b6-c790412adb8f\",\n      \"installmentNo\": 1,\n      \"amount\": \"1166.66\",\n      \"dueDate\": \"2026-10-10\",\n      \"status\": \"PAID\",\n      \"paymentDate\": \"2026-10-08\",\n      \"transactionId\": \"ef88ae21-a5e9-4e24-9197-862b39e6b3dd\"\n    },\n    {\n      \"id\": \"6f71f2b4-397e-4d93-93d0-66a0ff057b9e\",\n      \"installmentNo\": 2,\n      \"amount\": \"1166.66\",\n      \"dueDate\": \"2026-11-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"010b3e97-2995-42f0-9912-d654300f3b65\"\n    },\n    {\n      \"id\": \"ad49503b-bf8b-49e3-8016-9c9fa9c52b36\",\n      \"installmentNo\": 3,\n      \"amount\": \"1166.68\",\n      \"dueDate\": \"2026-12-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"37b8fe59-604a-43c6-a927-54c1842bdef7\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — installment already paid",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"paymentDate\": \"2026-10-08\",\n  \"paidAmount\": 1166.66\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668/installments/01278f40-292a-491c-94b6-c790412adb8f/pay",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "debts",
+                    "9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                    "installments",
+                    "01278f40-292a-491c-94b6-c790412adb8f",
+                    "pay"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"Installment is already paid.\"\n  ],\n  \"path\": \"/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668/installments/01278f40-292a-491c-94b6-c790412adb8f/pay\",\n  \"timestamp\": \"2026-09-23T19:01:21.693Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — installment isn't part of this debt",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"paymentDate\": \"2026-10-08\",\n  \"paidAmount\": 1166.66\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/debts/60c67230-0372-4f75-8f53-694b376cd0c0/installments/00000000-0000-4000-8000-000000000000/pay",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "debts",
+                    "60c67230-0372-4f75-8f53-694b376cd0c0",
+                    "installments",
+                    "00000000-0000-4000-8000-000000000000",
+                    "pay"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Installment not found.\"\n  ],\n  \"path\": \"/debts/60c67230-0372-4f75-8f53-694b376cd0c0/installments/00000000-0000-4000-8000-000000000000/pay\",\n  \"timestamp\": \"2026-09-24T23:01:26.025Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Debt",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Geladeira Frost Free\",\n  \"totalAmount\": 3600\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+              "host": ["{{baseUrl}}"],
+              "path": ["debts", "9c1be367-4d5b-49f9-be70-e9ef24e0f668"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — pending installments (and their transactions) recalculated",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Geladeira Frost Free\",\n  \"totalAmount\": 3600\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts", "9c1be367-4d5b-49f9-be70-e9ef24e0f668"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"9c1be367-4d5b-49f9-be70-e9ef24e0f668\",\n  \"workspace\": \"PERSONAL\",\n  \"categoryId\": \"2fe59d0f-f51a-40f2-9b93-04d772af3790\",\n  \"name\": \"Geladeira Frost Free\",\n  \"totalAmount\": \"3600.00\",\n  \"paidAmount\": \"1166.66\",\n  \"remainingAmount\": \"2433.34\",\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": \"1.99\",\n  \"totalInstallments\": 3,\n  \"paidInstallments\": 1,\n  \"notes\": \"Loja X, boleto todo dia 10\",\n  \"status\": \"ACTIVE\",\n  \"createdAt\": \"2026-09-23T19:01:21.496Z\",\n  \"updatedAt\": \"2026-09-23T19:01:21.728Z\",\n  \"installments\": [\n    {\n      \"id\": \"01278f40-292a-491c-94b6-c790412adb8f\",\n      \"installmentNo\": 1,\n      \"amount\": \"1166.66\",\n      \"dueDate\": \"2026-10-10\",\n      \"status\": \"PAID\",\n      \"paymentDate\": \"2026-10-08\",\n      \"transactionId\": \"ef88ae21-a5e9-4e24-9197-862b39e6b3dd\"\n    },\n    {\n      \"id\": \"6f71f2b4-397e-4d93-93d0-66a0ff057b9e\",\n      \"installmentNo\": 2,\n      \"amount\": \"1216.67\",\n      \"dueDate\": \"2026-11-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"010b3e97-2995-42f0-9912-d654300f3b65\"\n    },\n    {\n      \"id\": \"ad49503b-bf8b-49e3-8016-9c9fa9c52b36\",\n      \"installmentNo\": 3,\n      \"amount\": \"1216.67\",\n      \"dueDate\": \"2026-12-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"37b8fe59-604a-43c6-a927-54c1842bdef7\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — installment count changed after a payment",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"totalInstallments\": 6\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts", "9c1be367-4d5b-49f9-be70-e9ef24e0f668"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"Cannot change the number of installments once some are paid.\"\n  ],\n  \"path\": \"/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668\",\n  \"timestamp\": \"2026-09-23T19:01:21.702Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — null for a non-nullable field",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"startDate\": null\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/debts/60c67230-0372-4f75-8f53-694b376cd0c0",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts", "60c67230-0372-4f75-8f53-694b376cd0c0"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"startDate must be a date in YYYY-MM-DD format\",\n    \"startDate must be a valid ISO 8601 date string\"\n  ],\n  \"path\": \"/debts/60c67230-0372-4f75-8f53-694b376cd0c0\",\n  \"timestamp\": \"2026-09-24T23:01:25.928Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — not this user's debt",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Geladeira Frost Free\",\n  \"totalAmount\": 3600\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/debts/00000000-0000-4000-8000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts", "00000000-0000-4000-8000-000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Debt not found.\"\n  ],\n  \"path\": \"/debts/00000000-0000-4000-8000-000000000000\",\n  \"timestamp\": \"2026-09-24T23:01:25.847Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cancel Installment Payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668/installments/01278f40-292a-491c-94b6-c790412adb8f/cancel-payment",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "debts",
+                "9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                "installments",
+                "01278f40-292a-491c-94b6-c790412adb8f",
+                "cancel-payment"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668/installments/01278f40-292a-491c-94b6-c790412adb8f/cancel-payment",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "debts",
+                    "9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                    "installments",
+                    "01278f40-292a-491c-94b6-c790412adb8f",
+                    "cancel-payment"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"9c1be367-4d5b-49f9-be70-e9ef24e0f668\",\n  \"workspace\": \"PERSONAL\",\n  \"categoryId\": \"2fe59d0f-f51a-40f2-9b93-04d772af3790\",\n  \"name\": \"Geladeira Frost Free\",\n  \"totalAmount\": \"3600.00\",\n  \"paidAmount\": \"0.00\",\n  \"remainingAmount\": \"3600.00\",\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-12-10\",\n  \"interestRate\": \"1.99\",\n  \"totalInstallments\": 3,\n  \"paidInstallments\": 0,\n  \"notes\": \"Loja X, boleto todo dia 10\",\n  \"status\": \"ACTIVE\",\n  \"createdAt\": \"2026-09-23T19:01:21.496Z\",\n  \"updatedAt\": \"2026-09-23T19:01:21.745Z\",\n  \"installments\": [\n    {\n      \"id\": \"01278f40-292a-491c-94b6-c790412adb8f\",\n      \"installmentNo\": 1,\n      \"amount\": \"1166.66\",\n      \"dueDate\": \"2026-10-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"ef88ae21-a5e9-4e24-9197-862b39e6b3dd\"\n    },\n    {\n      \"id\": \"6f71f2b4-397e-4d93-93d0-66a0ff057b9e\",\n      \"installmentNo\": 2,\n      \"amount\": \"1216.67\",\n      \"dueDate\": \"2026-11-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"010b3e97-2995-42f0-9912-d654300f3b65\"\n    },\n    {\n      \"id\": \"ad49503b-bf8b-49e3-8016-9c9fa9c52b36\",\n      \"installmentNo\": 3,\n      \"amount\": \"1216.67\",\n      \"dueDate\": \"2026-12-10\",\n      \"status\": \"PENDING\",\n      \"paymentDate\": null,\n      \"transactionId\": \"37b8fe59-604a-43c6-a927-54c1842bdef7\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — installment isn't paid",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668/installments/01278f40-292a-491c-94b6-c790412adb8f/cancel-payment",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "debts",
+                    "9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                    "installments",
+                    "01278f40-292a-491c-94b6-c790412adb8f",
+                    "cancel-payment"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"Installment is not paid.\"\n  ],\n  \"path\": \"/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668/installments/01278f40-292a-491c-94b6-c790412adb8f/cancel-payment\",\n  \"timestamp\": \"2026-09-23T19:01:21.761Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — not this user's debt",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/debts/00000000-0000-4000-8000-000000000000/installments/01278f40-292a-491c-94b6-c790412adb8f/cancel-payment",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "debts",
+                    "00000000-0000-4000-8000-000000000000",
+                    "installments",
+                    "01278f40-292a-491c-94b6-c790412adb8f",
+                    "cancel-payment"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Debt not found.\"\n  ],\n  \"path\": \"/debts/00000000-0000-4000-8000-000000000000/installments/01278f40-292a-491c-94b6-c790412adb8f/cancel-payment\",\n  \"timestamp\": \"2026-09-24T23:01:26.106Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Debt",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+              "host": ["{{baseUrl}}"],
+              "path": ["debts", "9c1be367-4d5b-49f9-be70-e9ef24e0f668"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts", "9c1be367-4d5b-49f9-be70-e9ef24e0f668"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["debts", "9c1be367-4d5b-49f9-be70-e9ef24e0f668"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Debt not found.\"\n  ],\n  \"path\": \"/debts/9c1be367-4d5b-49f9-be70-e9ef24e0f668\",\n  \"timestamp\": \"2026-09-23T19:01:21.776Z\"\n}"
             }
           ]
         }

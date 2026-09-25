@@ -78,9 +78,16 @@ export class CategoriesController {
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: "Delete a category the current user owns" })
+  @ApiOperation({
+    summary: "Delete a category the current user owns",
+    description:
+      "With replacementCategoryId, the category's transactions AND debts are reassigned to the replacement first. Without it, debts still pointing at the category keep existing with categoryId = null.",
+  })
   @ApiNoContentResponse()
-  @ApiBadRequestResponse({ description: "Validation failed" })
+  @ApiBadRequestResponse({
+    description:
+      "Validation failed, the category has transactions and no replacementCategoryId was given, or the replacement is the same category or of a different type",
+  })
   @ApiUnauthorizedResponse({ description: "Missing or invalid access token" })
   @ApiNotFoundResponse({ description: "Category doesn't exist or isn't owned by this user" })
   delete(

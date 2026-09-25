@@ -21,6 +21,7 @@ describe("CategoriesService", () => {
       count: jest.Mock;
       updateMany: jest.Mock;
     };
+    debt: { updateMany: jest.Mock };
     $transaction: jest.Mock;
   };
 
@@ -48,6 +49,7 @@ describe("CategoriesService", () => {
         count: jest.fn().mockResolvedValue(0),
         updateMany: jest.fn(),
       },
+      debt: { updateMany: jest.fn() },
       $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
     };
 
@@ -147,7 +149,7 @@ describe("CategoriesService", () => {
       expect(prisma.category.delete).toHaveBeenCalledWith({ where: { id: "cat-1" } });
     });
 
-    it("validates the replacement category is owned by the user, reassigns transactions, then deletes", async () => {
+    it("validates the replacement category is owned by the user, reassigns transactions and debts, then deletes", async () => {
       prisma.category.findFirst
         .mockResolvedValueOnce(buildCategory({ id: "cat-1" }))
         .mockResolvedValueOnce(buildCategory({ id: "cat-2" }));
@@ -161,6 +163,10 @@ describe("CategoriesService", () => {
         where: { id: "cat-2", userId: "user-1" },
       });
       expect(prisma.transaction.updateMany).toHaveBeenCalledWith({
+        where: { categoryId: "cat-1", userId: "user-1" },
+        data: { categoryId: "cat-2" },
+      });
+      expect(prisma.debt.updateMany).toHaveBeenCalledWith({
         where: { categoryId: "cat-1", userId: "user-1" },
         data: { categoryId: "cat-2" },
       });

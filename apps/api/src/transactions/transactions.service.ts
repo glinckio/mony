@@ -1,7 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma, type Transaction, type WorkspaceType } from "@prisma/client";
 
-import { addMonthsToDateString, parseDateOnly, toDateOnlyString } from "../common/utils/date.util";
+import { syncInstallmentFromTransactionStatus } from "../common/debt-sync/debt-sync";
+import {
+  addMonthsToDateString,
+  parseDateOnly,
+  toDateOnlyString,
+  todayDateOnlyString,
+} from "../common/utils/date.util";
 import { decimalToString } from "../common/utils/money.util";
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -130,14 +136,41 @@ export class TransactionsService {
     id: string,
     dto: UpdateTransactionStatusDto,
   ): Promise<TransactionDto> {
-    const existing = await this.findOwned(userId, id);
+    const existing = await this.prisma.transaction.findFirst({
+      where: { id, userId },
+      include: { debtInstallment: { select: { id: true } } },
+    });
+    if (!existing) {
+      throw new NotFoundException("Transaction not found.");
+    }
     if (existing.type !== "EXPENSE") {
       throw new BadRequestException("Only expenses can have their status changed.");
     }
 
-    const transaction = await this.prisma.transaction.update({
-      where: { id },
-      data: { status: dto.status },
+    // Not linked to a debt installment — and it can't become linked later:
+    // installments only ever link transactions created alongside them — so
+    // no debt sync and no interactive transaction on this (common) path.
+    if (!existing.debtInstallment) {
+      const transaction = await this.prisma.transaction.update({
+        where: { id },
+        data: { status: dto.status },
+      });
+      return this.toDto(transaction);
+    }
+
+    // A transaction generated for a debt installment pays/unpays that
+    // installment too, atomically — legacy `atualizarStatusTransacao`,
+    // see docs/specs/debts/requirements.md. The sync (which row-locks the
+    // debt) runs BEFORE the transaction row is written: DebtsService
+    // always locks the debt first and then writes its linked transactions,
+    // so the opposite order here could deadlock against a concurrent
+    // pay/cancel of the same installment.
+    const transaction = await this.prisma.$transaction(async (tx) => {
+      await syncInstallmentFromTransactionStatus(tx, id, dto.status, todayDateOnlyString());
+      return tx.transaction.update({
+        where: { id },
+        data: { status: dto.status },
+      });
     });
     return this.toDto(transaction);
   }
