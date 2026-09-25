@@ -23,10 +23,13 @@ export class ApiError extends Error {
 }
 
 function rawFetch(path: string, init: RequestInit | undefined, accessToken: string | null) {
+  // Multipart uploads: let fetch set Content-Type itself — it has to add
+  // the boundary parameter, which a hand-written header would lack.
+  const isFormData = typeof FormData !== "undefined" && init?.body instanceof FormData;
   return fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...init?.headers,
     },

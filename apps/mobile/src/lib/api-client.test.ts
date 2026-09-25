@@ -31,7 +31,11 @@ describe("apiFetch", () => {
   });
 
   it("attaches the Bearer header when an access token is present", async () => {
-    useAuthStore.setState({ accessToken: "token-123", refreshToken: "refresh-123", user: testUser });
+    useAuthStore.setState({
+      accessToken: "token-123",
+      refreshToken: "refresh-123",
+      user: testUser,
+    });
     (globalThis.fetch as jest.Mock).mockResolvedValue(mockResponse({ ok: true }, 200));
 
     await apiFetch("/some/path");
@@ -49,8 +53,31 @@ describe("apiFetch", () => {
     expect(init.headers.Authorization).toBeUndefined();
   });
 
+  it("sends JSON by default but leaves Content-Type to fetch for multipart uploads", async () => {
+    useAuthStore.setState({
+      accessToken: "token-123",
+      refreshToken: "refresh-123",
+      user: testUser,
+    });
+    (globalThis.fetch as jest.Mock).mockResolvedValue(mockResponse({ ok: true }, 200));
+
+    await apiFetch("/json", { method: "POST", body: JSON.stringify({ a: 1 }) });
+    const form = new FormData();
+    form.append("photo", "x");
+    await apiFetch("/upload", { method: "PUT", body: form });
+
+    const [[, jsonInit], [, formInit]] = (globalThis.fetch as jest.Mock).mock.calls;
+    expect(jsonInit.headers["Content-Type"]).toBe("application/json");
+    expect(formInit.headers).not.toHaveProperty("Content-Type");
+    expect(formInit.headers.Authorization).toBe("Bearer token-123");
+  });
+
   it("silently refreshes once on 401 and retries the original request", async () => {
-    useAuthStore.setState({ accessToken: "old-token", refreshToken: "refresh-123", user: testUser });
+    useAuthStore.setState({
+      accessToken: "old-token",
+      refreshToken: "refresh-123",
+      user: testUser,
+    });
     const fetchMock = globalThis.fetch as jest.Mock;
     fetchMock
       .mockResolvedValueOnce(mockResponse(errorBody("/protected"), 401))
@@ -70,7 +97,11 @@ describe("apiFetch", () => {
   });
 
   it("clears the session when the refresh attempt also fails", async () => {
-    useAuthStore.setState({ accessToken: "old-token", refreshToken: "refresh-123", user: testUser });
+    useAuthStore.setState({
+      accessToken: "old-token",
+      refreshToken: "refresh-123",
+      user: testUser,
+    });
     const fetchMock = globalThis.fetch as jest.Mock;
     fetchMock
       .mockResolvedValueOnce(mockResponse(errorBody("/protected"), 401))

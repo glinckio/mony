@@ -1,0 +1,86 @@
+appId: com.mony.app
+---
+# Registers a fresh account, creates a vehicle (no photo — the system
+# photo picker isn't scriptable reliably), raises its mileage, then checks
+# that lowering it is rejected inline with the stored value — exercises
+# the Mais → Veículos screens against the real API.
+- launchApp
+- evalScript: ${output.testEmail = 'maestro-vehicles-' + Date.now() + '@example.com'}
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Vehicles Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Bem-vindo, Maestro Vehicles Tester"
+
+- tapOn:
+    id: "tab-more"
+- tapOn:
+    id: "more-vehicles"
+- assertVisible: "Nenhum veículo ainda."
+- tapOn:
+    id: "add-vehicle-button"
+- assertVisible: "Novo veículo"
+- tapOn:
+    id: "make-input"
+- inputText: "Jeep"
+- tapOn:
+    id: "model-input"
+- inputText: "Renegade"
+- tapOn:
+    id: "manufacture-year-input"
+- inputText: "2021"
+- tapOn:
+    id: "model-year-input"
+- inputText: "2022"
+- tapOn:
+    id: "current-mileage-input"
+- inputText: "35000"
+- tapOn:
+    id: "license-plate-input"
+- inputText: "abc1d23"
+- hideKeyboard
+- tapOn:
+    id: "fuel-type-FLEX"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Jeep Renegade 2022"
+- assertVisible: "ABC1D23 · 35.000 km"
+
+# Raise the mileage from the detail screen.
+- tapOn: "Jeep Renegade 2022"
+- assertVisible: "35.000 km"
+- tapOn:
+    id: "update-mileage-button"
+- tapOn:
+    id: "mileage-input"
+- eraseText
+- inputText: "36200"
+- hideKeyboard
+- tapOn:
+    id: "save-mileage-button"
+- assertVisible: "36.200 km"
+
+# Lowering it is refused inline, showing the stored value.
+- tapOn:
+    id: "update-mileage-button"
+- tapOn:
+    id: "mileage-input"
+- eraseText
+- inputText: "30000"
+- hideKeyboard
+- tapOn:
+    id: "save-mileage-button"
+- assertVisible: "A quilometragem não pode ser menor que a atual (36.200 km)"

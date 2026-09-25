@@ -6,6 +6,7 @@ export { ColorSwatchPicker } from "./ColorSwatchPicker";
 export { IconButton } from "./IconButton";
 export { IconGridPicker } from "./IconGridPicker";
 export { ListRow } from "./ListRow";
+export { PhotoFrame } from "./PhotoFrame";
 export { ProgressBar, type ProgressTone } from "./ProgressBar";
 export { Screen } from "./Screen";
 export { SegmentedToggle } from "./SegmentedToggle";

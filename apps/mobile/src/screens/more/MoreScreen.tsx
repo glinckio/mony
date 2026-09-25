@@ -36,6 +36,13 @@ export function MoreScreen() {
           description="Lista de compras e orçamento do mês"
           onPress={() => navigation.navigate("Grocery")}
         />
+        <ListRow
+          testID="more-vehicles"
+          icon="car-sport-outline"
+          label="Veículos"
+          description="Quilometragem e dados dos seus veículos"
+          onPress={() => navigation.navigate("Vehicles")}
+        />
       </View>
     </Screen>
   );

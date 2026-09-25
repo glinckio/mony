@@ -15,10 +15,21 @@
       "package": "com.mony.app",
       "adaptiveIcon": {
         "backgroundColor": "#166FE3"
-      }
+      },
+      "blockedPermissions": [
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Mony acessa suas fotos só quando você escolhe uma foto para o seu veículo.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ]
     ]
   }
 }

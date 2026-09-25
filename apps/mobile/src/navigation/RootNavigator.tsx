@@ -1,5 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { Category, Debt, Goal, GroceryItem, Profile, Transaction } from "@mony/shared-types";
+import type {
+  Category,
+  Debt,
+  Goal,
+  GroceryItem,
+  Profile,
+  Transaction,
+  Vehicle,
+} from "@mony/shared-types";
 import { color } from "@mony/ui-tokens";
 import {
   createBottomTabNavigator,
@@ -35,6 +43,9 @@ import { ChangePasswordScreen } from "../screens/profile/ChangePasswordScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { TransactionFormScreen } from "../screens/transactions/TransactionFormScreen";
 import { TransactionsListScreen } from "../screens/transactions/TransactionsListScreen";
+import { VehicleDetailScreen } from "../screens/vehicles/VehicleDetailScreen";
+import { VehicleFormScreen } from "../screens/vehicles/VehicleFormScreen";
+import { VehiclesListScreen } from "../screens/vehicles/VehiclesListScreen";
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -60,6 +71,9 @@ export type AppStackParamList = {
   DebtForm: { debt?: Debt } | undefined;
   Grocery: undefined;
   GroceryItemForm: { item?: GroceryItem } | undefined;
+  Vehicles: undefined;
+  VehicleDetail: { vehicleId: string };
+  VehicleForm: { vehicle?: Vehicle } | undefined;
   CategoryForm: { category?: Category } | undefined;
   TransactionForm: { transaction?: Transaction } | undefined;
   GoalForm: { goal?: Goal } | undefined;
@@ -166,6 +180,8 @@ export function RootNavigator() {
           <AppStack.Screen name="Debts" component={DebtsListScreen} />
           <AppStack.Screen name="DebtDetail" component={DebtDetailScreen} />
           <AppStack.Screen name="Grocery" component={GroceryScreen} />
+          <AppStack.Screen name="Vehicles" component={VehiclesListScreen} />
+          <AppStack.Screen name="VehicleDetail" component={VehicleDetailScreen} />
           <AppStack.Screen
             name="CategoryForm"
             component={CategoryFormScreen}
@@ -189,6 +205,11 @@ export function RootNavigator() {
           <AppStack.Screen
             name="GroceryItemForm"
             component={GroceryItemFormScreen}
+            options={{ presentation: "modal" }}
+          />
+          <AppStack.Screen
+            name="VehicleForm"
+            component={VehicleFormScreen}
             options={{ presentation: "modal" }}
           />
         </AppStack.Navigator>
