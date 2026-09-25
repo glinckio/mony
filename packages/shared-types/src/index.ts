@@ -10,3 +10,4 @@ export * from "./grocery";
 export * from "./money";
 export * from "./transaction";
 export * from "./user";
+export * from "./vehicle";
