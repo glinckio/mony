@@ -19,7 +19,7 @@ building the whole API first and the whole app after.
 | 8 | `dashboard` | ✅ Done | Home screen: totals, balance, monthly chart, goals preview | 6, 7 |
 | 9 | `debts` | ✅ Done | Debts with auto-generated installments, payment tracking | 5, 6 |
 | 10 | `grocery` | ✅ Done | Household grocery list + informational budget | 2 |
-| 11 | `vehicles` | ⬜ Not started | Vehicle registry, mileage tracking | 2 |
+| 11 | `vehicles` | ✅ Done | Vehicle registry, mileage tracking | 2 |
 | 12 | `vehicle-maintenance` | ⬜ Not started | Maintenance types, history, km/date-based alerts | 11 |
 | 13 | `subscriptions` | ⬜ Not started | Plan display + Stripe checkout, status sync | 4 |
 | 14 | `reports` | ⬜ Not started | Charts/aggregations over a date range | 6 |
@@ -37,7 +37,10 @@ below.
 
 - Account deletion + personal-data export endpoints (LGPD data-subject
   rights — flagged in `user-profile`'s spec as deferred here, not
-  dropped).
+  dropped). The DB cascade from `User` does NOT reach object storage:
+  deletion must also remove everything under `vehicles/{userId}/` (and
+  the receipts prefix from `vehicle-maintenance`), and the export must
+  include those files.
 - Full LGPD review pass (`lgpd-security-reviewer`) across the whole app.
 - Full Maestro E2E suite run together (not just per-feature flows).
 - Performance audit pass (`performance-auditor`) end to end.

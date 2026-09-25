@@ -82,6 +82,7 @@ Android). Spread into a `StyleSheet` entry: `{ ...shadow.md, ... }`.
 | `TextField` | Labeled input with inline `error` text, focus/error border states, optional `secureToggle` (adds an eye icon via `@expo/vector-icons` `Ionicons` to reveal/hide a password field). `editable={false}` renders the disabled look (`surfaceAlt` fill, `textDisabled` text). |
 | `AppHeader` | Screen title + workspace switcher + optional `rightAccessory`. `onBack` adds a back chevron (`testID="header-back"`) for screens pushed on the app stack, which have no native header. |
 | `ProgressBar` | Thin track + fill; `percent` clamped 0–100, optional `tone` (`primary` default, `success` `warning` `danger`) — e.g. the grocery budget bar colored by legacy thresholds. Exposes `accessibilityRole="progressbar"` + `accessibilityValue`. |
+| `PhotoFrame` | 4:3 photo slot (`uri` or tokenized placeholder icon), `variant` `thumb` (touch-target tall) or `full` (fills width) — vehicle photos, later receipts. |
 | `IconButton` | Touch-target-sized square icon control on a `primaryMuted` fill (`icon`, required `accessibilityLabel`, `disabled`) — e.g. the grocery −/+ stepper. Bare header icons keep using `TouchableOpacity` + `hitSlop`. |
 | `Badge` | Small status pill; `tone` = `success` `danger` `warning` `info` `neutral`, each a muted background + matching foreground from the palette. |
 | `ListRow` | Tappable menu row (icon badge + label + optional description + chevron) — the `Mais` tab's entries. |

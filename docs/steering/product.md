@@ -36,7 +36,9 @@ the legacy names only exist for cross-referencing during migration.
 `User` (name, email, phone) and `Subscription` (last 4 card digits, card
 brand) hold personal data under Brazil's LGPD. Financial records
 (`Transaction`, `Debt`, `Goal`) are also personal data once linked to a
-`User`. See [`lgpd-security-reviewer`](../../.claude/agents/lgpd-security-reviewer.md)
+`User`, and so are a `Vehicle`'s license plate and photo (the photo can
+show the plate, people, or places; stored in private object storage, see
+`docs/specs/vehicles/design.md`). See [`lgpd-security-reviewer`](../../.claude/agents/lgpd-security-reviewer.md)
 — it must review any phase that touches these entities.
 
 Hard rule: never store raw card numbers. `Subscription` payment handling
