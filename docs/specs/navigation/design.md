@@ -58,3 +58,25 @@ None.
 ## Error handling
 
 None — no new failure modes, this doesn't touch data fetching.
+
+## Amendment (2026-09-23, `debts` feature) — `Categorias` tab → `Mais`
+
+Owner decision while starting `debts`: with Dívidas, Mercado, Veículos,
+Manutenção, Relatórios, and Assinatura still to come, a tab per
+feature doesn't scale. The fourth tab slot changes from `Categories` to
+**`More`** (title `Mais`, icon `menu-outline`, `tabBarButtonTestID:
+"tab-more"`), rendering `MoreScreen` — a menu of `ListRow`s, one per
+secondary section (`more-categories`, `more-debts`, later features
+append here).
+
+`CategoriesScreen` moves off the tab bar onto `AppStack` as a regular
+pushed screen (`Categories`), like `ChangePassword` — it now renders a
+back button through `AppHeader`'s `onBack` prop (`testID
+"header-back"`), and types its navigation as `AppStackNavigation`
+instead of `MainTabNavigation`. Tab order is now Início, Transações,
+Metas, Mais, Perfil — `Mais` sits before `Perfil` so the account tab
+stays last.
+
+Maestro flows that used `tab-categories` now tap `tab-more` →
+`more-categories`, and `header-back` before switching tabs again (a
+pushed `AppStack` screen covers the tab bar).

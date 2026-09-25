@@ -7,7 +7,7 @@ import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { AppHeader, Button, Screen, Text } from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
-import type { MainTabNavigation } from "../../navigation/RootNavigator";
+import type { AppStackNavigation } from "../../navigation/RootNavigator";
 
 interface ReplacementPrompt {
   categoryId: string;
@@ -16,7 +16,7 @@ interface ReplacementPrompt {
 }
 
 export function CategoriesScreen() {
-  const navigation = useNavigation<MainTabNavigation>();
+  const navigation = useNavigation<AppStackNavigation>();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,9 +38,7 @@ export function CategoriesScreen() {
 
   const performDelete = async (categoryId: string, replacementCategoryId?: string) => {
     try {
-      const query = replacementCategoryId
-        ? `?replacementCategoryId=${replacementCategoryId}`
-        : "";
+      const query = replacementCategoryId ? `?replacementCategoryId=${replacementCategoryId}` : "";
       await apiFetch(`/categories/${categoryId}${query}`, { method: "DELETE" });
       setReplacementPrompt(null);
       load();
@@ -78,12 +76,14 @@ export function CategoriesScreen() {
   const expenseCategories = categories.filter((c) => c.type === "EXPENSE");
   const incomeCategories = categories.filter((c) => c.type === "INCOME");
   const replacementOptions = replacementPrompt
-    ? categories.filter((c) => c.type === replacementPrompt.type && c.id !== replacementPrompt.categoryId)
+    ? categories.filter(
+        (c) => c.type === replacementPrompt.type && c.id !== replacementPrompt.categoryId,
+      )
     : [];
 
   return (
     <Screen>
-      <AppHeader title="Categorias" />
+      <AppHeader title="Categorias" onBack={() => navigation.goBack()} />
 
       {error && (
         <View style={styles.errorBanner}>
@@ -97,8 +97,8 @@ export function CategoriesScreen() {
       {replacementPrompt && (
         <View style={styles.replacementBanner} testID="replacement-prompt">
           <Text variant="bodyStrong">
-            "{replacementPrompt.categoryName}" está em uso. Escolha uma categoria para substituir
-            as transações:
+            "{replacementPrompt.categoryName}" está em uso. Escolha uma categoria para substituir as
+            transações:
           </Text>
           <View style={styles.replacementOptions}>
             {replacementOptions.map((option) => (
@@ -178,7 +178,11 @@ function CategorySection({ title, categories, onEdit, onDelete }: CategorySectio
               hitSlop={8}
               onPress={() => onEdit(category)}
             >
-              <Ionicons name="pencil-outline" size={sizeTokens.iconSm} color={color.textSecondary} />
+              <Ionicons
+                name="pencil-outline"
+                size={sizeTokens.iconSm}
+                color={color.textSecondary}
+              />
             </TouchableOpacity>
             <TouchableOpacity
               testID={`delete-category-${category.id}`}

@@ -1,7 +1,10 @@
 export { AppHeader } from "./AppHeader";
+export { Badge, type BadgeTone } from "./Badge";
+export { BottomSheet } from "./BottomSheet";
 export { Button } from "./Button";
 export { ColorSwatchPicker } from "./ColorSwatchPicker";
 export { IconGridPicker } from "./IconGridPicker";
+export { ListRow } from "./ListRow";
 export { ProgressBar } from "./ProgressBar";
 export { Screen } from "./Screen";
 export { SegmentedToggle } from "./SegmentedToggle";

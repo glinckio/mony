@@ -1,4 +1,9 @@
-import { formatDateDisplay, formatDateInputDigits, parseDateInputToISO } from "./date-mask";
+import {
+  formatDateDisplay,
+  formatDateInputDigits,
+  localTodayISO,
+  parseDateInputToISO,
+} from "./date-mask";
 
 describe("formatDateDisplay", () => {
   it("converts an ISO date to DD/MM/AAAA", () => {
@@ -33,5 +38,11 @@ describe("parseDateInputToISO", () => {
   it("returns an empty string while the date is incomplete", () => {
     expect(parseDateInputToISO("15/01")).toBe("");
     expect(parseDateInputToISO("")).toBe("");
+  });
+});
+
+describe("localTodayISO", () => {
+  it("formats the local calendar date, zero-padded", () => {
+    expect(localTodayISO(new Date(2026, 0, 5, 23, 30))).toBe("2026-01-05");
   });
 });

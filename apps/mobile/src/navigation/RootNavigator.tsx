@@ -1,7 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { Category, Goal, Profile, Transaction } from "@mony/shared-types";
+import type { Category, Debt, Goal, Profile, Transaction } from "@mony/shared-types";
 import { color } from "@mony/ui-tokens";
-import { createBottomTabNavigator, type BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import {
+  createBottomTabNavigator,
+  type BottomTabNavigationProp,
+} from "@react-navigation/bottom-tabs";
 import {
   NavigationContainer,
   type CompositeNavigationProp,
@@ -20,8 +23,12 @@ import { ResetPasswordScreen } from "../screens/auth/ResetPasswordScreen";
 import { CategoriesScreen } from "../screens/categories/CategoriesScreen";
 import { CategoryFormScreen } from "../screens/categories/CategoryFormScreen";
 import { DashboardScreen } from "../screens/dashboard/DashboardScreen";
+import { DebtDetailScreen } from "../screens/debts/DebtDetailScreen";
+import { DebtFormScreen } from "../screens/debts/DebtFormScreen";
+import { DebtsListScreen } from "../screens/debts/DebtsListScreen";
 import { GoalFormScreen } from "../screens/goals/GoalFormScreen";
 import { GoalsScreen } from "../screens/goals/GoalsScreen";
+import { MoreScreen } from "../screens/more/MoreScreen";
 import { ChangePasswordScreen } from "../screens/profile/ChangePasswordScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { TransactionFormScreen } from "../screens/transactions/TransactionFormScreen";
@@ -37,14 +44,18 @@ export type AuthStackParamList = {
 export type MainTabParamList = {
   Home: undefined;
   Transactions: undefined;
-  Categories: undefined;
   Goals: undefined;
+  More: undefined;
   Profile: undefined;
 };
 
 export type AppStackParamList = {
   MainTabs: undefined;
   ChangePassword: undefined;
+  Categories: undefined;
+  Debts: undefined;
+  DebtDetail: { debtId: string };
+  DebtForm: { debt?: Debt } | undefined;
   CategoryForm: { category?: Category } | undefined;
   TransactionForm: { transaction?: Transaction } | undefined;
   GoalForm: { goal?: Goal } | undefined;
@@ -54,7 +65,7 @@ export type AuthStackNavigation = NavigationProp<AuthStackParamList>;
 export type AppStackNavigation = NavigationProp<AppStackParamList>;
 
 // Screens living inside the tab navigator need to reach both sibling
-// tabs and the stack-level modal routes (e.g. Categories -> CategoryForm)
+// tabs and the stack-level routes (e.g. Goals -> GoalForm, More -> Debts)
 // — React Navigation resolves an unmatched route name by searching up
 // the navigator tree at runtime, but the type needs to know about both
 // param lists for that to type-check.
@@ -70,8 +81,8 @@ const MainTab = createBottomTabNavigator<MainTabParamList>();
 const TAB_ICONS: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
   Home: "home-outline",
   Transactions: "swap-horizontal-outline",
-  Categories: "pricetags-outline",
   Goals: "flag-outline",
+  More: "menu-outline",
   Profile: "person-outline",
 };
 
@@ -84,7 +95,11 @@ function MainTabs() {
         tabBarInactiveTintColor: color.textSecondary,
         tabBarStyle: { backgroundColor: color.surface, borderTopColor: color.border },
         tabBarIcon: ({ color: tintColor, size }) => (
-          <Ionicons name={TAB_ICONS[route.name as keyof MainTabParamList]} size={size} color={tintColor} />
+          <Ionicons
+            name={TAB_ICONS[route.name as keyof MainTabParamList]}
+            size={size}
+            color={tintColor}
+          />
         ),
       })}
     >
@@ -99,14 +114,14 @@ function MainTabs() {
         options={{ title: "Transações", tabBarButtonTestID: "tab-transactions" }}
       />
       <MainTab.Screen
-        name="Categories"
-        component={CategoriesScreen}
-        options={{ title: "Categorias", tabBarButtonTestID: "tab-categories" }}
-      />
-      <MainTab.Screen
         name="Goals"
         component={GoalsScreen}
         options={{ title: "Metas", tabBarButtonTestID: "tab-goals" }}
+      />
+      <MainTab.Screen
+        name="More"
+        component={MoreScreen}
+        options={{ title: "Mais", tabBarButtonTestID: "tab-more" }}
       />
       <MainTab.Screen
         name="Profile"
@@ -143,6 +158,9 @@ export function RootNavigator() {
         <AppStack.Navigator screenOptions={{ headerShown: false }}>
           <AppStack.Screen name="MainTabs" component={MainTabs} />
           <AppStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+          <AppStack.Screen name="Categories" component={CategoriesScreen} />
+          <AppStack.Screen name="Debts" component={DebtsListScreen} />
+          <AppStack.Screen name="DebtDetail" component={DebtDetailScreen} />
           <AppStack.Screen
             name="CategoryForm"
             component={CategoryFormScreen}
@@ -156,6 +174,11 @@ export function RootNavigator() {
           <AppStack.Screen
             name="GoalForm"
             component={GoalFormScreen}
+            options={{ presentation: "modal" }}
+          />
+          <AppStack.Screen
+            name="DebtForm"
+            component={DebtFormScreen}
             options={{ presentation: "modal" }}
           />
         </AppStack.Navigator>

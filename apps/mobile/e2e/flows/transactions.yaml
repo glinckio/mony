@@ -28,7 +28,9 @@ appId: com.mony.app
 
 # Set up one expense and one income category to use in the form below.
 - tapOn:
-    id: "tab-categories"
+    id: "tab-more"
+- tapOn:
+    id: "more-categories"
 - tapOn:
     id: "add-category-button"
 - tapOn:
@@ -51,6 +53,9 @@ appId: com.mony.app
 - tapOn:
     id: "submit-button"
 - assertVisible: "Salário"
+# Categorias is pushed over the tab bar — back out to reach the tabs.
+- tapOn:
+    id: "header-back"
 
 # Create a one-off expense and mark it paid.
 - tapOn:

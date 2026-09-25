@@ -25,3 +25,13 @@ export function parseDateInputToISO(text: string): string {
   const year = digits.slice(4, 8);
   return `${year}-${month}-${day}`;
 }
+
+// The device's local calendar date as ISO — for defaulting a date field
+// to "today" the way the user reads their own calendar (a UTC date would
+// already be tomorrow after 21:00 in Brazil).
+export function localTodayISO(now: Date = new Date()): string {
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}

@@ -4,10 +4,18 @@ import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation } from "@react-navigation/native";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { AppHeader, Button, Screen, SegmentedToggle, Text, TextField } from "../../components/ui";
 import { apiFetch } from "../../lib/api-client";
+import { DEBT_RELATED_QUERY_KEYS } from "../../lib/debt-display";
 import { useRefetchOnFocus } from "../../lib/use-refetch-on-focus";
 import type { MainTabNavigation } from "../../navigation/RootNavigator";
 
@@ -54,20 +62,20 @@ export function TransactionsListScreen() {
     isError,
     refetch,
   } = useInfiniteQuery({
-      queryKey: ["transactions", { typeFilter, search }],
-      queryFn: async ({ pageParam }) => {
-        const params = new URLSearchParams({
-          page: String(pageParam),
-          perPage: String(PER_PAGE),
-        });
-        if (typeFilter !== "ALL") params.set("type", typeFilter);
-        if (search) params.set("search", search);
-        return apiFetch<PaginatedTransactions>(`/transactions?${params.toString()}`);
-      },
-      initialPageParam: 1,
-      getNextPageParam: (lastPage) =>
-        lastPage.page * lastPage.perPage < lastPage.total ? lastPage.page + 1 : undefined,
-    });
+    queryKey: ["transactions", { typeFilter, search }],
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({
+        page: String(pageParam),
+        perPage: String(PER_PAGE),
+      });
+      if (typeFilter !== "ALL") params.set("type", typeFilter);
+      if (search) params.set("search", search);
+      return apiFetch<PaginatedTransactions>(`/transactions?${params.toString()}`);
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page * lastPage.perPage < lastPage.total ? lastPage.page + 1 : undefined,
+  });
   useRefetchOnFocus(refetch);
 
   const transactions = data?.pages.flatMap((page) => page.items) ?? [];
@@ -82,6 +90,14 @@ export function TransactionsListScreen() {
     });
   };
 
+  // A debt installment's transaction pays/unpays (status toggle) or
+  // unlinks (delete) that installment server-side, so debt screens and
+  // dashboard totals need to refetch too, not just this list.
+  const invalidateTransactionDependents = () =>
+    Promise.all(
+      DEBT_RELATED_QUERY_KEYS.map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+    );
+
   const handleToggleStatus = async (transaction: Transaction) => {
     if (transaction.type !== "EXPENSE") return;
     const nextStatus: TransactionStatus = transaction.status === "PAID" ? "PENDING" : "PAID";
@@ -90,7 +106,7 @@ export function TransactionsListScreen() {
         method: "PATCH",
         body: JSON.stringify({ status: nextStatus }),
       });
-      await queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      await invalidateTransactionDependents();
     } catch {
       // Best-effort — the row just doesn't update, user can retry the tap.
     }
@@ -107,7 +123,7 @@ export function TransactionsListScreen() {
         });
       }
       setSelectedIds(new Set());
-      await queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      await invalidateTransactionDependents();
     } catch {
       Alert.alert("Erro", "Não foi possível excluir. Tente novamente.");
     }

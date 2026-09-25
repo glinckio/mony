@@ -16,6 +16,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(
     const [isFocused, setIsFocused] = useState(false);
     const [revealed, setRevealed] = useState(false);
     const isSecure = secureToggle ? !revealed : secureTextEntry;
+    const disabled = rest.editable === false;
 
     return (
       <View style={styles.container}>
@@ -27,12 +28,13 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(
             styles.inputWrapper,
             isFocused && styles.inputWrapperFocused,
             error && styles.inputWrapperError,
+            disabled && styles.inputWrapperDisabled,
           ]}
         >
           <TextInput
             ref={ref}
             testID={testID}
-            style={[styles.input, style]}
+            style={[styles.input, disabled && styles.inputDisabled, style]}
             placeholderTextColor={color.textDisabled}
             secureTextEntry={isSecure}
             onFocus={(e) => {
@@ -96,6 +98,13 @@ const styles = StyleSheet.create({
   },
   inputWrapperError: {
     borderColor: color.danger,
+  },
+  // `editable={false}` — surfaceAlt fill per design-system.md.
+  inputWrapperDisabled: {
+    backgroundColor: color.surfaceAlt,
+  },
+  inputDisabled: {
+    color: color.textDisabled,
   },
   input: {
     flex: 1,

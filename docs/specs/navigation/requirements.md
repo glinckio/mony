@@ -41,3 +41,9 @@ away regardless of which one the user is currently on.
 ## Open questions
 
 - None blocking.
+
+## Amendment (2026-09-23)
+
+The five tabs are now Início, Transações, Metas, **Mais**, Perfil —
+`Categorias` moved into the `Mais` menu alongside `Dívidas` (and every
+later secondary feature). See design.md → Amendment.

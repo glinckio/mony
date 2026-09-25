@@ -26,7 +26,9 @@ appId: com.mony.app
 
 # A category to optionally attach to the goal below.
 - tapOn:
-    id: "tab-categories"
+    id: "tab-more"
+- tapOn:
+    id: "more-categories"
 - tapOn:
     id: "add-category-button"
 - tapOn:
@@ -37,6 +39,9 @@ appId: com.mony.app
 - tapOn:
     id: "submit-button"
 - assertVisible: "Viagens"
+# Categorias is pushed over the tab bar — back out to reach the tabs.
+- tapOn:
+    id: "header-back"
 
 - tapOn:
     id: "tab-goals"

@@ -27,7 +27,9 @@ appId: com.mony.app
     id: "submit-button"
 - assertVisible: "Bem-vindo, Maestro Categories Tester"
 - tapOn:
-    id: "tab-categories"
+    id: "tab-more"
+- tapOn:
+    id: "more-categories"
 - assertVisible: "Categorias"
 - assertVisible: "Nenhuma categoria ainda."
 - tapOn:

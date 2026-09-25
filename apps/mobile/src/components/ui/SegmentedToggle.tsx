@@ -34,7 +34,11 @@ export function SegmentedToggle<T extends string>({
             accessibilityRole="button"
             accessibilityState={{ selected, disabled }}
             disabled={disabled}
-            style={[styles.option, selected && styles.optionSelected, disabled && styles.optionDisabled]}
+            style={[
+              styles.option,
+              selected && styles.optionSelected,
+              disabled && styles.optionDisabled,
+            ]}
             onPress={() => onChange(option.value)}
           >
             <Text variant="bodyStrong" color={selected ? color.onPrimary : color.textSecondary}>
