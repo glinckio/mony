@@ -79,7 +79,11 @@ Android). Spread into a `StyleSheet` entry: `{ ...shadow.md, ... }`.
 | `Screen` | Wraps `SafeAreaView` + optional `KeyboardAvoidingView` + optional `ScrollView`. Every screen renders through this — see `docs/steering/structure.md` "Mobile screen conventions" for the safe-area/keyboard reasoning. Props: `scrollable`, `keyboardAvoiding`, `edges`, `centered`, `contentStyle`. **Don't pass `centered` on a screen that has text inputs** — centering makes the content's vertical position depend on available height, and that height changes when the keyboard opens, so the field you just tapped visibly jumps/lags instead of tracking the keyboard smoothly. `centered` is for static content only (e.g. `HomeScreen`, which also sets `keyboardAvoiding={false}` since it has no inputs at all). A form screen (`LoginScreen`, `RegisterScreen`) stays top-aligned, non-centered. |
 | `Text` | Typography variants: `display` `heading` `title` `body` `bodyStrong` `caption`. Optional `color` override for semantic colors (danger, secondary, etc). |
 | `Button` | Variants `primary` `secondary` `ghost`; `loading`, `disabled`, `leftIcon`, `fullWidth` props. Always meets `size.controlHeight`. |
-| `TextField` | Labeled input with inline `error` text, focus/error border states, optional `secureToggle` (adds an eye icon via `@expo/vector-icons` `Ionicons` to reveal/hide a password field). |
+| `TextField` | Labeled input with inline `error` text, focus/error border states, optional `secureToggle` (adds an eye icon via `@expo/vector-icons` `Ionicons` to reveal/hide a password field). `editable={false}` renders the disabled look (`surfaceAlt` fill, `textDisabled` text). |
+| `AppHeader` | Screen title + workspace switcher + optional `rightAccessory`. `onBack` adds a back chevron (`testID="header-back"`) for screens pushed on the app stack, which have no native header. |
+| `Badge` | Small status pill; `tone` = `success` `danger` `warning` `info` `neutral`, each a muted background + matching foreground from the palette. |
+| `ListRow` | Tappable menu row (icon badge + label + optional description + chevron) — the `Mais` tab's entries. |
+| `BottomSheet` | Bottom-anchored modal sheet over the `overlay` backdrop, for short forms that belong to the screen underneath (e.g. paying a debt installment). Owns its own `KeyboardAvoidingView` — a RN `Modal` is a separate native window with no `Screen` ScrollView to hand keyboard insets to. |
 
 Icons: `@expo/vector-icons` (bundled with Expo) — default to `Ionicons`
 unless a specific icon only exists in another set.

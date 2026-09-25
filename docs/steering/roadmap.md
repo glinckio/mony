@@ -17,7 +17,7 @@ building the whole API first and the whole app after.
 | 6 | `transactions` | ✅ Done | Create/list/edit income & expense entries, recurring batches | 5 |
 | 7 | `goals` | ✅ Done | Savings goals with progress tracking | 4 |
 | 8 | `dashboard` | ✅ Done | Home screen: totals, balance, monthly chart, goals preview | 6, 7 |
-| 9 | `debts` | ⬜ Not started | Debts with auto-generated installments, payment tracking | 5, 6 |
+| 9 | `debts` | ✅ Done | Debts with auto-generated installments, payment tracking | 5, 6 |
 | 10 | `grocery` | ⬜ Not started | Household grocery list + informational budget | 2 |
 | 11 | `vehicles` | ⬜ Not started | Vehicle registry, mileage tracking | 2 |
 | 12 | `vehicle-maintenance` | ⬜ Not started | Maintenance types, history, km/date-based alerts | 11 |

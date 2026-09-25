@@ -199,6 +199,13 @@ pnpm --filter @mony/api test:e2e      # Supertest e2e
   different: delete `apps/api/tsconfig.build.tsbuildinfo` too, not just
   `dist/`. Already gitignored (`*.tsbuildinfo`), but remember it exists
   locally whenever you clean build output by hand.
+- **Mobile screen tests can time out (~30s, first test per file) when
+  `pnpm test` runs every package in parallel through turbo** — cold
+  Babel transforms under load, not a real failure; the same suites pass
+  run alone. Re-run serially with `pnpm exec turbo run test
+  --concurrency=1` (NOT `pnpm test -- --concurrency=1`: pnpm forwards
+  the literal `--`, so the flag reaches jest instead of turbo). The
+  `pre-push` hook uses default parallelism, so it can hit this too.
 
 ## Non-negotiable rules
 
