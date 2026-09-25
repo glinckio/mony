@@ -7,6 +7,7 @@ import { CategoriesModule } from "./categories/categories.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { DebtsModule } from "./debts/debts.module";
 import { GoalsModule } from "./goals/goals.module";
+import { GroceryModule } from "./grocery/grocery.module";
 import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./prisma/prisma.module";
 import { TransactionsModule } from "./transactions/transactions.module";
@@ -29,6 +30,7 @@ import { UsersModule } from "./users/users.module";
     TransactionsModule,
     GoalsModule,
     DebtsModule,
+    GroceryModule,
     DashboardModule,
   ],
   controllers: [HealthController],

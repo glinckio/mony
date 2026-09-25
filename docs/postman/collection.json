@@ -2332,6 +2332,387 @@
       ]
     },
     {
+      "name": "Grocery",
+      "item": [
+        {
+          "name": "List Grocery Items",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/grocery/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["grocery", "items"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — ordered by category, then name",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": \"4a699892-8830-414d-8a76-017db6272855\",\n    \"name\": \"Sabonete\",\n    \"unit\": \"un\",\n    \"idealQuantity\": \"4.00\",\n    \"currentQuantity\": \"0.00\",\n    \"estimatedPrice\": \"2.50\",\n    \"category\": \"PERSONAL_CARE\",\n    \"missing\": true,\n    \"createdAt\": \"2026-09-25T18:00:25.774Z\",\n    \"updatedAt\": \"2026-09-25T18:00:25.774Z\"\n  },\n  {\n    \"id\": \"ec906163-bac2-43c1-9364-536066a4e5a3\",\n    \"name\": \"Detergente\",\n    \"unit\": \"un\",\n    \"idealQuantity\": \"2.00\",\n    \"currentQuantity\": \"3.00\",\n    \"estimatedPrice\": \"3.00\",\n    \"category\": \"CLEANING\",\n    \"missing\": false,\n    \"createdAt\": \"2026-09-25T18:00:25.783Z\",\n    \"updatedAt\": \"2026-09-25T18:00:25.783Z\"\n  },\n  {\n    \"id\": \"d6834661-5ef2-4e69-9447-324c140013e3\",\n    \"name\": \"Arroz\",\n    \"unit\": \"kg\",\n    \"idealQuantity\": \"5.00\",\n    \"currentQuantity\": \"1.50\",\n    \"estimatedPrice\": \"6.49\",\n    \"category\": \"PANTRY\",\n    \"missing\": true,\n    \"createdAt\": \"2026-09-25T18:00:25.760Z\",\n    \"updatedAt\": \"2026-09-25T18:00:25.760Z\"\n  }\n]"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\n    \"Unauthorized\"\n  ],\n  \"path\": \"/grocery/items\",\n  \"timestamp\": \"2026-09-25T18:00:25.816Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Grocery Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Arroz\",\n  \"unit\": \"kg\",\n  \"idealQuantity\": 5,\n  \"currentQuantity\": 1.5,\n  \"estimatedPrice\": 6.49,\n  \"category\": \"PANTRY\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/grocery/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["grocery", "items"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Arroz\",\n  \"unit\": \"kg\",\n  \"idealQuantity\": 5,\n  \"currentQuantity\": 1.5,\n  \"estimatedPrice\": 6.49,\n  \"category\": \"PANTRY\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"d6834661-5ef2-4e69-9447-324c140013e3\",\n  \"name\": \"Arroz\",\n  \"unit\": \"kg\",\n  \"idealQuantity\": \"5.00\",\n  \"currentQuantity\": \"1.50\",\n  \"estimatedPrice\": \"6.49\",\n  \"category\": \"PANTRY\",\n  \"missing\": true,\n  \"createdAt\": \"2026-09-25T18:00:25.760Z\",\n  \"updatedAt\": \"2026-09-25T18:00:25.760Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — unknown category",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Arroz\",\n  \"unit\": \"kg\",\n  \"idealQuantity\": 5,\n  \"currentQuantity\": 1.5,\n  \"estimatedPrice\": 6.49,\n  \"category\": \"SNACKS\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"category must be one of the following values: FOOD, BEVERAGES, MEAT, FROZEN, DAIRY_AND_DELI, PERSONAL_CARE, PRODUCE, CLEANING, PANTRY, BAKERY, PETS, HOUSEHOLD\"\n  ],\n  \"path\": \"/grocery/items\",\n  \"timestamp\": \"2026-09-25T18:00:25.792Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Grocery Item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"currentQuantity\": 3\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3",
+              "host": ["{{baseUrl}}"],
+              "path": ["grocery", "items", "d6834661-5ef2-4e69-9447-324c140013e3"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — quick stepper sends only currentQuantity",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"currentQuantity\": 3\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items", "d6834661-5ef2-4e69-9447-324c140013e3"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"d6834661-5ef2-4e69-9447-324c140013e3\",\n  \"name\": \"Arroz\",\n  \"unit\": \"kg\",\n  \"idealQuantity\": \"5.00\",\n  \"currentQuantity\": \"3.00\",\n  \"estimatedPrice\": \"6.49\",\n  \"category\": \"PANTRY\",\n  \"missing\": true,\n  \"createdAt\": \"2026-09-25T18:00:25.760Z\",\n  \"updatedAt\": \"2026-09-25T18:00:25.840Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — negative quantity",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"currentQuantity\": -1\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items", "d6834661-5ef2-4e69-9447-324c140013e3"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"currentQuantity must not be less than 0\"\n  ],\n  \"path\": \"/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3\",\n  \"timestamp\": \"2026-09-25T18:00:25.852Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — null for a non-nullable field",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"currentQuantity\": null\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items", "d6834661-5ef2-4e69-9447-324c140013e3"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"currentQuantity must not be greater than 99999999.99\",\n    \"currentQuantity must not be less than 0\",\n    \"currentQuantity must be a number conforming to the specified constraints\"\n  ],\n  \"path\": \"/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3\",\n  \"timestamp\": \"2026-09-25T18:11:11.204Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — not this user's item",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"currentQuantity\": 1\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items/00000000-0000-4000-8000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items", "00000000-0000-4000-8000-000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Grocery item not found.\"\n  ],\n  \"path\": \"/grocery/items/00000000-0000-4000-8000-000000000000\",\n  \"timestamp\": \"2026-09-25T18:00:25.863Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Grocery Item",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3",
+              "host": ["{{baseUrl}}"],
+              "path": ["grocery", "items", "d6834661-5ef2-4e69-9447-324c140013e3"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items", "d6834661-5ef2-4e69-9447-324c140013e3"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "items", "d6834661-5ef2-4e69-9447-324c140013e3"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Grocery item not found.\"\n  ],\n  \"path\": \"/grocery/items/d6834661-5ef2-4e69-9447-324c140013e3\",\n  \"timestamp\": \"2026-09-25T18:00:25.943Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Grocery Budget",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/grocery/budget",
+              "host": ["{{baseUrl}}"],
+              "path": ["grocery", "budget"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — newest entry",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/budget",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "budget"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"amount\": \"800.00\",\n  \"setAt\": \"2026-09-25T18:00:25.885Z\"\n}"
+            },
+            {
+              "name": "200 OK — never set",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/budget",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "budget"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"amount\": null,\n  \"setAt\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set Grocery Budget",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 800\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/grocery/budget",
+              "host": ["{{baseUrl}}"],
+              "path": ["grocery", "budget"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created — recorded as a new entry",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"amount\": 800\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/budget",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "budget"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"amount\": \"800.00\",\n  \"setAt\": \"2026-09-25T18:00:25.885Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — negative amount",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"amount\": -50\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/budget",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "budget"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"amount must not be less than 0\"\n  ],\n  \"path\": \"/grocery/budget\",\n  \"timestamp\": \"2026-09-25T18:00:25.898Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Grocery Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/grocery/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["grocery", "summary"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — Arroz 2 × 6.49 + Sabonete 4 × 2.50 = 22.98 (Detergente is over stock)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/grocery/summary",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["grocery", "summary"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"totalItemCount\": 3,\n  \"missingItemCount\": 2,\n  \"estimatedPurchaseTotal\": \"22.98\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Dashboard",
       "item": [
         {

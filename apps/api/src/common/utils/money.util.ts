@@ -2,8 +2,9 @@ import { Prisma } from "@prisma/client";
 
 // Largest value a `@db.Decimal(12, 2)` money column can hold. DTOs cap
 // amounts here so an oversized value is a 400, not a Postgres numeric
-// overflow surfacing as a 500.
-export const MAX_MONEY_AMOUNT = 9_999_999_999.99;
+// overflow surfacing as a 500. Defined once in shared-types so the mobile
+// forms validate against the same number.
+export { MAX_MONEY_AMOUNT } from "@mony/shared-types";
 
 // Centralizes every place money leaves Prisma's `Decimal` and becomes a
 // plain string for a DTO — never a JS float, never ad-hoc `.toFixed()`
