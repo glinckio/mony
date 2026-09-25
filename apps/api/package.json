@@ -15,6 +15,8 @@
     "import:legacy": "ts-node --project scripts/tsconfig.json scripts/import-legacy.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1140.0",
+    "@aws-sdk/s3-request-presigner": "^3.1140.0",
     "@getbrevo/brevo": "^6.0.3",
     "@nestjs/common": "^10.4.4",
     "@nestjs/config": "^3.3.0",
@@ -30,7 +32,8 @@
     "class-validator": "^0.14.1",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@mony/config": "workspace:*",
@@ -40,6 +43,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.13",
+    "@types/multer": "^2.2.0",
     "@types/node": "^20.16.11",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
