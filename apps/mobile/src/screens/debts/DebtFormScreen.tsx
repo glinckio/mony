@@ -263,7 +263,10 @@ export function DebtFormScreen() {
               value={endDateDisplay}
               onChangeText={(text) => {
                 setEndDateDisplay(formatDateInputDigits(text));
-                field.onChange(parseDateInputToISO(text) || undefined);
+                // Empty clears it; a half-typed date is kept as-is so the
+                // schema flags it ("Data inválida") instead of silently
+                // dropping — and, on edit, clearing — the stored date.
+                field.onChange(text ? parseDateInputToISO(text) || text : undefined);
               }}
               keyboardType="number-pad"
               placeholder="DD/MM/AAAA"
