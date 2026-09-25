@@ -2713,6 +2713,451 @@
       ]
     },
     {
+      "name": "Vehicles",
+      "item": [
+        {
+          "name": "List Vehicles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/vehicles", "host": ["{{baseUrl}}"], "path": ["vehicles"] }
+          },
+          "response": [
+            {
+              "name": "200 OK — newest first",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": { "raw": "{{baseUrl}}/vehicles", "host": ["{{baseUrl}}"], "path": ["vehicles"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n    \"make\": \"Jeep\",\n    \"model\": \"Renegade\",\n    \"displayName\": \"Jeep Renegade 2022\",\n    \"manufactureYear\": 2021,\n    \"modelYear\": 2022,\n    \"currentMileage\": 35000,\n    \"licensePlate\": \"ABC1D23\",\n    \"acquisitionDate\": \"2022-03-15\",\n    \"color\": \"Prata\",\n    \"fuelType\": \"FLEX\",\n    \"photoUrl\": null,\n    \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n    \"updatedAt\": \"2026-09-25T19:35:02.567Z\"\n  }\n]"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/vehicles", "host": ["{{baseUrl}}"], "path": ["vehicles"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\n    \"Unauthorized\"\n  ],\n  \"path\": \"/vehicles\",\n  \"timestamp\": \"2026-09-25T19:35:02.601Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Vehicle",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — photoUrl is a short-lived signed URL, 60–90 min (signature elided)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 36200,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\",\n  \"photoUrl\": \"http://192.168.0.10:9010/mony/vehicles/a613208e-0ccf-4433-804d-46cfea879e8b/147e9264-9070-481f-9b81-5128285f7f3c/fc0735bf-fb32-4b93-bfc2-06592a689a22.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:35:02.749Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — not this user's vehicle",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/00000000-0000-4000-8000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "00000000-0000-4000-8000-000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Vehicle not found.\"\n  ],\n  \"path\": \"/vehicles/00000000-0000-4000-8000-000000000000\",\n  \"timestamp\": \"2026-09-25T19:35:02.802Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 35000,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/vehicles", "host": ["{{baseUrl}}"], "path": ["vehicles"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 35000,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\"\n}"
+                },
+                "url": { "raw": "{{baseUrl}}/vehicles", "host": ["{{baseUrl}}"], "path": ["vehicles"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 35000,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\",\n  \"photoUrl\": null,\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:35:02.567Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — modelYear before manufactureYear",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2020,\n  \"currentMileage\": 35000,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\"\n}"
+                },
+                "url": { "raw": "{{baseUrl}}/vehicles", "host": ["{{baseUrl}}"], "path": ["vehicles"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"modelYear cannot be earlier than manufactureYear.\"\n  ],\n  \"path\": \"/vehicles\",\n  \"timestamp\": \"2026-09-25T19:35:02.577Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Vehicle",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"currentMileage\": 36200\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — mileage raised",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"currentMileage\": 36200\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 36200,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\",\n  \"photoUrl\": null,\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:35:02.622Z\"\n}"
+            },
+            {
+              "name": "200 OK — null clears an optional field (omitted = unchanged)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"color\": null,\n  \"fuelType\": null\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 36200,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": null,\n  \"fuelType\": null,\n  \"photoUrl\": null,\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:46:26.736Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — mileage can't go down",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"currentMileage\": 30000\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"New mileage cannot be lower than the current value (36200 km).\"\n  ],\n  \"path\": \"/vehicles/147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"timestamp\": \"2026-09-25T19:35:02.636Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — null for a non-nullable field",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"make\": null\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"make must be longer than or equal to 1 characters\",\n    \"make must be a string\"\n  ],\n  \"path\": \"/vehicles/147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"timestamp\": \"2026-09-25T19:46:26.856Z\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": { "mode": "raw", "raw": "{\n  \"currentMileage\": 1\n}" },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/00000000-0000-4000-8000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "00000000-0000-4000-8000-000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Vehicle not found.\"\n  ],\n  \"path\": \"/vehicles/00000000-0000-4000-8000-000000000000\",\n  \"timestamp\": \"2026-09-25T19:35:02.651Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Vehicle",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content — photo deleted from storage too",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Vehicle not found.\"\n  ],\n  \"path\": \"/vehicles/147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"timestamp\": \"2026-09-25T19:35:02.848Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set Vehicle Photo",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "photo", "type": "file", "src": "car.png" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c", "photo"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — JPEG/PNG/WebP detected from content, ≤ 5 MB",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "photo", "type": "file", "src": "car.png" }]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c", "photo"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 36200,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\",\n  \"photoUrl\": \"http://192.168.0.10:9010/mony/vehicles/a613208e-0ccf-4433-804d-46cfea879e8b/147e9264-9070-481f-9b81-5128285f7f3c/fc0735bf-fb32-4b93-bfc2-06592a689a22.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:35:02.749Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — not a JPEG/PNG/WebP image",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "photo", "type": "file", "src": "notes.txt" }]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c", "photo"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"Photo must be a JPEG, PNG, or WebP image.\"\n  ],\n  \"path\": \"/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo\",\n  \"timestamp\": \"2026-09-25T19:35:02.781Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — no file in the 'photo' field",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": { "mode": "formdata", "formdata": [] },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c", "photo"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"A photo file is required (multipart field 'photo').\"\n  ],\n  \"path\": \"/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo\",\n  \"timestamp\": \"2026-09-25T19:46:26.964Z\"\n}"
+            },
+            {
+              "name": "413 Payload Too Large — file over 5 MB (Multer limit)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "photo", "type": "file", "src": "car-6mb.jpg" }]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c", "photo"]
+                }
+              },
+              "status": "Payload Too Large",
+              "code": 413,
+              "body": "{\n  \"statusCode\": 413,\n  \"error\": \"PAYLOAD_TOO_LARGE\",\n  \"message\": [\n    \"File too large\"\n  ],\n  \"path\": \"/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo\",\n  \"timestamp\": \"2026-09-25T19:46:27.093Z\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "photo", "type": "file", "src": "car.png" }]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/00000000-0000-4000-8000-000000000000/photo",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "00000000-0000-4000-8000-000000000000", "photo"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Vehicle not found.\"\n  ],\n  \"path\": \"/vehicles/00000000-0000-4000-8000-000000000000/photo\",\n  \"timestamp\": \"2026-09-25T19:46:27.205Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Remove Vehicle Photo",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c", "photo"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/147e9264-9070-481f-9b81-5128285f7f3c/photo",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "147e9264-9070-481f-9b81-5128285f7f3c", "photo"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 36200,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\",\n  \"photoUrl\": null,\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:35:02.807Z\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/00000000-0000-4000-8000-000000000000/photo",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "00000000-0000-4000-8000-000000000000", "photo"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Vehicle not found.\"\n  ],\n  \"path\": \"/vehicles/00000000-0000-4000-8000-000000000000/photo\",\n  \"timestamp\": \"2026-09-25T19:46:27.433Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Dashboard",
       "item": [
         {

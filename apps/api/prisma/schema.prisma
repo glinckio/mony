@@ -48,6 +48,17 @@ enum InstallmentStatus {
   PAID
 }
 
+enum FuelType {
+  GASOLINE
+  ETHANOL
+  FLEX
+  DIESEL
+  ELECTRIC
+  HYBRID
+  CNG
+  OTHER
+}
+
 enum GroceryCategory {
   FOOD
   BEVERAGES
@@ -83,6 +94,7 @@ model User {
   debts              Debt[]
   groceryItems       GroceryItem[]
   groceryBudgets     GroceryBudget[]
+  vehicles           Vehicle[]
 }
 
 model PasswordResetCode {
@@ -227,5 +239,28 @@ model GroceryBudget {
   amount    Decimal  @db.Decimal(12, 2)
   createdAt DateTime @default(now())
 
+  @@index([userId, createdAt])
+}
+
+model Vehicle {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  make            String    @db.VarChar(100)
+  model           String    @db.VarChar(100)
+  manufactureYear Int
+  modelYear       Int
+  currentMileage  Int
+  licensePlate    String?   @db.VarChar(10) // no uniqueness — matches legacy
+  acquisitionDate DateTime? @db.Date
+  color           String?   @db.VarChar(50)
+  fuelType        FuelType?
+  // Object key in private storage — never a URL; responses carry a
+  // short-lived signed URL minted per request instead.
+  photoKey        String?   @db.VarChar(200)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Serves the list: WHERE userId ORDER BY createdAt DESC.
   @@index([userId, createdAt])
 }
