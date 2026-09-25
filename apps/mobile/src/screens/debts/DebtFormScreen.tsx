@@ -20,21 +20,13 @@ import { ApiError, apiFetch } from "../../lib/api-client";
 import { formatAmountDisplay, parseAmountInput } from "../../lib/currency-mask";
 import { formatDateDisplay, formatDateInputDigits, parseDateInputToISO } from "../../lib/date-mask";
 import { DEBT_RELATED_QUERY_KEYS } from "../../lib/debt-display";
+import {
+  formatDecimalInput,
+  parseDecimalInput,
+  sanitizeDecimalInput,
+} from "../../lib/decimal-input";
 import { useRefetchOnFocus } from "../../lib/use-refetch-on-focus";
 import type { AppStackNavigation, AppStackParamList } from "../../navigation/RootNavigator";
-
-// "1,99" -> 1.99; "" -> undefined. Keeps at most one comma and two
-// decimals so the display can't drift from what gets submitted.
-function sanitizeRateInput(text: string): string {
-  const [integer = "", ...decimals] = text.replace(/[^\d,]/g, "").split(",");
-  return decimals.length > 0 ? `${integer},${decimals.join("").slice(0, 2)}` : integer;
-}
-
-function parseRateInput(text: string): number | undefined {
-  if (!text) return undefined;
-  const value = Number(text.replace(",", "."));
-  return Number.isNaN(value) ? undefined : value;
-}
 
 export function DebtFormScreen() {
   const navigation = useNavigation<AppStackNavigation>();
@@ -54,7 +46,7 @@ export function DebtFormScreen() {
   const [endDateDisplay, setEndDateDisplay] = useState(
     editing?.endDate ? formatDateDisplay(editing.endDate) : "",
   );
-  const [rateDisplay, setRateDisplay] = useState(editing?.interestRate?.replace(".", ",") ?? "");
+  const [rateDisplay, setRateDisplay] = useState(formatDecimalInput(editing?.interestRate));
 
   const {
     control,
@@ -289,9 +281,9 @@ export function DebtFormScreen() {
               label="Juros ao mês em % (opcional)"
               value={rateDisplay}
               onChangeText={(text) => {
-                const sanitized = sanitizeRateInput(text);
+                const sanitized = sanitizeDecimalInput(text);
                 setRateDisplay(sanitized);
-                field.onChange(parseRateInput(sanitized));
+                field.onChange(parseDecimalInput(sanitized));
               }}
               keyboardType="decimal-pad"
               placeholder="0,00"
