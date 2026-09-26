@@ -1,0 +1,208 @@
+{
+  "stack": "expo",
+  "origem": "design/img-original",
+  "destino": "assets/images",
+  "larguraTela": 430,
+  "alturaTela": 932,
+  "fundo": "#FAF8F6",
+  "registro": {
+    "arquivo": "src/design/images.ts",
+    "linguagem": "ts"
+  },
+  "assets": [
+    {
+      "arquivo": "icone_app.png",
+      "nome": "icon",
+      "slot": "Ícone do app (app.json > icon)",
+      "tipo": "icone",
+      "conjunto": "marca",
+      "prioridade": "essencial",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 1024,
+        "altura": 1024
+      },
+      "densidades": [
+        1
+      ],
+      "ampliar": true,
+      "destino": "assets",
+      "transparente": false,
+      "formato": "png",
+      "registro": false,
+      "status": "pendente"
+    },
+    {
+      "arquivo": "icone_simbolo.png",
+      "nome": "adaptive-icon",
+      "slot": "Android adaptive icon foreground + monochrome",
+      "tipo": "simbolo",
+      "conjunto": "marca",
+      "prioridade": "essencial",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 1024,
+        "altura": 1024
+      },
+      "densidades": [
+        1
+      ],
+      "ampliar": true,
+      "destino": "assets",
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.25,
+      "transparente": true,
+      "formato": "png",
+      "registro": false,
+      "status": "pendente"
+    },
+    {
+      "arquivo": "icone_simbolo.png",
+      "nome": "splash-icon",
+      "slot": "Splash (plugin expo-splash-screen > image)",
+      "tipo": "simbolo",
+      "conjunto": "marca",
+      "prioridade": "essencial",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 1024,
+        "altura": 1024
+      },
+      "densidades": [
+        1
+      ],
+      "ampliar": true,
+      "destino": "assets",
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.1,
+      "transparente": true,
+      "formato": "png",
+      "registro": false,
+      "status": "pendente"
+    },
+    {
+      "arquivo": "onboarding_1.png",
+      "slot": "Onboarding 1 > metade de cima",
+      "tipo": "ilustracao",
+      "conjunto": "onboarding",
+      "prioridade": "essencial",
+      "gerar": "1024x1536",
+      "exibicao": {
+        "largura": 320,
+        "altura": 360
+      },
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.04,
+      "foco": "base",
+      "transparente": true,
+      "formato": "png",
+      "quantizar": true,
+      "status": "pendente"
+    },
+    {
+      "arquivo": "hero_home.png",
+      "slot": "Início > topo, título sobre o terço esquerdo",
+      "tipo": "foto",
+      "prioridade": "essencial",
+      "gerar": "1536x1024",
+      "exibicao": {
+        "largura": "tela",
+        "proporcao": "16:9"
+      },
+      "ajuste": "cobrir",
+      "foco": "direita",
+      "transparente": false,
+      "formato": "jpg",
+      "qualidade": 82,
+      "status": "pendente"
+    },
+    {
+      "arquivo": "vazio_favoritos.png",
+      "slot": "Favoritos > estado vazio",
+      "tipo": "ilustracao",
+      "conjunto": "estados",
+      "prioridade": "complementar",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 180,
+        "altura": 180
+      },
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.04,
+      "transparente": true,
+      "formato": "png",
+      "quantizar": true,
+      "status": "pendente"
+    },
+    {
+      "arquivo": "mock_item_1.png",
+      "slot": "Card de item (MOCK, reaproveitado)",
+      "tipo": "mock",
+      "prioridade": "complementar",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 160,
+        "altura": 120
+      },
+      "ajuste": "cobrir",
+      "transparente": false,
+      "formato": "jpg",
+      "status": "pendente"
+    },
+    {
+      "arquivo": "luz_refletor.png",
+      "slot": "Efeito: feixe de refletor no topo da Home e na confirmação",
+      "tipo": "efeito",
+      "conjunto": "efeitos",
+      "prioridade": "complementar",
+      "gerar": "1024x1536",
+      "exibicao": {
+        "largura": "tela",
+        "altura": "tela"
+      },
+      "efeito": "luz",
+      "formato": "webp",
+      "status": "pendente"
+    },
+    {
+      "arquivo": "textura_giz.png",
+      "slot": "Efeito: textura repetida sobre o cartão-quadra",
+      "tipo": "efeito",
+      "conjunto": "efeitos",
+      "prioridade": "opcional",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 256,
+        "altura": 256
+      },
+      "efeito": {
+        "tipo": "textura",
+        "mistura": "normal"
+      },
+      "transparente": false,
+      "status": "pendente"
+    },
+    {
+      "arquivo": "fundo_home_escuro.png",
+      "slot": "Efeito: wallpaper do topo da Home (tema escuro)",
+      "tipo": "efeito",
+      "conjunto": "efeitos",
+      "prioridade": "complementar",
+      "gerar": "1024x1536",
+      "exibicao": {
+        "largura": "tela",
+        "altura": "tela"
+      },
+      "efeito": {
+        "tipo": "fundo",
+        "suave": true
+      },
+      "transparente": false,
+      "status": "pendente"
+    }
+  ]
+}
