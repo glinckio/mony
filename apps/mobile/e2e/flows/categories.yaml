@@ -1,11 +1,12 @@
 appId: com.mony.app
 ---
 # Registers a fresh account, then creates, edits, and deletes a category
-# with no transactions attached (delete-with-replacement is covered once
-# the `transactions` feature lands, per tasks.md) — exercises the
-# Categories list + form screens against the real API. Edit/delete
-# buttons carry a dynamic (UUID) testID, so this flow selects them by
-# their accessibilityLabel ("Editar <nome>"/"Excluir <nome>") instead.
+# with no transactions attached; then deletes one that is in use, moving
+# its transactions to another category (the API answers 400 and the app
+# asks for a replacement) — exercises the Categories list + form screens
+# against the real API. Edit/delete buttons carry a dynamic (UUID)
+# testID, so this flow selects them by their accessibilityLabel
+# ("Editar <nome>"/"Excluir <nome>"/"Mover para <nome>") instead.
 - launchApp
 - evalScript: ${output.testEmail = 'maestro-categories-' + Date.now() + '@example.com'}
 - assertVisible: "Entrar"
@@ -25,7 +26,7 @@ appId: com.mony.app
 - inputText: "correcthorsebattery"
 - tapOn:
     id: "submit-button"
-- assertVisible: "Bem-vindo, Maestro Categories Tester"
+- assertVisible: "Maestro Categories Tester"
 - tapOn:
     id: "tab-more"
 - tapOn:
@@ -54,5 +55,71 @@ appId: com.mony.app
     id: "submit-button"
 - assertVisible: "Alimentação Fora"
 - tapOn: "Excluir Alimentação Fora"
-- tapOn: "Excluir"
+- tapOn:
+    id: "confirm-sheet-confirm"
 - assertVisible: "Nenhuma categoria ainda."
+
+# Two expense categories, one of them used by a transaction.
+- tapOn:
+    id: "add-category-button"
+- tapOn:
+    id: "name-input"
+- inputText: "Padaria"
+- tapOn:
+    id: "icon-picker-cafe-outline"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Padaria"
+- tapOn:
+    id: "add-category-button"
+- tapOn:
+    id: "name-input"
+- inputText: "Lanches"
+- tapOn:
+    id: "icon-picker-bag-outline"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Lanches"
+# Categorias is pushed over the tab bar — back out to reach the tabs.
+- tapOn:
+    id: "header-back"
+- tapOn:
+    id: "tab-transactions"
+- tapOn:
+    id: "add-transaction-button"
+- tapOn: "Padaria"
+- tapOn:
+    id: "description-input"
+- inputText: "Pao de queijo"
+- tapOn:
+    id: "amount-input"
+- inputText: "1500"
+- tapOn:
+    id: "date-input"
+- inputText: "10012026"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Pao de queijo"
+
+# Deleting "Padaria" now asks where its transactions go; the prompt opens
+# once the confirmation sheet has left the screen.
+- tapOn:
+    id: "tab-more"
+- tapOn:
+    id: "more-categories"
+- tapOn: "Excluir Padaria"
+- tapOn:
+    id: "confirm-sheet-confirm"
+- assertVisible: "Categoria em uso"
+- tapOn: "Mover para Lanches"
+- assertNotVisible: "Categoria em uso"
+- assertNotVisible: "Padaria"
+- assertVisible: "Lanches"
+
+# The transaction now shows under "Lanches".
+- tapOn:
+    id: "header-back"
+- tapOn:
+    id: "tab-transactions"
+- assertVisible: "Pao de queijo"
+- assertVisible: "Lanches"

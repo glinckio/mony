@@ -22,7 +22,7 @@ appId: com.mony.app
 - inputText: "correcthorsebattery"
 - tapOn:
     id: "submit-button"
-- assertVisible: "Bem-vindo, Maestro Goals Tester"
+- assertVisible: "Maestro Goals Tester"
 
 # A category to optionally attach to the goal below.
 - tapOn:

@@ -24,7 +24,7 @@ appId: com.mony.app
 - inputText: "correcthorsebattery"
 - tapOn:
     id: "submit-button"
-- assertVisible: "Bem-vindo, Maestro Transactions Tester"
+- assertVisible: "Maestro Transactions Tester"
 
 # Set up one expense and one income category to use in the form below.
 - tapOn:
@@ -75,7 +75,7 @@ appId: com.mony.app
 - tapOn:
     id: "submit-button"
 - assertVisible: "Conta de luz"
-- tapOn: "Pendente"
+- tapOn: "A pagar"
 - assertVisible: "Pago"
 
 # Create a recurring income and verify every generated row shows up.
@@ -90,9 +90,10 @@ appId: com.mony.app
 - tapOn:
     id: "amount-input"
 - inputText: "5000"
+# The field is masked DD/MM/AAAA and only takes digits: 01/02/2026.
 - tapOn:
     id: "date-input"
-- inputText: "2026-02-01"
+- inputText: "01022026"
 - tapOn:
     id: "recurring-toggle"
 - tapOn:
@@ -106,18 +107,20 @@ appId: com.mony.app
 
 # Delete a single transaction via long-press multi-select.
 - longPressOn: "Conta de luz"
-- assertVisible: "1 selecionada(s)"
+- assertVisible: "1 selecionado"
 - tapOn:
     id: "bulk-delete-button"
-- tapOn: "Excluir"
+- tapOn:
+    id: "confirm-sheet-confirm"
 - assertNotVisible: "Conta de luz"
 
 # Bulk-delete two of the recurring income rows the same way.
 - longPressOn: "Salário mensal (2/3)"
 - tapOn: "Salário mensal (3/3)"
-- assertVisible: "2 selecionada(s)"
+- assertVisible: "2 selecionados"
 - tapOn:
     id: "bulk-delete-button"
-- tapOn: "Excluir"
+- tapOn:
+    id: "confirm-sheet-confirm"
 - assertNotVisible: "Salário mensal (2/3)"
 - assertNotVisible: "Salário mensal (3/3)"

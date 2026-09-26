@@ -1,5 +1,8 @@
 appId: com.mony.app
 ---
-- launchApp
+# A fresh install (no saved session) opens on Entrar.
+- launchApp:
+    clearState: true
 - assertVisible: "Mony"
-- assertVisible: "Mobile app scaffold — Phase 0"
+- assertVisible: "Entrar"
+- assertVisible: "Acesse sua conta para continuar organizando suas finanças."

@@ -29,7 +29,7 @@ appId: com.mony.app
 - inputText: "correcthorsebattery"
 - tapOn:
     id: "submit-button"
-- assertVisible: "Bem-vindo, Maestro Dashboard Tester"
+- assertVisible: "Maestro Dashboard Tester"
 
 # Set up one expense and one income category.
 - tapOn:
@@ -81,7 +81,7 @@ appId: com.mony.app
 - tapOn:
     id: "submit-button"
 - assertVisible: "Conta de luz"
-- tapOn: "Pendente"
+- tapOn: "A pagar"
 - assertVisible: "Pago"
 
 - tapOn:
@@ -122,8 +122,8 @@ appId: com.mony.app
     id: "tab-home"
 - assertVisible:
     id: "dashboard-summary-card"
-- assertVisible: "R$ 1.000,00"
-- assertVisible: "R$ 400,00"
+- assertVisible: "+ R$ 1.000,00"
+- assertVisible: "− R$ 400,00"
 - assertVisible: "R$ 600,00"
 - assertVisible: "Viagem para a praia"
 

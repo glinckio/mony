@@ -23,7 +23,7 @@ appId: com.mony.app
 - inputText: "correcthorsebattery"
 - tapOn:
     id: "submit-button"
-- assertVisible: "Bem-vindo, Maestro Grocery Tester"
+- assertVisible: "Maestro Grocery Tester"
 
 - tapOn:
     id: "tab-more"
@@ -83,7 +83,7 @@ appId: com.mony.app
 - assertVisible: "Sabonete"
 - assertVisible: "2 itens · 2 faltando"
 # Regex, not literals: Intl may put a non-breaking space after "R$".
-- assertVisible: 'R.*35,96'
+- assertVisible: "R.*35,96"
 
 # Budget R$ 40,00 → R$ 4,04 left.
 - tapOn:
@@ -95,8 +95,10 @@ appId: com.mony.app
 - hideKeyboard
 - tapOn:
     id: "save-grocery-budget"
-- assertVisible: 'R.*40,00'
-- assertVisible: 'R.*4,04'
+- assertVisible: "R.*40,00"
+# The balance is a nested run of one text ("Saldo disponível R$ 4,04"),
+# and Maestro matches the whole text.
+- assertVisible: "Saldo disponível R.*4,04"
 
 # Quick + four times brings Arroz to its ideal 5 kg — no longer missing.
 - tapOn: "Aumentar Arroz"
@@ -109,7 +111,7 @@ appId: com.mony.app
 - assertVisible: "5 de 5 kg.*"
 - assertVisible: "2 itens · 1 faltando"
 
-# By id: the text "Faltando" also matches the row badges.
+# By id: the text "Faltando" also matches the rows' status pills.
 - tapOn:
     id: "grocery-filter-MISSING"
 - assertVisible: "Sabonete"

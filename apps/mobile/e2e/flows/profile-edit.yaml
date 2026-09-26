@@ -23,9 +23,11 @@ appId: com.mony.app
 - inputText: "correcthorsebattery"
 - tapOn:
     id: "submit-button"
-- assertVisible: "Bem-vindo, Maestro Profile Tester"
+- assertVisible: "Maestro Profile Tester"
 - tapOn:
-    id: "tab-profile"
+    id: "tab-more"
+- tapOn:
+    id: "more-profile"
 - assertVisible: "Meu perfil"
 - tapOn:
     id: "name-input"
@@ -49,9 +51,16 @@ appId: com.mony.app
 - tapOn:
     id: "submit-button"
 - assertVisible: "Meu perfil"
+# Saving writes the new name into the session, so Mais and Início greet
+# the user by it without a new login.
+- tapOn:
+    id: "header-back"
+- assertVisible: "Maestro Profile Tester Edited"
 - tapOn:
     id: "tab-home"
-- assertVisible: "Bem-vindo, Maestro Profile Tester Edited"
+- assertVisible: "Maestro Profile Tester Edited"
+- tapOn:
+    id: "tab-more"
 - tapOn:
     id: "logout-button"
 - assertVisible: "Entrar"
@@ -63,4 +72,4 @@ appId: com.mony.app
 - inputText: "brandNewPassword1"
 - tapOn:
     id: "submit-button"
-- assertVisible: "Bem-vindo, Maestro Profile Tester Edited"
+- assertVisible: "Maestro Profile Tester Edited"

@@ -23,7 +23,7 @@ appId: com.mony.app
 - inputText: "correcthorsebattery"
 - tapOn:
     id: "submit-button"
-- assertVisible: "Bem-vindo, Maestro Vehicles Tester"
+- assertVisible: "Maestro Vehicles Tester"
 
 - tapOn:
     id: "tab-more"

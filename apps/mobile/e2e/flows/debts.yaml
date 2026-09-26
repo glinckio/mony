@@ -24,7 +24,7 @@ appId: com.mony.app
 - inputText: "correcthorsebattery"
 - tapOn:
     id: "submit-button"
-- assertVisible: "Bem-vindo, Maestro Debts Tester"
+- assertVisible: "Maestro Debts Tester"
 
 # Every installment becomes an expense, so an expense category comes first.
 - tapOn:
@@ -60,7 +60,7 @@ appId: com.mony.app
     id: "total-installments-input"
 - inputText: "3"
 # Regex, not a literal: Intl may put a non-breaking space after "R$".
-- assertVisible: '3x de R.*1.000,00.*'
+- assertVisible: "3x de R.*1.000,00.*"
 - tapOn:
     id: "start-date-input"
 - inputText: "10012099"
@@ -108,7 +108,8 @@ appId: com.mony.app
 - tapOn: "Geladeira"
 - tapOn:
     id: "cancel-payment-1"
-- tapOn: "Sim, desfazer"
+- tapOn:
+    id: "confirm-sheet-confirm"
 - assertVisible: "0 de 3 parcelas pagas"
 - assertVisible:
     id: "pay-installment-1"
