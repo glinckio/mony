@@ -1,5 +1,7 @@
 import type { AuthTokens } from "@mony/shared-types";
 
+import { useDesignLab } from "../dev/design-lab";
+
 import { useAuthStore } from "./auth-store";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -64,6 +66,15 @@ async function refreshSession(): Promise<boolean> {
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  // Dev-only: the DesignLab can route every call to the in-memory mock
+  // backend (src/dev/mock-api). `__DEV__` stays inline so release builds
+  // constant-fold this branch — and the mock module — away.
+  if (__DEV__ && process.env.NODE_ENV !== "test" && useDesignLab.getState().useMocks) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { mockFetch } = require("../dev/mock-api") as typeof import("../dev/mock-api");
+    return mockFetch<T>(path, init);
+  }
+
   const accessToken = useAuthStore.getState().accessToken;
   let response = await rawFetch(path, init, accessToken);
 

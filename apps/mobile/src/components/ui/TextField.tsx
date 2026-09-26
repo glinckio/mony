@@ -1,118 +1,168 @@
-import { Ionicons } from "@expo/vector-icons";
-import { color, radius, size as sizeTokens, spacing, typography } from "@mony/ui-tokens";
-import { forwardRef, useState } from "react";
-import { StyleSheet, TextInput, type TextInputProps, TouchableOpacity, View } from "react-native";
+import { forwardRef, useState, type ReactNode } from "react";
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  type StyleProp,
+  type TextInputProps,
+  type ViewStyle,
+} from "react-native";
 
-import { Text } from "./Text";
+import { layout, radius, space, useTheme } from "../../theme";
 
-interface TextFieldProps extends TextInputProps {
+import { Icon, type IconName } from "./Icon";
+import { IconButton } from "./IconButton";
+import { Text, typeStyle } from "./Text";
+
+export interface TextFieldProps extends TextInputProps {
   label: string;
   error?: string;
+  hint?: string;
+  // Adds an eye button that reveals/hides a password field.
   secureToggle?: boolean;
+  leftIcon?: IconName;
+  rightAccessory?: ReactNode;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
-export const TextField = forwardRef<TextInput, TextFieldProps>(
-  ({ label, error, secureToggle = false, secureTextEntry, style, testID, ...rest }, ref) => {
-    const [isFocused, setIsFocused] = useState(false);
-    const [revealed, setRevealed] = useState(false);
-    const isSecure = secureToggle ? !revealed : secureTextEntry;
-    const disabled = rest.editable === false;
+// Label on top, paper field, ink border on focus, the error below with its
+// icon (validated on blur/submit by the form). Keyboard appearance follows
+// the theme.
+export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField(
+  {
+    label,
+    error,
+    hint,
+    secureToggle = false,
+    secureTextEntry,
+    leftIcon,
+    rightAccessory,
+    containerStyle,
+    editable = true,
+    multiline,
+    onFocus,
+    onBlur,
+    style,
+    testID,
+    ...rest
+  },
+  ref,
+) {
+  const { colors, scheme, elevation } = useTheme();
+  const [focused, setFocused] = useState(false);
+  const [hidden, setHidden] = useState(true);
 
-    return (
-      <View style={styles.container}>
-        <Text variant="caption" style={styles.label}>
-          {label}
-        </Text>
-        <View
+  const borderColor = error ? colors.danger : focused ? colors.primary : colors.border;
+
+  return (
+    <View style={[styles.container, containerStyle]}>
+      <Text variant="subhead" tone={error ? "danger" : "muted"}>
+        {label}
+      </Text>
+      <View
+        style={[
+          styles.field,
+          multiline && styles.multiline,
+          {
+            borderColor,
+            borderWidth: focused || error ? 1.5 : 1,
+            backgroundColor: editable ? colors.surface : colors.surfaceMuted,
+          },
+          focused && editable ? elevation("sm") : null,
+        ]}
+      >
+        {leftIcon ? (
+          <View style={styles.leftIcon}>
+            <Icon name={leftIcon} size="md" color={focused ? colors.primary : colors.textSubtle} />
+          </View>
+        ) : null}
+        <TextInput
+          ref={ref}
+          testID={testID}
+          accessibilityLabel={label}
+          accessibilityHint={error}
+          editable={editable}
+          multiline={multiline}
+          secureTextEntry={secureToggle ? hidden : secureTextEntry}
+          placeholderTextColor={colors.textSubtle}
+          keyboardAppearance={scheme}
+          selectionColor={colors.primary}
+          cursorColor={colors.primary}
+          onFocus={(event) => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
           style={[
-            styles.inputWrapper,
-            isFocused && styles.inputWrapperFocused,
-            error && styles.inputWrapperError,
-            disabled && styles.inputWrapperDisabled,
+            styles.input,
+            typeStyle("body"),
+            { color: editable ? colors.text : colors.textSubtle },
+            multiline && styles.inputMultiline,
+            style,
           ]}
-        >
-          <TextInput
-            ref={ref}
-            testID={testID}
-            style={[styles.input, disabled && styles.inputDisabled, style]}
-            placeholderTextColor={color.textDisabled}
-            secureTextEntry={isSecure}
-            onFocus={(e) => {
-              setIsFocused(true);
-              rest.onFocus?.(e);
-            }}
-            onBlur={(e) => {
-              setIsFocused(false);
-              rest.onBlur?.(e);
-            }}
-            {...rest}
+          {...rest}
+        />
+        {secureToggle && (
+          <IconButton
+            testID={testID ? `${testID}-toggle-visibility` : undefined}
+            icon={hidden ? "eye-outline" : "eye-off-outline"}
+            accessibilityLabel={hidden ? "Mostrar senha" : "Ocultar senha"}
+            onPress={() => setHidden((value) => !value)}
           />
-          {secureToggle && (
-            <TouchableOpacity
-              testID={testID ? `${testID}-toggle-visibility` : undefined}
-              accessibilityRole="button"
-              accessibilityLabel={revealed ? "Ocultar senha" : "Mostrar senha"}
-              hitSlop={8}
-              onPress={() => setRevealed((value) => !value)}
-            >
-              <Ionicons
-                name={revealed ? "eye-off-outline" : "eye-outline"}
-                size={sizeTokens.iconMd}
-                color={color.textSecondary}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-        {error && (
-          <Text variant="caption" color={color.danger} style={styles.error}>
+        )}
+        {rightAccessory}
+      </View>
+      {error ? (
+        <View style={styles.message}>
+          <Icon name="alert-circle" size="sm" color={colors.danger} />
+          <Text variant="footnote" tone="danger" style={styles.messageText}>
             {error}
           </Text>
-        )}
-      </View>
-    );
-  },
-);
-
-TextField.displayName = "TextField";
+        </View>
+      ) : hint ? (
+        <Text variant="footnote" tone="muted">
+          {hint}
+        </Text>
+      ) : null}
+    </View>
+  );
+});
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.xs,
+    gap: space.xs + 2,
   },
-  label: {
-    marginLeft: spacing.xxs,
-  },
-  inputWrapper: {
+  field: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: sizeTokens.controlHeight,
-    backgroundColor: color.surface,
-    borderWidth: 1,
-    borderColor: color.border,
+    minHeight: layout.controlHeight,
     borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    gap: spacing.sm,
+    paddingLeft: space.lg,
   },
-  inputWrapperFocused: {
-    borderColor: color.borderFocus,
+  multiline: {
+    alignItems: "flex-start",
+    minHeight: 96,
   },
-  inputWrapperError: {
-    borderColor: color.danger,
-  },
-  // `editable={false}` — surfaceAlt fill per design-system.md.
-  inputWrapperDisabled: {
-    backgroundColor: color.surfaceAlt,
-  },
-  inputDisabled: {
-    color: color.textDisabled,
+  leftIcon: {
+    marginRight: space.sm,
   },
   input: {
     flex: 1,
-    fontSize: typography.size.md,
-    color: color.textPrimary,
-    paddingVertical: spacing.sm,
+    paddingVertical: space.md,
+    paddingRight: space.lg,
   },
-  error: {
-    marginLeft: spacing.xxs,
+  inputMultiline: {
+    textAlignVertical: "top",
+  },
+  message: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: space.xs,
+  },
+  messageText: {
+    flex: 1,
   },
 });

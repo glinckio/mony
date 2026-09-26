@@ -1,17 +1,20 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerInputSchema, type AuthTokens, type RegisterInput } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { Button, Screen, Text, TextField } from "../../components/ui";
+import { AuthLayout, Button, InlineNotice, TextField } from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
 import { useAuthStore } from "../../lib/auth-store";
 import type { AuthStackNavigation } from "../../navigation/RootNavigator";
+import { space } from "../../theme";
+import { haptic } from "../../theme/haptics";
 
+import { AuthLink } from "./AuthLink";
+
+// Criar conta (design/telas.md §5).
 export function RegisterScreen() {
   const navigation = useNavigation<AuthStackNavigation>();
   const setSession = useAuthStore((state) => state.setSession);
@@ -34,8 +37,13 @@ export function RegisterScreen() {
         method: "POST",
         body: JSON.stringify({ ...data, phone: data.phone || undefined }),
       });
+      haptic.success();
+      // Only reachable signed in as the dev catalog's preview of this
+      // screen: never swap out the session that is already open.
+      if (useAuthStore.getState().accessToken) return;
       setSession(tokens);
     } catch (error) {
+      haptic.error();
       if (error instanceof ApiError && error.statusCode === 409) {
         setError("email", { type: "manual", message: "Este e-mail já está cadastrado." });
       } else {
@@ -45,17 +53,20 @@ export function RegisterScreen() {
   };
 
   return (
-    <Screen>
-      <View style={styles.badge}>
-        <Ionicons name="wallet-outline" size={28} color={color.primary} />
-      </View>
-
-      <Text variant="heading">Criar sua conta</Text>
-      <Text variant="caption" style={styles.subtitle}>
-        Comece a organizar suas finanças em poucos minutos.
-      </Text>
-
-      <View style={styles.form}>
+    <AuthLayout
+      title="Criar sua conta"
+      subtitle="Comece a organizar suas finanças em poucos minutos."
+      onBack={navigation.canGoBack() ? () => navigation.goBack() : undefined}
+      footer={
+        <AuthLink
+          testID="go-to-login"
+          lead="Já tem uma conta?"
+          action="Entrar"
+          onPress={() => navigation.navigate("Login")}
+        />
+      }
+    >
+      <View style={styles.fields}>
         <Controller
           control={control}
           name="name"
@@ -63,14 +74,16 @@ export function RegisterScreen() {
             <TextField
               testID="name-input"
               label="Nome"
+              leftIcon="person-outline"
               value={field.value}
               onChangeText={field.onChange}
               autoCapitalize="words"
+              textContentType="name"
+              autoComplete="name"
               error={errors.name?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="email"
@@ -78,15 +91,17 @@ export function RegisterScreen() {
             <TextField
               testID="email-input"
               label="E-mail"
+              leftIcon="mail-outline"
               value={field.value}
               onChangeText={field.onChange}
               autoCapitalize="none"
               keyboardType="email-address"
+              textContentType="emailAddress"
+              autoComplete="email"
               error={errors.email?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="phone"
@@ -94,14 +109,15 @@ export function RegisterScreen() {
             <TextField
               testID="phone-input"
               label="Telefone (opcional)"
+              leftIcon="call-outline"
               value={field.value}
               onChangeText={field.onChange}
               keyboardType="phone-pad"
+              textContentType="telephoneNumber"
               error={errors.phone?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="password"
@@ -109,14 +125,15 @@ export function RegisterScreen() {
             <TextField
               testID="password-input"
               label="Senha"
+              leftIcon="lock-closed-outline"
               value={field.value}
               onChangeText={field.onChange}
               secureToggle
+              textContentType="newPassword"
               error={errors.password?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="passwordConfirmation"
@@ -124,23 +141,18 @@ export function RegisterScreen() {
             <TextField
               testID="password-confirmation-input"
               label="Confirmar senha"
+              leftIcon="lock-closed-outline"
               value={field.value}
               onChangeText={field.onChange}
               secureToggle
+              textContentType="newPassword"
               error={errors.passwordConfirmation?.message}
             />
           )}
         />
       </View>
 
-      {submitError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {submitError}
-          </Text>
-        </View>
-      )}
+      {submitError ? <InlineNotice tone="danger" message={submitError} /> : null}
 
       <Button
         testID="submit-button"
@@ -148,47 +160,12 @@ export function RegisterScreen() {
         onPress={handleSubmit(onSubmit)}
         loading={isSubmitting}
       />
-
-      <TouchableOpacity
-        testID="go-to-login"
-        style={styles.loginLink}
-        onPress={() => navigation.navigate("Login")}
-      >
-        <Text variant="caption">
-          Já tem uma conta? <Text variant="bodyStrong">Entrar</Text>
-        </Text>
-      </TouchableOpacity>
-    </Screen>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  badge: {
-    alignSelf: "flex-start",
-    width: 56,
-    height: 56,
-    borderRadius: radius.lg,
-    backgroundColor: color.primaryMuted,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    marginBottom: spacing.sm,
-  },
-  form: {
-    gap: spacing.md,
-  },
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-  },
-  loginLink: {
-    marginTop: spacing.lg,
-    alignItems: "center",
+  fields: {
+    gap: space.lg,
   },
 });

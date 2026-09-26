@@ -39,12 +39,17 @@ describe("CategoryFormScreen", () => {
   it("defaults to the EXPENSE type with both options enabled when creating", async () => {
     await renderScreen();
 
-    expect(screen.getByTestId("type-option-EXPENSE").props.accessibilityState.selected).toBe(
-      true,
-    );
-    expect(screen.getByTestId("type-option-INCOME").props.accessibilityState.disabled).toBe(
-      false,
-    );
+    expect(screen.getByTestId("type-option-EXPENSE").props.accessibilityState.selected).toBe(true);
+    expect(screen.getByTestId("type-option-INCOME").props.accessibilityState.disabled).toBe(false);
+  });
+
+  it("starts on the type it was opened with (the transaction form's Criar categoria)", async () => {
+    await renderScreen({ type: "INCOME" });
+
+    expect(screen.getByTestId("type-option-INCOME").props.accessibilityState.selected).toBe(true);
+    expect(screen.getByTestId("type-option-EXPENSE").props.accessibilityState.selected).toBe(false);
+    // Still a new category: the type can be changed.
+    expect(screen.getByTestId("type-option-EXPENSE").props.accessibilityState.disabled).toBe(false);
   });
 
   it("disables the type toggle and pre-fills fields when editing", async () => {

@@ -99,7 +99,10 @@ it("refuses a lower mileage inline without calling the API, then saves a higher 
   await waitFor(() => {
     expect(screen.getByTestId("vehicle-mileage")).toHaveTextContent("37.000 km");
   });
-  expect(screen.queryByTestId("mileage-input")).toBeNull();
+  // The sheet closes with a short exit animation before unmounting.
+  await waitFor(() => {
+    expect(screen.queryByTestId("mileage-input")).toBeNull();
+  });
   const patch = mockedApiFetch.mock.calls.find(([, init]) => init?.method === "PATCH");
   expect(patch?.[0]).toBe("/vehicles/veh-1");
   expect(JSON.parse(patch?.[1].body)).toEqual({ currentMileage: 37000 });

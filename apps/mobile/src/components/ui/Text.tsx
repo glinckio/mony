@@ -1,61 +1,117 @@
-import { color, typography } from "@mony/ui-tokens";
-import type { ReactNode } from "react";
-import { Text as RNText, type TextProps as RNTextProps, StyleSheet } from "react-native";
+import type { SemanticColorName, TypeVariant } from "@mony/ui-tokens";
+import { forwardRef } from "react";
+import { Text as RNText, type TextProps as RNTextProps, type TextStyle } from "react-native";
 
-export type TextVariant = "display" | "heading" | "title" | "body" | "bodyStrong" | "caption";
+import { typeScale, useTheme } from "../../theme";
 
-interface TextProps extends RNTextProps {
-  variant?: TextVariant;
-  color?: string;
-  children: ReactNode;
+export type TextTone =
+  | "default"
+  | "muted"
+  | "subtle"
+  | "primary"
+  | "success"
+  | "warning"
+  | "danger"
+  | "onPrimary"
+  | "onAccent"
+  | "onSuccessMuted"
+  | "onWarningMuted"
+  | "onDangerMuted"
+  | "onPrimaryMuted"
+  | "onDanger";
+
+const TONE_TO_COLOR: Record<TextTone, SemanticColorName> = {
+  default: "text",
+  muted: "textMuted",
+  subtle: "textSubtle",
+  primary: "primary",
+  success: "success",
+  warning: "onWarningMuted",
+  danger: "danger",
+  onPrimary: "onPrimary",
+  onAccent: "onAccent",
+  onSuccessMuted: "onSuccessMuted",
+  onWarningMuted: "onWarningMuted",
+  onDangerMuted: "onDangerMuted",
+  onPrimaryMuted: "onPrimaryMuted",
+  onDanger: "onDanger",
+};
+
+// Only the big display sizes stop growing (at 130%), so the hero number
+// stays on screen; body text follows the system font scale all the way.
+const LARGE_VARIANTS = new Set<TypeVariant>([
+  "display",
+  "title1",
+  "amountInput",
+  "numeralLarge",
+  "odometer",
+]);
+
+export function typeStyle(variant: TypeVariant): TextStyle {
+  const spec = typeScale[variant];
+  return {
+    fontFamily: spec.fontFamily,
+    fontSize: spec.fontSize,
+    lineHeight: spec.lineHeight,
+    letterSpacing: spec.letterSpacing,
+    ...(spec.tabular ? { fontVariant: ["tabular-nums"] } : null),
+    ...(spec.uppercase ? { textTransform: "uppercase" } : null),
+  };
 }
 
-export function Text({ variant = "body", color: colorProp, style, children, ...rest }: TextProps) {
+function withoutLineHeight({ lineHeight: _lineHeight, ...style }: TextStyle): TextStyle {
+  return style;
+}
+
+// Built once: Text is the most rendered component in the app.
+const VARIANTS = Object.keys(typeScale) as TypeVariant[];
+const TYPE_STYLES = Object.fromEntries(
+  VARIANTS.map((variant) => [variant, typeStyle(variant)]),
+) as Record<TypeVariant, TextStyle>;
+const INLINE_TYPE_STYLES = Object.fromEntries(
+  VARIANTS.map((variant) => [variant, withoutLineHeight(TYPE_STYLES[variant])]),
+) as Record<TypeVariant, TextStyle>;
+
+export interface TextProps extends RNTextProps {
+  variant?: TypeVariant;
+  tone?: TextTone;
+  // Raw semantic color override (e.g. a category's own color is never
+  // used for text; this is for theme colors a tone doesn't cover).
+  color?: string;
+  align?: TextStyle["textAlign"];
+  // A run nested inside another Text: drops its own line height so the
+  // paragraph keeps the outer one. On Android a nested run's line height
+  // applies to the whole line and clips the bigger glyphs around it.
+  inline?: boolean;
+}
+
+export const Text = forwardRef<RNText, TextProps>(function Text(
+  {
+    variant = "body",
+    tone = "default",
+    color,
+    align,
+    inline = false,
+    style,
+    maxFontSizeMultiplier,
+    ...rest
+  },
+  ref,
+) {
+  const { colors } = useTheme();
   return (
     <RNText
-      style={[styles[variant], colorProp ? { color: colorProp } : undefined, style]}
+      ref={ref}
+      maxFontSizeMultiplier={
+        maxFontSizeMultiplier ?? (LARGE_VARIANTS.has(variant) ? 1.3 : undefined)
+      }
+      style={[
+        inline ? INLINE_TYPE_STYLES[variant] : TYPE_STYLES[variant],
+        { color: color ?? colors[TONE_TO_COLOR[tone]] },
+        align ? { textAlign: align } : null,
+        style,
+      ]}
       {...rest}
-    >
-      {children}
-    </RNText>
+    />
   );
-}
-
-const styles = StyleSheet.create({
-  display: {
-    fontSize: typography.size.display,
-    lineHeight: typography.lineHeight.display,
-    fontWeight: typography.weight.bold,
-    color: color.textPrimary,
-  },
-  heading: {
-    fontSize: typography.size.xxl,
-    lineHeight: typography.lineHeight.xxl,
-    fontWeight: typography.weight.bold,
-    color: color.textPrimary,
-  },
-  title: {
-    fontSize: typography.size.xl,
-    lineHeight: typography.lineHeight.xl,
-    fontWeight: typography.weight.semibold,
-    color: color.textPrimary,
-  },
-  body: {
-    fontSize: typography.size.md,
-    lineHeight: typography.lineHeight.md,
-    fontWeight: typography.weight.regular,
-    color: color.textPrimary,
-  },
-  bodyStrong: {
-    fontSize: typography.size.md,
-    lineHeight: typography.lineHeight.md,
-    fontWeight: typography.weight.medium,
-    color: color.textPrimary,
-  },
-  caption: {
-    fontSize: typography.size.sm,
-    lineHeight: typography.lineHeight.sm,
-    fontWeight: typography.weight.regular,
-    color: color.textSecondary,
-  },
 });

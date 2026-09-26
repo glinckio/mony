@@ -1,13 +1,26 @@
-import { Ionicons } from "@expo/vector-icons";
 import type { Category, CategoryType } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { useCallback, useState } from "react";
-import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useCallback, useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
-import { AppHeader, Button, Screen, Text } from "../../components/ui";
+import {
+  Card,
+  ConfirmSheet,
+  IconBadge,
+  IconButton,
+  InlineNotice,
+  PaperSheet,
+  ScrollScreen,
+  Skeleton,
+  Text,
+  Touchable,
+  Button,
+  type IconName,
+} from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
+import { queryClient } from "../../lib/query-client";
 import type { AppStackNavigation } from "../../navigation/RootNavigator";
+import { radius, space, useTheme } from "../../theme";
 
 interface ReplacementPrompt {
   categoryId: string;
@@ -15,12 +28,21 @@ interface ReplacementPrompt {
   type: CategoryType;
 }
 
+// Categorias (design/telas.md §17): expenses and income as two white cards
+// of rows (the category's own color and icon, edit and delete). Deleting
+// one that's in use asks where its transactions should go.
 export function CategoriesScreen() {
   const navigation = useNavigation<AppStackNavigation>();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Category | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [replacementPrompt, setReplacementPrompt] = useState<ReplacementPrompt | null>(null);
+  // A category in use comes back as 400 while the confirm sheet is open:
+  // the replacement sheet waits for it to leave the screen (iOS can't
+  // present two Modals at once).
+  const queuedReplacement = useRef<ReplacementPrompt | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -37,41 +59,33 @@ export function CategoriesScreen() {
   );
 
   const performDelete = async (categoryId: string, replacementCategoryId?: string) => {
+    setDeleting(true);
     try {
       const query = replacementCategoryId ? `?replacementCategoryId=${replacementCategoryId}` : "";
       await apiFetch(`/categories/${categoryId}${query}`, { method: "DELETE" });
+      // The transaction form's picker and the list badges read the cache.
+      void queryClient.invalidateQueries({ queryKey: ["categories"] });
       setReplacementPrompt(null);
+      setPendingDelete(null);
       load();
     } catch (err) {
+      setPendingDelete(null);
       if (err instanceof ApiError && err.statusCode === 400) {
         const category = categories.find((c) => c.id === categoryId);
         if (category) {
-          setReplacementPrompt({
+          queuedReplacement.current = {
             categoryId,
             categoryName: category.name,
             type: category.type,
-          });
+          };
           return;
         }
       }
       setError("Algo deu errado. Tente novamente.");
+    } finally {
+      setDeleting(false);
     }
   };
-
-  const confirmDelete = (category: Category) => {
-    Alert.alert("Excluir categoria", `Excluir "${category.name}"?`, [
-      { text: "Cancelar", style: "cancel" },
-      { text: "Excluir", style: "destructive", onPress: () => performDelete(category.id) },
-    ]);
-  };
-
-  if (loading) {
-    return (
-      <Screen centered>
-        <Text variant="caption">Carregando...</Text>
-      </Screen>
-    );
-  }
 
   const expenseCategories = categories.filter((c) => c.type === "EXPENSE");
   const incomeCategories = categories.filter((c) => c.type === "INCOME");
@@ -82,68 +96,112 @@ export function CategoriesScreen() {
     : [];
 
   return (
-    <Screen>
-      <AppHeader title="Categorias" onBack={() => navigation.goBack()} />
+    <ScrollScreen
+      title="Categorias"
+      onBack={() => navigation.goBack()}
+      actions={
+        <IconButton
+          testID="add-category-button"
+          icon="add"
+          variant="soft"
+          tone="primary"
+          accessibilityLabel="Nova categoria"
+          onPress={() => navigation.navigate("CategoryForm", undefined)}
+        />
+      }
+    >
+      {error ? <InlineNotice tone="danger" message={error} style={styles.error} /> : null}
 
-      {error && (
-        <View style={styles.errorBanner}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {error}
-          </Text>
+      {loading && categories.length === 0 ? (
+        <View style={styles.sections} accessibilityLabel="Carregando categorias">
+          <Skeleton height={220} radius="lg" />
+          <Skeleton height={150} radius="lg" />
+        </View>
+      ) : (
+        <View style={styles.sections}>
+          <CategorySection
+            title="Despesas"
+            categories={expenseCategories}
+            onEdit={(category) => navigation.navigate("CategoryForm", { category })}
+            onDelete={setPendingDelete}
+          />
+          <CategorySection
+            title="Receitas"
+            categories={incomeCategories}
+            onEdit={(category) => navigation.navigate("CategoryForm", { category })}
+            onDelete={setPendingDelete}
+          />
         </View>
       )}
 
-      {replacementPrompt && (
-        <View style={styles.replacementBanner} testID="replacement-prompt">
-          <Text variant="bodyStrong">
-            "{replacementPrompt.categoryName}" está em uso. Escolha uma categoria para substituir as
-            transações:
-          </Text>
-          <View style={styles.replacementOptions}>
-            {replacementOptions.map((option) => (
-              <TouchableOpacity
-                key={option.id}
-                testID={`replacement-option-${option.id}`}
-                style={styles.replacementOption}
-                onPress={() => performDelete(replacementPrompt.categoryId, option.id)}
-              >
-                <Ionicons name={option.icon} size={sizeTokens.iconSm} color={option.color} />
-                <Text variant="caption">{option.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <TouchableOpacity
-            testID="cancel-replacement"
-            onPress={() => setReplacementPrompt(null)}
-            style={styles.cancelReplacement}
-          >
-            <Text variant="caption" color={color.textSecondary}>
-              Cancelar
-            </Text>
-          </TouchableOpacity>
+      <ConfirmSheet
+        visible={pendingDelete !== null}
+        title={pendingDelete ? `Excluir a categoria "${pendingDelete.name}"?` : ""}
+        message="Se ela estiver em uso, você escolhe para onde vão os lançamentos dela."
+        preview={
+          pendingDelete ? (
+            <View style={styles.preview}>
+              <IconBadge
+                icon={pendingDelete.icon as IconName}
+                color={pendingDelete.color}
+                size={40}
+              />
+              <Text variant="bodyStrong">{pendingDelete.name}</Text>
+            </View>
+          ) : undefined
+        }
+        confirmLabel="Excluir categoria"
+        busy={deleting}
+        onConfirm={() => {
+          if (pendingDelete) void performDelete(pendingDelete.id);
+        }}
+        onClose={() => setPendingDelete(null)}
+        onDismissed={() => {
+          if (!queuedReplacement.current) return;
+          setReplacementPrompt(queuedReplacement.current);
+          queuedReplacement.current = null;
+        }}
+      />
+
+      <PaperSheet
+        testID="replacement-prompt"
+        visible={replacementPrompt !== null}
+        title="Categoria em uso"
+        onClose={() => setReplacementPrompt(null)}
+      >
+        <Text variant="callout" tone="muted">
+          &quot;{replacementPrompt?.categoryName}&quot; está em uso. Escolha uma categoria para
+          substituir as transações:
+        </Text>
+        <View style={styles.options}>
+          {replacementOptions.map((option) => (
+            <Touchable
+              key={option.id}
+              testID={`replacement-option-${option.id}`}
+              feedback="row"
+              accessibilityRole="button"
+              accessibilityLabel={`Mover para ${option.name}`}
+              disabled={deleting}
+              onPress={() => {
+                if (replacementPrompt) void performDelete(replacementPrompt.categoryId, option.id);
+              }}
+              style={styles.option}
+            >
+              <IconBadge icon={option.icon as IconName} color={option.color} size={40} />
+              <Text variant="bodyStrong" style={styles.flex}>
+                {option.name}
+              </Text>
+            </Touchable>
+          ))}
         </View>
-      )}
-
-      <CategorySection
-        title="Despesas"
-        categories={expenseCategories}
-        onEdit={(category) => navigation.navigate("CategoryForm", { category })}
-        onDelete={confirmDelete}
-      />
-      <CategorySection
-        title="Receitas"
-        categories={incomeCategories}
-        onEdit={(category) => navigation.navigate("CategoryForm", { category })}
-        onDelete={confirmDelete}
-      />
-
-      <Button
-        testID="add-category-button"
-        label="Nova categoria"
-        onPress={() => navigation.navigate("CategoryForm", undefined)}
-      />
-    </Screen>
+        <Button
+          testID="cancel-replacement"
+          label="Cancelar"
+          variant="ghost"
+          onPress={() => setReplacementPrompt(null)}
+        />
+      </PaperSheet>
+    </ScrollScreen>
   );
 }
 
@@ -155,106 +213,94 @@ interface CategorySectionProps {
 }
 
 function CategorySection({ title, categories, onEdit, onDelete }: CategorySectionProps) {
+  const { colors } = useTheme();
   return (
     <View style={styles.section}>
-      <Text variant="bodyStrong">{title}</Text>
-      {categories.length === 0 ? (
-        <Text variant="caption" color={color.textSecondary}>
-          Nenhuma categoria ainda.
-        </Text>
-      ) : (
-        categories.map((category) => (
-          <View key={category.id} style={styles.row} testID={`category-row-${category.id}`}>
-            <View style={[styles.iconBadge, { backgroundColor: category.color }]}>
-              <Ionicons name={category.icon} size={sizeTokens.iconSm} color={color.onPrimary} />
-            </View>
-            <Text variant="body" style={styles.rowName}>
-              {category.name}
-            </Text>
-            <TouchableOpacity
-              testID={`edit-category-${category.id}`}
-              accessibilityRole="button"
-              accessibilityLabel={`Editar ${category.name}`}
-              hitSlop={8}
-              onPress={() => onEdit(category)}
+      <Text variant="title2" accessibilityRole="header">
+        {title}
+      </Text>
+      <Card padded={false}>
+        {categories.length === 0 ? (
+          <Text variant="callout" tone="muted" style={styles.empty}>
+            Nenhuma categoria ainda.
+          </Text>
+        ) : (
+          categories.map((category, index) => (
+            <View
+              key={category.id}
+              testID={`category-row-${category.id}`}
+              style={[
+                styles.row,
+                index > 0 && {
+                  borderTopWidth: StyleSheet.hairlineWidth * 2,
+                  borderTopColor: colors.border,
+                },
+              ]}
             >
-              <Ionicons
-                name="pencil-outline"
-                size={sizeTokens.iconSm}
-                color={color.textSecondary}
+              <IconBadge icon={category.icon as IconName} color={category.color} size={42} />
+              <Text variant="bodyStrong" style={styles.flex} numberOfLines={1}>
+                {category.name}
+              </Text>
+              <IconButton
+                testID={`edit-category-${category.id}`}
+                icon="pencil-outline"
+                accessibilityLabel={`Editar ${category.name}`}
+                onPress={() => onEdit(category)}
               />
-            </TouchableOpacity>
-            <TouchableOpacity
-              testID={`delete-category-${category.id}`}
-              accessibilityRole="button"
-              accessibilityLabel={`Excluir ${category.name}`}
-              hitSlop={8}
-              style={styles.deleteButton}
-              onPress={() => onDelete(category)}
-            >
-              <Ionicons name="trash-outline" size={sizeTokens.iconSm} color={color.danger} />
-            </TouchableOpacity>
-          </View>
-        ))
-      )}
+              <IconButton
+                testID={`delete-category-${category.id}`}
+                icon="trash-outline"
+                tone="danger"
+                accessibilityLabel={`Excluir ${category.name}`}
+                onPress={() => onDelete(category)}
+              />
+            </View>
+          ))
+        )}
+      </Card>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
+  flex: {
+    flex: 1,
   },
-  replacementBanner: {
-    backgroundColor: color.warningMuted,
-    borderRadius: radius.md,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
-    gap: spacing.sm,
+  error: {
+    marginBottom: space.lg,
   },
-  replacementOptions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  replacementOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.surface,
-    borderRadius: radius.sm,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  cancelReplacement: {
-    alignSelf: "flex-start",
+  sections: {
+    gap: space["2xl"],
   },
   section: {
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
+    gap: space.md,
+  },
+  empty: {
+    padding: space.lg,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: space.sm,
+    paddingLeft: space.lg,
+    paddingRight: space.xs,
+    paddingVertical: space.xs,
+    minHeight: 64,
   },
-  iconBadge: {
-    width: sizeTokens.touchTarget,
-    height: sizeTokens.touchTarget,
-    borderRadius: radius.xl,
+  preview: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: space.md,
+    padding: space.lg,
   },
-  rowName: {
-    flex: 1,
+  options: {
+    gap: space.xs,
   },
-  deleteButton: {
-    marginLeft: spacing.sm,
+  option: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+    padding: space.sm,
+    borderRadius: radius.md,
   },
 });

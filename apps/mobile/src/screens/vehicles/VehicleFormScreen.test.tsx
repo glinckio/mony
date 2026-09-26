@@ -2,8 +2,10 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import * as ImagePicker from "expo-image-picker";
 
 import { apiFetch } from "../../lib/api-client";
+import { useToastStore } from "../../lib/toast-store";
 
 import { VehicleFormScreen } from "./VehicleFormScreen";
 
@@ -13,6 +15,7 @@ jest.mock("../../lib/api-client", () => ({
   ApiError: class ApiError extends Error {},
 }));
 
+const mockedPicker = ImagePicker.launchImageLibraryAsync as jest.Mock;
 const Stack = createNativeStackNavigator();
 
 const VEHICLE = {
@@ -80,6 +83,36 @@ describe("VehicleFormScreen", () => {
     expect(screen.getByTestId("current-mileage-input").props.value).toBe("36200");
     expect(screen.getByTestId("fuel-type-FLEX").props.accessibilityState.selected).toBe(true);
     expect(screen.queryByTestId("pick-photo-button")).toBeNull();
+    view.unmount();
+    await flush();
+  });
+
+  // This form is an iOS modal: the app's toast would render behind it.
+  it("says inline, not in a toast, when the photo library can't be opened", async () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    useToastStore.getState().hide();
+    mockedPicker.mockRejectedValueOnce(new Error("Missing photo library permission"));
+    const view = await renderScreen();
+    await waitFor(() => {
+      expect(screen.getByTestId("pick-photo-button")).toBeTruthy();
+    });
+
+    await fireEvent.press(screen.getByTestId("pick-photo-button"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Não foi possível abrir suas fotos.")).toBeTruthy();
+    });
+    expect(useToastStore.getState().message).toBeNull();
+    expect(screen.queryByText(/permission/)).toBeNull();
+    expect(screen.getByText("Adicionar foto (opcional)")).toBeTruthy();
+
+    // Trying again clears it (here the user just closes the picker).
+    mockedPicker.mockResolvedValueOnce({ canceled: true, assets: null });
+    await fireEvent.press(screen.getByTestId("pick-photo-button"));
+    await waitFor(() => {
+      expect(screen.queryByText("Não foi possível abrir suas fotos.")).toBeNull();
+    });
+    warn.mockRestore();
     view.unmount();
     await flush();
   });

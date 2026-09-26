@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createTransactionInputSchema,
@@ -7,18 +6,31 @@ import {
   type TransactionStatus,
   type TransactionType,
 } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { Button, Screen, SegmentedToggle, Text, TextField } from "../../components/ui";
+import { AmountField } from "../../components/domain";
+import {
+  Button,
+  Checkbox,
+  Field,
+  FormScreen,
+  InlineNotice,
+  SegmentedControl,
+  SelectChip,
+  TextField,
+  type IconName,
+} from "../../components/ui";
 import { apiFetch } from "../../lib/api-client";
-import { formatAmountDisplay, parseAmountInput } from "../../lib/currency-mask";
 import { formatDateDisplay, formatDateInputDigits, parseDateInputToISO } from "../../lib/date-mask";
+import { formatMoney } from "../../lib/money-display";
+import { useToastStore } from "../../lib/toast-store";
 import type { AppStackNavigation, AppStackParamList } from "../../navigation/RootNavigator";
+import { space } from "../../theme";
+import { haptic } from "../../theme/haptics";
 
 const TYPE_OPTIONS: Array<{ value: TransactionType; label: string }> = [
   { value: "EXPENSE", label: "Despesa" },
@@ -26,10 +38,12 @@ const TYPE_OPTIONS: Array<{ value: TransactionType; label: string }> = [
 ];
 
 const STATUS_OPTIONS: Array<{ value: TransactionStatus; label: string }> = [
-  { value: "PENDING", label: "Pendente" },
+  { value: "PENDING", label: "A pagar" },
   { value: "PAID", label: "Pago" },
 ];
 
+// Lançamento (design/telas.md §3): the amount first, as the hero, then
+// what and when. The CTA stays glued above the keyboard.
 export function TransactionFormScreen() {
   const navigation = useNavigation<AppStackNavigation>();
   const queryClient = useQueryClient();
@@ -89,244 +103,181 @@ export function TransactionFormScreen() {
         await apiFetch("/transactions", { method: "POST", body: JSON.stringify(data) });
       }
       await queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      const category = categories?.find((item) => item.id === data.categoryId);
+      haptic.success();
+      useToastStore.getState().show(editing ? "Alterações salvas." : "Lançamento registrado.", {
+        tone: "success",
+        receipt: {
+          amount: `${data.type === "INCOME" ? "+" : "−"} ${formatMoney(data.amount)}`,
+          detail: category?.name,
+        },
+      });
       navigation.goBack();
     } catch {
+      haptic.error();
       setSubmitError("Algo deu errado. Tente novamente.");
     }
   };
 
+  const income = type === "INCOME";
+
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text variant="heading">{editing ? "Editar transação" : "Nova transação"}</Text>
-        <TouchableOpacity
-          testID="header-close"
-          accessibilityRole="button"
-          hitSlop={8}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="close-outline" size={sizeTokens.iconLg} color={color.textPrimary} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.form}>
-        <View>
-          <Text variant="caption" style={styles.fieldLabel}>
-            Tipo
-          </Text>
-          <SegmentedToggle
-            testID="type-option"
-            options={TYPE_OPTIONS}
-            value={type}
-            disabled={!!editing}
-            onChange={(value) => {
-              setValue("type", value, { shouldValidate: true });
-              setValue("categoryId", "", { shouldValidate: false });
-            }}
+    <FormScreen
+      title={editing ? "Editar lançamento" : "Novo lançamento"}
+      onClose={() => navigation.goBack()}
+      footer={
+        <>
+          {submitError ? <InlineNotice tone="danger" message={submitError} /> : null}
+          <Button
+            testID="submit-button"
+            label={editing ? "Salvar alterações" : income ? "Salvar receita" : "Salvar despesa"}
+            onPress={handleSubmit(onSubmit)}
+            loading={isSubmitting}
           />
-        </View>
+        </>
+      }
+    >
+      <SegmentedControl
+        testID="type-option"
+        accessibilityLabel="Tipo"
+        options={TYPE_OPTIONS}
+        value={type}
+        disabled={!!editing}
+        onChange={(value) => {
+          setValue("type", value, { shouldValidate: true });
+          setValue("categoryId", "", { shouldValidate: false });
+        }}
+      />
 
-        {type === "EXPENSE" && (
-          <View>
-            <Text variant="caption" style={styles.fieldLabel}>
-              Status
-            </Text>
-            <SegmentedToggle
-              testID="status-option"
-              options={STATUS_OPTIONS}
-              value={status ?? "PENDING"}
-              onChange={(value) => setValue("status", value, { shouldValidate: true })}
-            />
-          </View>
+      <Controller
+        control={control}
+        name="amount"
+        render={({ field }) => (
+          <AmountField
+            testID="amount-input"
+            label={income ? "Valor da receita" : "Valor da despesa"}
+            direction={income ? "in" : "out"}
+            value={field.value}
+            onChangeValue={field.onChange}
+            autoFocus={!editing}
+            error={errors.amount?.message}
+          />
         )}
+      />
 
-        <View>
-          <Text variant="caption" style={styles.fieldLabel}>
-            Categoria
-          </Text>
-          <View style={styles.categoryList} testID="category-picker">
-            {(categories ?? []).map((category) => {
-              const selected = category.id === categoryId;
-              return (
-                <TouchableOpacity
-                  key={category.id}
-                  testID={`category-option-${category.id}`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  style={[styles.categoryChip, selected && styles.categoryChipSelected]}
-                  onPress={() => setValue("categoryId", category.id, { shouldValidate: true })}
-                >
-                  <Ionicons
-                    name={category.icon as never}
-                    size={sizeTokens.iconSm}
-                    color={selected ? color.onPrimary : category.color}
-                  />
-                  <Text variant="caption" color={selected ? color.onPrimary : color.textPrimary}>
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          {errors.categoryId?.message && (
-            <Text variant="caption" color={color.danger} style={styles.fieldError}>
-              {errors.categoryId.message}
-            </Text>
-          )}
-        </View>
-
-        <Controller
-          control={control}
-          name="description"
-          render={({ field }) => (
-            <TextField
-              testID="description-input"
-              label="Descrição"
-              value={field.value}
-              onChangeText={field.onChange}
-              error={errors.description?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="amount"
-          render={({ field }) => (
-            <TextField
-              testID="amount-input"
-              label="Valor"
-              value={formatAmountDisplay(field.value)}
-              onChangeText={(text) => field.onChange(parseAmountInput(text))}
-              keyboardType="number-pad"
-              placeholder="R$ 0,00"
-              error={errors.amount?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="date"
-          render={({ field }) => (
-            <TextField
-              testID="date-input"
-              label="Data"
-              value={dateDisplay}
-              onChangeText={(text) => {
-                setDateDisplay(formatDateInputDigits(text));
-                field.onChange(parseDateInputToISO(text));
-              }}
-              keyboardType="number-pad"
-              placeholder="DD/MM/AAAA"
-              error={errors.date?.message}
-            />
-          )}
-        />
-
-        {!editing && (
-          <>
-            <TouchableOpacity
-              testID="recurring-toggle"
-              accessibilityRole="button"
-              accessibilityState={{ selected: !!recurring }}
-              style={styles.recurringRow}
-              onPress={() => setValue("recurring", !recurring, { shouldValidate: true })}
-            >
-              <Ionicons
-                name={recurring ? "checkbox" : "square-outline"}
-                size={sizeTokens.iconMd}
-                color={color.primary}
-              />
-              <Text variant="body">Repetir todo mês</Text>
-            </TouchableOpacity>
-
-            {recurring && (
-              <Controller
-                control={control}
-                name="recurringMonths"
-                render={({ field }) => (
-                  <TextField
-                    testID="recurring-months-input"
-                    label="Por quantos meses (1-60)"
-                    value={field.value === undefined ? "" : String(field.value)}
-                    onChangeText={(text) => field.onChange(text ? Number(text) : undefined)}
-                    keyboardType="number-pad"
-                    error={errors.recurringMonths?.message}
-                  />
-                )}
-              />
-            )}
-          </>
-        )}
-      </View>
-
-      {submitError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {submitError}
-          </Text>
-        </View>
+      {!income && (
+        <Field label="Situação">
+          <SegmentedControl
+            testID="status-option"
+            accessibilityLabel="Situação"
+            options={STATUS_OPTIONS}
+            value={status ?? "PENDING"}
+            onChange={(value) => setValue("status", value, { shouldValidate: true })}
+          />
+        </Field>
       )}
 
-      <Button
-        testID="submit-button"
-        label={editing ? "Salvar alterações" : "Criar transação"}
-        onPress={handleSubmit(onSubmit)}
-        loading={isSubmitting}
+      <Field label="Categoria" error={errors.categoryId?.message}>
+        <View style={styles.chips} testID="category-picker" accessibilityRole="radiogroup">
+          {(categories ?? []).map((category) => (
+            <SelectChip
+              key={category.id}
+              testID={`category-option-${category.id}`}
+              label={category.name}
+              icon={category.icon as IconName}
+              iconColor={category.color}
+              selected={category.id === categoryId}
+              onPress={() => setValue("categoryId", category.id, { shouldValidate: true })}
+            />
+          ))}
+          {categories && categories.length === 0 ? (
+            <SelectChip
+              label="Criar categoria"
+              icon="add"
+              dashed
+              selected={false}
+              onPress={() => navigation.navigate("CategoryForm", { type })}
+            />
+          ) : null}
+        </View>
+      </Field>
+
+      <Controller
+        control={control}
+        name="description"
+        render={({ field }) => (
+          <TextField
+            testID="description-input"
+            label="Descrição"
+            placeholder={income ? "Ex.: Salário" : "Ex.: Mercado do mês"}
+            value={field.value}
+            onChangeText={field.onChange}
+            returnKeyType="next"
+            error={errors.description?.message}
+          />
+        )}
       />
-    </Screen>
+
+      <Controller
+        control={control}
+        name="date"
+        render={({ field }) => (
+          <TextField
+            testID="date-input"
+            label="Data"
+            leftIcon="calendar-outline"
+            value={dateDisplay}
+            onChangeText={(text) => {
+              setDateDisplay(formatDateInputDigits(text));
+              field.onChange(parseDateInputToISO(text));
+            }}
+            keyboardType="number-pad"
+            placeholder="DD/MM/AAAA"
+            maxLength={10}
+            error={errors.date?.message}
+          />
+        )}
+      />
+
+      {!editing && (
+        <View style={styles.recurring}>
+          <Checkbox
+            testID="recurring-toggle"
+            label="Repetir todo mês"
+            description="Cria um lançamento por mês, a partir desta data."
+            checked={!!recurring}
+            onChange={(next) => setValue("recurring", next, { shouldValidate: true })}
+          />
+          {recurring && (
+            <Controller
+              control={control}
+              name="recurringMonths"
+              render={({ field }) => (
+                <TextField
+                  testID="recurring-months-input"
+                  label="Por quantos meses (1-60)"
+                  value={field.value === undefined ? "" : String(field.value)}
+                  onChangeText={(text) => field.onChange(text ? Number(text) : undefined)}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  error={errors.recurringMonths?.message}
+                />
+              )}
+            />
+          )}
+        </View>
+      )}
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  form: {
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  fieldLabel: {
-    marginBottom: spacing.xs,
-    marginLeft: spacing.xxs,
-  },
-  fieldError: {
-    marginTop: spacing.xs,
-    marginLeft: spacing.xxs,
-  },
-  categoryList: {
+  chips: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
+    gap: space.sm,
   },
-  categoryChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.surfaceAlt,
-    borderRadius: radius.sm,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  categoryChipSelected: {
-    backgroundColor: color.primary,
-  },
-  recurringRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
+  recurring: {
+    gap: space.md,
   },
 });

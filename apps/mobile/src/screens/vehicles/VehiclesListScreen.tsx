@@ -1,21 +1,34 @@
-import { Ionicons } from "@expo/vector-icons";
 import type { Vehicle } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
-import { ActivityIndicator, FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { AppHeader, PhotoFrame, Screen, Text } from "../../components/ui";
+import { VehiclePhoto } from "../../components/domain";
+import {
+  EmptyState,
+  ErrorState,
+  Icon,
+  IconButton,
+  ScrollScreen,
+  Skeleton,
+  Text,
+  Touchable,
+} from "../../components/ui";
 import { apiFetch } from "../../lib/api-client";
 import { useRefetchOnFocus } from "../../lib/use-refetch-on-focus";
-import { formatMileage } from "../../lib/vehicle-display";
+import { FUEL_TYPE_LABELS, formatMileage } from "../../lib/vehicle-display";
 import type { AppStackNavigation } from "../../navigation/RootNavigator";
+import { radius, space, useTheme } from "../../theme";
 
+// Veículos (design/telas.md §14): the garage — each vehicle as a card with
+// its photo, name, plate and mileage.
 export function VehiclesListScreen() {
   const navigation = useNavigation<AppStackNavigation>();
+  const { colors, elevation } = useTheme();
   const {
     data: vehicles,
     isError,
+    isRefetching,
     refetch,
   } = useQuery({
     queryKey: ["vehicles"],
@@ -26,101 +39,108 @@ export function VehiclesListScreen() {
   useRefetchOnFocus(refetch);
 
   return (
-    <Screen scrollable={false}>
-      <AppHeader
-        title="Veículos"
-        onBack={() => navigation.goBack()}
-        rightAccessory={
-          <TouchableOpacity
-            testID="add-vehicle-button"
-            accessibilityRole="button"
-            accessibilityLabel="Novo veículo"
-            hitSlop={8}
-            onPress={() => navigation.navigate("VehicleForm", undefined)}
-          >
-            <Ionicons name="add-circle-outline" size={sizeTokens.iconLg} color={color.primary} />
-          </TouchableOpacity>
-        }
-      />
-
+    <ScrollScreen
+      title="Veículos"
+      onBack={() => navigation.goBack()}
+      actions={
+        <IconButton
+          testID="add-vehicle-button"
+          icon="add"
+          variant="soft"
+          tone="primary"
+          accessibilityLabel="Novo veículo"
+          onPress={() => navigation.navigate("VehicleForm", undefined)}
+        />
+      }
+      refreshing={isRefetching}
+      onRefresh={() => void refetch()}
+    >
       {isError ? (
-        <Text variant="caption" color={color.danger}>
-          Algo deu errado. Tente novamente.
-        </Text>
+        <ErrorState onRetry={() => void refetch()} />
       ) : !vehicles ? (
-        <View style={styles.centered}>
-          <ActivityIndicator color={color.primary} />
+        <View style={styles.list} accessibilityLabel="Carregando veículos">
+          {[0, 1, 2].map((index) => (
+            <Skeleton key={index} height={98} radius="lg" />
+          ))}
         </View>
+      ) : vehicles.length === 0 ? (
+        <EmptyState
+          image="emptyVehicles"
+          icon="car-sport-outline"
+          title="Nenhum veículo ainda."
+          message="Cadastre o carro ou a moto e acompanhe a quilometragem."
+          action={{
+            label: "Cadastrar veículo",
+            onPress: () => navigation.navigate("VehicleForm", undefined),
+          }}
+        />
       ) : (
-        <FlatList
-          testID="vehicles-list"
-          data={vehicles}
-          keyExtractor={(vehicle) => vehicle.id}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            <Text variant="caption" color={color.textSecondary}>
-              Nenhum veículo ainda.
-            </Text>
-          }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              testID={`vehicle-row-${item.id}`}
+        <View style={styles.list} testID="vehicles-list">
+          {vehicles.map((vehicle) => (
+            <Touchable
+              key={vehicle.id}
+              testID={`vehicle-row-${vehicle.id}`}
+              feedback="sink"
               accessibilityRole="button"
-              accessibilityLabel={item.displayName}
-              style={styles.row}
-              onPress={() => navigation.navigate("VehicleDetail", { vehicleId: item.id })}
+              accessibilityLabel={vehicle.displayName}
+              onPress={() => navigation.navigate("VehicleDetail", { vehicleId: vehicle.id })}
+              style={[styles.card, { backgroundColor: colors.surface }, elevation("sm")]}
             >
-              <PhotoFrame
-                uri={item.photoUrl}
-                placeholderIcon="car-sport-outline"
-                variant="thumb"
-                accessibilityLabel={`Foto de ${item.displayName}`}
+              <VehiclePhoto
+                uri={vehicle.photoUrl}
+                size="thumb"
+                accessibilityLabel={`Foto de ${vehicle.displayName}`}
               />
-              <View style={styles.rowText}>
+              <View style={styles.text}>
                 <Text variant="bodyStrong" numberOfLines={1}>
-                  {item.displayName}
+                  {vehicle.displayName}
                 </Text>
-                <Text variant="caption">
-                  {[item.licensePlate, formatMileage(item.currentMileage)]
+                <Text variant="footnote" tone="muted" numberOfLines={1}>
+                  {[vehicle.licensePlate, formatMileage(vehicle.currentMileage)]
                     .filter(Boolean)
                     .join(" · ")}
                 </Text>
+                {vehicle.fuelType ? (
+                  <View style={[styles.fuel, { backgroundColor: colors.primaryMuted }]}>
+                    <Icon name="water-outline" size={12} color={colors.primary} />
+                    <Text variant="caption" tone="primary" numberOfLines={1}>
+                      {FUEL_TYPE_LABELS[vehicle.fuelType]}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
-              <Ionicons
-                name="chevron-forward"
-                size={sizeTokens.iconMd}
-                color={color.textSecondary}
-              />
-            </TouchableOpacity>
-          )}
-        />
+              <Icon name="chevron-forward" size="md" color={colors.textSubtle} />
+            </Touchable>
+          ))}
+        </View>
       )}
-    </Screen>
+    </ScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+  list: {
+    gap: space.md,
   },
-  listContent: {
-    gap: spacing.sm,
-    paddingBottom: spacing.lg,
-  },
-  row: {
+  card: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.md,
-    padding: spacing.md,
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: color.border,
+    gap: space.md,
+    padding: space.md,
+    borderRadius: radius.lg,
   },
-  rowText: {
+  text: {
     flex: 1,
-    gap: spacing.xxs,
+    gap: space.xxs,
+  },
+  fuel: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: space.xs,
+    paddingHorizontal: space.sm,
+    paddingVertical: 2,
+    borderRadius: radius.full,
+    marginTop: space.xxs,
   },
 });

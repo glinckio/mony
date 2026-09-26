@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   FUEL_TYPES,
@@ -7,23 +6,36 @@ import {
   type UpdateVehicleInput,
   type Vehicle,
 } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { Button, PhotoFrame, Screen, Text, TextField } from "../../components/ui";
+import { MercosulPlate, VehiclePhoto } from "../../components/domain";
+import {
+  Button,
+  Card,
+  Field,
+  FormScreen,
+  InlineNotice,
+  SelectChip,
+  TextField,
+} from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
 import { formatDateDisplay, formatDateInputDigits, parseDateInputToISO } from "../../lib/date-mask";
 import { useToastStore } from "../../lib/toast-store";
 import { FUEL_TYPE_LABELS, formatMileage, parseIntegerInput } from "../../lib/vehicle-display";
 import { pickVehiclePhoto, uploadVehiclePhoto, type PickedPhoto } from "../../lib/vehicle-photo";
 import type { AppStackNavigation, AppStackParamList } from "../../navigation/RootNavigator";
+import { space } from "../../theme";
+import { haptic } from "../../theme/haptics";
 
 const numberText = (value: number | undefined) => (value === undefined ? "" : String(value));
 
+// Veículo (form) (design/telas.md §16): the optional photo first (on
+// create), then make/model, years side by side, mileage, the plate with a
+// live Mercosul preview, and the fuel as chips.
 export function VehicleFormScreen() {
   const navigation = useNavigation<AppStackNavigation>();
   const queryClient = useQueryClient();
@@ -33,6 +45,7 @@ export function VehicleFormScreen() {
   // Photo is only picked here when creating; an existing vehicle's photo
   // is managed from its detail screen.
   const [photo, setPhoto] = useState<PickedPhoto | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [dateDisplay, setDateDisplay] = useState(
     editing?.acquisitionDate ? formatDateDisplay(editing.acquisitionDate) : "",
   );
@@ -60,6 +73,7 @@ export function VehicleFormScreen() {
   });
 
   const fuelType = watch("fuelType");
+  const plate = watch("licensePlate");
 
   const mileageFloorError = (current: number) =>
     `A quilometragem não pode ser menor que a atual (${formatMileage(current)})`;
@@ -115,10 +129,12 @@ export function VehicleFormScreen() {
             return;
           }
         }
+        haptic.error();
         setSubmitError("Algo deu errado. Tente novamente.");
         return;
       }
       applySaved(saved);
+      haptic.success();
       navigation.goBack();
       return;
     }
@@ -134,6 +150,7 @@ export function VehicleFormScreen() {
         }),
       });
     } catch {
+      haptic.error();
       setSubmitError("Algo deu errado. Tente novamente.");
       return;
     }
@@ -151,55 +168,60 @@ export function VehicleFormScreen() {
           .getState()
           .show(
             "Veículo salvo, mas não foi possível enviar a foto. Tente de novo na tela do veículo.",
+            {
+              tone: "warning",
+            },
           );
       }
     }
     applySaved(saved);
+    haptic.success();
     navigation.goBack();
   };
 
   const choosePhoto = async () => {
     try {
+      setPhotoError(null);
       const picked = await pickVehiclePhoto();
       if (picked) setPhoto(picked);
     } catch (error) {
       if (__DEV__) console.warn("Vehicle photo pick failed:", error);
-      useToastStore.getState().show("Não foi possível abrir suas fotos.");
+      // Inline: this screen is an iOS modal, and the toast renders behind it.
+      setPhotoError("Não foi possível abrir suas fotos.");
     }
   };
 
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text variant="heading">{editing ? "Editar veículo" : "Novo veículo"}</Text>
-        <TouchableOpacity
-          testID="header-close"
-          accessibilityRole="button"
-          accessibilityLabel="Fechar"
-          hitSlop={8}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="close-outline" size={sizeTokens.iconLg} color={color.textPrimary} />
-        </TouchableOpacity>
-      </View>
+    <FormScreen
+      title={editing ? "Editar veículo" : "Novo veículo"}
+      onClose={() => navigation.goBack()}
+      footer={
+        <>
+          {submitError ? <InlineNotice tone="danger" message={submitError} /> : null}
+          <Button
+            testID="submit-button"
+            label={editing ? "Salvar alterações" : "Cadastrar veículo"}
+            onPress={handleSubmit(onSubmit)}
+            loading={isSubmitting}
+          />
+        </>
+      }
+    >
+      {!editing ? (
+        <Card style={styles.photoCard}>
+          <VehiclePhoto testID="vehicle-photo-preview" uri={photo?.uri ?? null} />
+          {photoError ? <InlineNotice tone="danger" message={photoError} /> : null}
+          <Button
+            testID="pick-photo-button"
+            label={photo ? "Trocar foto" : "Adicionar foto (opcional)"}
+            leftIcon="image-outline"
+            variant="secondary"
+            onPress={() => void choosePhoto()}
+          />
+        </Card>
+      ) : null}
 
-      <View style={styles.form}>
-        {!editing && (
-          <View style={styles.photo}>
-            <PhotoFrame
-              testID="vehicle-photo-preview"
-              uri={photo?.uri ?? null}
-              placeholderIcon="camera-outline"
-            />
-            <Button
-              testID="pick-photo-button"
-              label={photo ? "Trocar foto" : "Adicionar foto (opcional)"}
-              variant="secondary"
-              onPress={choosePhoto}
-            />
-          </View>
-        )}
-
+      <Card style={styles.card}>
         <Controller
           control={control}
           name="make"
@@ -228,46 +250,42 @@ export function VehicleFormScreen() {
             />
           )}
         />
-
         <View style={styles.row}>
-          <View style={styles.rowField}>
-            <Controller
-              control={control}
-              name="manufactureYear"
-              render={({ field }) => (
-                <TextField
-                  testID="manufacture-year-input"
-                  label="Ano de fabricação"
-                  value={numberText(field.value)}
-                  onChangeText={(text) => field.onChange(parseIntegerInput(text.slice(0, 4)))}
-                  keyboardType="number-pad"
-                  placeholder="2021"
-                  maxLength={4}
-                  error={errors.manufactureYear?.message}
-                />
-              )}
-            />
-          </View>
-          <View style={styles.rowField}>
-            <Controller
-              control={control}
-              name="modelYear"
-              render={({ field }) => (
-                <TextField
-                  testID="model-year-input"
-                  label="Ano do modelo"
-                  value={numberText(field.value)}
-                  onChangeText={(text) => field.onChange(parseIntegerInput(text.slice(0, 4)))}
-                  keyboardType="number-pad"
-                  placeholder="2022"
-                  maxLength={4}
-                  error={errors.modelYear?.message}
-                />
-              )}
-            />
-          </View>
+          <Controller
+            control={control}
+            name="manufactureYear"
+            render={({ field }) => (
+              <TextField
+                testID="manufacture-year-input"
+                label="Ano de fabricação"
+                value={numberText(field.value)}
+                onChangeText={(text) => field.onChange(parseIntegerInput(text.slice(0, 4)))}
+                keyboardType="number-pad"
+                placeholder="2021"
+                maxLength={4}
+                containerStyle={styles.flex}
+                error={errors.manufactureYear?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="modelYear"
+            render={({ field }) => (
+              <TextField
+                testID="model-year-input"
+                label="Ano do modelo"
+                value={numberText(field.value)}
+                onChangeText={(text) => field.onChange(parseIntegerInput(text.slice(0, 4)))}
+                keyboardType="number-pad"
+                placeholder="2022"
+                maxLength={4}
+                containerStyle={styles.flex}
+                error={errors.modelYear?.message}
+              />
+            )}
+          />
         </View>
-
         <Controller
           control={control}
           name="currentMileage"
@@ -275,6 +293,7 @@ export function VehicleFormScreen() {
             <TextField
               testID="current-mileage-input"
               label="Quilometragem atual (km)"
+              leftIcon="speedometer-outline"
               value={numberText(field.value)}
               onChangeText={(text) => field.onChange(parseIntegerInput(text))}
               keyboardType="number-pad"
@@ -283,7 +302,9 @@ export function VehicleFormScreen() {
             />
           )}
         />
+      </Card>
 
+      <Card style={styles.card}>
         <Controller
           control={control}
           name="licensePlate"
@@ -300,7 +321,7 @@ export function VehicleFormScreen() {
             />
           )}
         />
-
+        {plate ? <MercosulPlate plate={plate} /> : null}
         <Controller
           control={control}
           name="acquisitionDate"
@@ -308,6 +329,7 @@ export function VehicleFormScreen() {
             <TextField
               testID="acquisition-date-input"
               label="Data de aquisição (opcional)"
+              leftIcon="calendar-outline"
               value={dateDisplay}
               onChangeText={(text) => {
                 setDateDisplay(formatDateInputDigits(text));
@@ -318,11 +340,11 @@ export function VehicleFormScreen() {
               }}
               keyboardType="number-pad"
               placeholder="DD/MM/AAAA"
+              maxLength={10}
               error={errors.acquisitionDate?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="color"
@@ -337,100 +359,48 @@ export function VehicleFormScreen() {
             />
           )}
         />
+      </Card>
 
-        <View>
-          <Text variant="caption" style={styles.fieldLabel}>
-            Combustível (opcional)
-          </Text>
-          <View style={styles.chipList} testID="fuel-type-picker">
-            {FUEL_TYPES.map((option) => {
-              const selected = option === fuelType;
-              return (
-                <TouchableOpacity
-                  key={option}
-                  testID={`fuel-type-${option}`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  style={[styles.chip, selected && styles.chipSelected]}
-                  // Tapping the selected chip clears it (the field is optional).
-                  onPress={() =>
-                    setValue("fuelType", selected ? undefined : option, { shouldDirty: true })
-                  }
-                >
-                  <Text variant="caption" color={selected ? color.onPrimary : color.textPrimary}>
-                    {FUEL_TYPE_LABELS[option]}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+      <Field label="Combustível (opcional)">
+        <View style={styles.chips} testID="fuel-type-picker" accessibilityRole="radiogroup">
+          {FUEL_TYPES.map((option) => {
+            const selected = option === fuelType;
+            return (
+              <SelectChip
+                key={option}
+                testID={`fuel-type-${option}`}
+                label={FUEL_TYPE_LABELS[option]}
+                selected={selected}
+                // Tapping the selected chip clears it (the field is optional).
+                onPress={() =>
+                  setValue("fuelType", selected ? undefined : option, { shouldDirty: true })
+                }
+              />
+            );
+          })}
         </View>
-      </View>
-
-      {submitError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {submitError}
-          </Text>
-        </View>
-      )}
-
-      <Button
-        testID="submit-button"
-        label={editing ? "Salvar alterações" : "Cadastrar veículo"}
-        onPress={handleSubmit(onSubmit)}
-        loading={isSubmitting}
-      />
-    </Screen>
+      </Field>
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  flex: {
+    flex: 1,
   },
-  form: {
-    gap: spacing.md,
-    marginBottom: spacing.md,
+  photoCard: {
+    gap: space.md,
   },
-  photo: {
-    gap: spacing.sm,
+  card: {
+    gap: space.lg,
   },
   row: {
     flexDirection: "row",
-    gap: spacing.sm,
+    gap: space.md,
   },
-  rowField: {
-    flex: 1,
-  },
-  fieldLabel: {
-    marginBottom: spacing.xs,
-    marginLeft: spacing.xxs,
-  },
-  chipList: {
+  chips: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  chip: {
-    backgroundColor: color.surfaceAlt,
-    borderRadius: radius.sm,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  chipSelected: {
-    backgroundColor: color.primary,
-  },
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
+    gap: space.sm,
   },
 });

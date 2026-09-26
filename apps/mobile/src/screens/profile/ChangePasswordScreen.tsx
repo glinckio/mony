@@ -1,16 +1,27 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { changePasswordInputSchema, type ChangePasswordInput } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { Button, Screen, Text, TextField } from "../../components/ui";
+import {
+  Button,
+  Card,
+  FormScreen,
+  IconBadge,
+  InlineNotice,
+  Text,
+  TextField,
+} from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
+import { useToastStore } from "../../lib/toast-store";
 import type { AppStackNavigation } from "../../navigation/RootNavigator";
+import { space } from "../../theme";
+import { haptic } from "../../theme/haptics";
 
+// Alterar senha (design/telas.md §20): three password fields in a card,
+// the CTA glued above the keyboard; success goes back with a toast.
 export function ChangePasswordScreen() {
   const navigation = useNavigation<AppStackNavigation>();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -32,8 +43,11 @@ export function ChangePasswordScreen() {
         method: "POST",
         body: JSON.stringify(data),
       });
+      haptic.success();
+      useToastStore.getState().show("Senha alterada.", { tone: "success" });
       navigation.goBack();
     } catch (error) {
+      haptic.error();
       if (
         error instanceof ApiError &&
         error.statusCode === 400 &&
@@ -47,23 +61,29 @@ export function ChangePasswordScreen() {
   };
 
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text variant="heading">Alterar senha</Text>
-        <TouchableOpacity
-          testID="header-close"
-          accessibilityRole="button"
-          hitSlop={8}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="close-outline" size={sizeTokens.iconLg} color={color.textPrimary} />
-        </TouchableOpacity>
+    <FormScreen
+      title="Alterar senha"
+      onClose={() => navigation.goBack()}
+      footer={
+        <>
+          {submitError ? <InlineNotice tone="danger" message={submitError} /> : null}
+          <Button
+            testID="submit-button"
+            label="Alterar senha"
+            onPress={handleSubmit(onSubmit)}
+            loading={isSubmitting}
+          />
+        </>
+      }
+    >
+      <View style={styles.intro}>
+        <IconBadge icon="lock-closed" size={56} filled />
+        <Text variant="callout" tone="muted" style={styles.flex}>
+          Informe sua senha atual e escolha uma nova, com pelo menos 8 caracteres.
+        </Text>
       </View>
-      <Text variant="caption" style={styles.subtitle}>
-        Informe sua senha atual e a nova senha.
-      </Text>
 
-      <View style={styles.form}>
+      <Card style={styles.card}>
         <Controller
           control={control}
           name="currentPassword"
@@ -74,11 +94,11 @@ export function ChangePasswordScreen() {
               value={field.value}
               onChangeText={field.onChange}
               secureToggle
+              textContentType="password"
               error={errors.currentPassword?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="newPassword"
@@ -89,11 +109,11 @@ export function ChangePasswordScreen() {
               value={field.value}
               onChangeText={field.onChange}
               secureToggle
+              textContentType="newPassword"
               error={errors.newPassword?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="newPasswordConfirmation"
@@ -104,51 +124,26 @@ export function ChangePasswordScreen() {
               value={field.value}
               onChangeText={field.onChange}
               secureToggle
+              textContentType="newPassword"
               error={errors.newPasswordConfirmation?.message}
             />
           )}
         />
-      </View>
-
-      {submitError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {submitError}
-          </Text>
-        </View>
-      )}
-
-      <Button
-        testID="submit-button"
-        label="Alterar senha"
-        onPress={handleSubmit(onSubmit)}
-        loading={isSubmitting}
-      />
-    </Screen>
+      </Card>
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
+  intro: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: space.lg,
   },
-  subtitle: {
-    marginBottom: spacing.sm,
+  flex: {
+    flex: 1,
   },
-  form: {
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
+  card: {
+    gap: space.lg,
   },
 });

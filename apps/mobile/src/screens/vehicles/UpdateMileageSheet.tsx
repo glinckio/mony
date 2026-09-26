@@ -1,19 +1,19 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   updateMileageInputSchema,
   type UpdateMileageInput,
   type Vehicle,
 } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 
-import { BottomSheet, Button, Text, TextField } from "../../components/ui";
+import { Odometer } from "../../components/domain";
+import { Button, InlineNotice, PaperSheet, Text, TextField } from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
 import { formatMileage, parseIntegerInput } from "../../lib/vehicle-display";
+import { space } from "../../theme";
 
 interface UpdateMileageSheetProps {
   vehicle: Vehicle;
@@ -87,13 +87,18 @@ export function UpdateMileageSheet({ vehicle, visible, onClose }: UpdateMileageS
   }, [visible, vehicle.currentMileage, reset]);
 
   return (
-    <BottomSheet
+    <PaperSheet
       testID="update-mileage-sheet"
       visible={visible}
       title="Atualizar quilometragem"
       onClose={onClose}
     >
-      <Text variant="caption">Atual: {formatMileage(vehicle.currentMileage)}</Text>
+      <View style={styles.current}>
+        <Odometer km={vehicle.currentMileage} />
+        <Text variant="footnote" tone="muted">
+          Atual: {formatMileage(vehicle.currentMileage)}
+        </Text>
+      </View>
       <Controller
         control={control}
         name="currentMileage"
@@ -104,18 +109,14 @@ export function UpdateMileageSheet({ vehicle, visible, onClose }: UpdateMileageS
             value={field.value !== undefined ? String(field.value) : ""}
             onChangeText={(text) => field.onChange(parseIntegerInput(text))}
             keyboardType="number-pad"
+            leftIcon="speedometer-outline"
             error={errors.currentMileage?.message}
           />
         )}
       />
-      {genericError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            Algo deu errado. Tente novamente.
-          </Text>
-        </View>
-      )}
+      {genericError ? (
+        <InlineNotice tone="danger" message="Algo deu errado. Tente novamente." />
+      ) : null}
       <Button
         testID="save-mileage-button"
         label="Salvar"
@@ -125,17 +126,12 @@ export function UpdateMileageSheet({ vehicle, visible, onClose }: UpdateMileageS
           mutation.mutate(input);
         })}
       />
-    </BottomSheet>
+    </PaperSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
+  current: {
+    gap: space.sm,
   },
 });

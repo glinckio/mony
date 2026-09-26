@@ -1,6 +1,7 @@
 import { formatCurrency, type GroceryCategory, type GroceryItem } from "@mony/shared-types";
 
-import type { ProgressTone } from "../components/ui";
+// Budget usage tone (legacy thresholds), mapped to the progress bar's tones.
+export type ProgressTone = "success" | "warning" | "danger";
 
 // Legacy `mercado.php` labels. The enum is declared in this same
 // (alphabetical-by-label) order, so the API's `ORDER BY category` already

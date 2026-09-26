@@ -1,52 +1,96 @@
-import { Ionicons } from "@expo/vector-icons";
-import { color, radius, size as sizeTokens } from "@mony/ui-tokens";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, type StyleProp, type ViewStyle } from "react-native";
+
+import { layout, radius, useTheme } from "../../theme";
+import { haptic as haptics } from "../../theme/haptics";
+
+import { Icon, type IconName } from "./Icon";
+import { Touchable } from "./Touchable";
 
 interface IconButtonProps {
-  icon: keyof typeof Ionicons.glyphMap;
-  // Required — an icon-only control has no visible text for screen readers.
+  icon: IconName;
   accessibilityLabel: string;
   onPress: () => void;
+  // plain: bare glyph in a 48 hit area
+  // soft: white circle with a soft shadow (back, header actions)
+  // overlay: translucent circle, for use over photos
+  // ink: small solid indigo circle (grocery stepper)
+  variant?: "plain" | "soft" | "overlay" | "ink";
+  tone?: "default" | "primary" | "danger";
   disabled?: boolean;
+  filled?: boolean;
+  haptic?: keyof typeof haptics;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
-// Square, touch-target-sized icon control on a `primaryMuted` fill — e.g.
-// the grocery list's quick −/+ stepper. For bare header icons (add, edit,
-// share) screens keep using a plain `TouchableOpacity` + `hitSlop`.
 export function IconButton({
   icon,
   accessibilityLabel,
   onPress,
+  variant = "plain",
+  tone = "default",
   disabled = false,
+  filled = false,
+  haptic,
+  style,
   testID,
 }: IconButtonProps) {
+  const { colors, elevation } = useTheme();
+  const toneColor =
+    tone === "danger" ? colors.danger : tone === "primary" ? colors.primary : colors.text;
+  const glyphColor = variant === "ink" || variant === "overlay" ? colors.onPrimary : toneColor;
+  const surface =
+    variant === "soft"
+      ? { backgroundColor: colors.surface, ...elevation("sm") }
+      : variant === "overlay"
+        ? { backgroundColor: colors.overlay }
+        : variant === "ink"
+          ? { backgroundColor: colors.primary }
+          : null;
+  const diameter = variant === "ink" ? 36 : 44;
+  const slop = (layout.touchTarget - diameter) / 2;
+
   return (
-    <TouchableOpacity
+    <Touchable
       testID={testID}
+      feedback={variant === "plain" ? "fade" : "sink"}
+      haptic={haptic}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}
       disabled={disabled}
-      style={[styles.button, disabled && styles.disabled]}
       onPress={onPress}
+      hitSlop={variant === "plain" ? undefined : slop}
+      style={[
+        variant === "plain" ? styles.plain : [styles.round, { width: diameter, height: diameter }],
+        surface,
+        disabled && styles.disabled,
+        style,
+      ]}
     >
-      <Ionicons name={icon} size={sizeTokens.iconMd} color={color.primary} />
-    </TouchableOpacity>
+      <Icon
+        name={icon}
+        size={variant === "ink" || variant === "soft" ? "md" : "lg"}
+        color={glyphColor}
+        filled={filled}
+      />
+    </Touchable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    width: sizeTokens.touchTarget,
-    height: sizeTokens.touchTarget,
-    borderRadius: radius.md,
-    backgroundColor: color.primaryMuted,
+  plain: {
+    width: layout.touchTarget,
+    height: layout.touchTarget,
     alignItems: "center",
     justifyContent: "center",
   },
-  // Same disabled treatment as `Button`.
+  round: {
+    borderRadius: radius.full,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.35,
   },
 });

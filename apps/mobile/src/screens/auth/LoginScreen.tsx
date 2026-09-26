@@ -1,21 +1,25 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginInputSchema, type AuthTokens, type LoginInput } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View, type TextInput } from "react-native";
 
-import { Button, Screen, Text, TextField } from "../../components/ui";
+import { AuthLayout, Button, InlineNotice, Text, TextField, Touchable } from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
 import { useAuthStore } from "../../lib/auth-store";
 import type { AuthStackNavigation } from "../../navigation/RootNavigator";
+import { space } from "../../theme";
+import { haptic } from "../../theme/haptics";
 
+import { AuthLink } from "./AuthLink";
+
+// Entrar (design/telas.md §4).
 export function LoginScreen() {
   const navigation = useNavigation<AuthStackNavigation>();
   const setSession = useAuthStore((state) => state.setSession);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const passwordRef = useRef<TextInput>(null);
 
   const {
     control,
@@ -33,8 +37,13 @@ export function LoginScreen() {
         method: "POST",
         body: JSON.stringify(data),
       });
+      haptic.success();
+      // Only reachable signed in as the dev catalog's preview of this
+      // screen: never swap out the session that is already open.
+      if (useAuthStore.getState().accessToken) return;
       setSession(tokens);
     } catch (error) {
+      haptic.error();
       if (error instanceof ApiError && error.statusCode === 403) {
         setSubmitError("Sua conta está inativa. Entre em contato com o suporte.");
       } else if (error instanceof ApiError && error.statusCode === 429) {
@@ -46,13 +55,20 @@ export function LoginScreen() {
   };
 
   return (
-    <Screen>
-      <Text variant="heading">Entrar</Text>
-      <Text variant="caption" style={styles.subtitle}>
-        Acesse sua conta para continuar organizando suas finanças.
-      </Text>
-
-      <View style={styles.form}>
+    <AuthLayout
+      hero="large"
+      title="Entrar"
+      subtitle="Acesse sua conta para continuar organizando suas finanças."
+      footer={
+        <AuthLink
+          testID="go-to-register"
+          lead="Não tem uma conta?"
+          action="Criar conta"
+          onPress={() => navigation.navigate("Register")}
+        />
+      }
+    >
+      <View style={styles.fields}>
         <Controller
           control={control}
           name="email"
@@ -60,47 +76,54 @@ export function LoginScreen() {
             <TextField
               testID="email-input"
               label="E-mail"
+              leftIcon="mail-outline"
               value={field.value}
               onChangeText={field.onChange}
               autoCapitalize="none"
               keyboardType="email-address"
+              textContentType="emailAddress"
+              autoComplete="email"
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
               error={errors.email?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="password"
           render={({ field }) => (
             <TextField
+              ref={passwordRef}
               testID="password-input"
               label="Senha"
+              leftIcon="lock-closed-outline"
               value={field.value}
               onChangeText={field.onChange}
               secureToggle
+              textContentType="password"
+              autoComplete="password"
+              returnKeyType="go"
+              onSubmitEditing={handleSubmit(onSubmit)}
               error={errors.password?.message}
             />
           )}
         />
+        <Touchable
+          testID="go-to-forgot-password"
+          feedback="fade"
+          accessibilityRole="link"
+          onPress={() => navigation.navigate("ForgotPassword")}
+          style={styles.forgot}
+          hitSlop={10}
+        >
+          <Text variant="subhead" tone="primary">
+            Esqueceu sua senha?
+          </Text>
+        </Touchable>
       </View>
 
-      <TouchableOpacity
-        testID="go-to-forgot-password"
-        style={styles.forgotPasswordLink}
-        onPress={() => navigation.navigate("ForgotPassword")}
-      >
-        <Text variant="caption">Esqueceu sua senha?</Text>
-      </TouchableOpacity>
-
-      {submitError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {submitError}
-          </Text>
-        </View>
-      )}
+      {submitError ? <InlineNotice tone="danger" message={submitError} /> : null}
 
       <Button
         testID="submit-button"
@@ -108,43 +131,15 @@ export function LoginScreen() {
         onPress={handleSubmit(onSubmit)}
         loading={isSubmitting}
       />
-
-      <TouchableOpacity
-        testID="go-to-register"
-        style={styles.registerLink}
-        onPress={() => navigation.navigate("Register")}
-      >
-        <Text variant="caption">
-          Não tem uma conta? <Text variant="bodyStrong">Criar conta</Text>
-        </Text>
-      </TouchableOpacity>
-    </Screen>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  subtitle: {
-    marginBottom: spacing.sm,
+  fields: {
+    gap: space.lg,
   },
-  form: {
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  forgotPasswordLink: {
+  forgot: {
     alignSelf: "flex-end",
-    marginBottom: spacing.md,
-  },
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  registerLink: {
-    marginTop: spacing.lg,
-    alignItems: "center",
   },
 });

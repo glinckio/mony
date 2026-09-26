@@ -1,16 +1,18 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { requestResetInputSchema, type RequestResetInput } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { Button, Screen, Text, TextField } from "../../components/ui";
+import { AuthLayout, Button, InlineNotice, TextField } from "../../components/ui";
 import { apiFetch } from "../../lib/api-client";
 import type { AuthStackNavigation } from "../../navigation/RootNavigator";
+import { haptic } from "../../theme/haptics";
 
+import { AuthLink } from "./AuthLink";
+
+// Esqueci a senha (design/telas.md §21). The answer is always the same
+// generic message — it never reveals whether the e-mail exists.
 export function ForgotPasswordScreen() {
   const navigation = useNavigation<AuthStackNavigation>();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -33,55 +35,55 @@ export function ForgotPasswordScreen() {
         method: "POST",
         body: JSON.stringify(data),
       });
+      haptic.success();
       setSent(true);
     } catch {
+      haptic.error();
       setSubmitError("Algo deu errado. Tente novamente.");
     }
   };
 
   return (
-    <Screen>
-      <Text variant="heading">Esqueceu sua senha?</Text>
-      <Text variant="caption" style={styles.subtitle}>
-        Informe seu e-mail e enviaremos um código para redefinir sua senha.
-      </Text>
-
-      <View style={styles.form}>
-        <Controller
-          control={control}
-          name="email"
-          render={({ field }) => (
-            <TextField
-              testID="email-input"
-              label="E-mail"
-              value={field.value}
-              onChangeText={field.onChange}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              editable={!sent}
-              error={errors.email?.message}
-            />
-          )}
+    <AuthLayout
+      title="Esqueceu sua senha?"
+      subtitle="Informe seu e-mail e enviaremos um código para redefinir sua senha."
+      onBack={navigation.canGoBack() ? () => navigation.goBack() : undefined}
+      footer={
+        <AuthLink
+          testID="go-to-login"
+          lead="Lembrou a senha?"
+          action="Entrar"
+          onPress={() => navigation.navigate("Login")}
         />
-      </View>
+      }
+    >
+      <Controller
+        control={control}
+        name="email"
+        render={({ field }) => (
+          <TextField
+            testID="email-input"
+            label="E-mail"
+            leftIcon="mail-outline"
+            value={field.value}
+            onChangeText={field.onChange}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            autoComplete="email"
+            editable={!sent}
+            error={errors.email?.message}
+          />
+        )}
+      />
 
-      {sent && (
-        <View style={styles.confirmation}>
-          <Ionicons name="checkmark-circle-outline" size={sizeTokens.iconSm} color={color.primary} />
-          <Text variant="caption" style={styles.confirmationText}>
-            Se este e-mail estiver cadastrado, você receberá um código em instantes.
-          </Text>
-        </View>
-      )}
-
-      {submitError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {submitError}
-          </Text>
-        </View>
-      )}
+      {sent ? (
+        <InlineNotice
+          tone="success"
+          message="Se este e-mail estiver cadastrado, você receberá um código em instantes."
+        />
+      ) : null}
+      {submitError ? <InlineNotice tone="danger" message={submitError} /> : null}
 
       {sent ? (
         <Button
@@ -97,51 +99,6 @@ export function ForgotPasswordScreen() {
           loading={isSubmitting}
         />
       )}
-
-      <TouchableOpacity
-        testID="go-to-login"
-        style={styles.loginLink}
-        onPress={() => navigation.navigate("Login")}
-      >
-        <Text variant="caption">
-          Lembrou a senha? <Text variant="bodyStrong">Entrar</Text>
-        </Text>
-      </TouchableOpacity>
-    </Screen>
+    </AuthLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  subtitle: {
-    marginBottom: spacing.sm,
-  },
-  form: {
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  confirmation: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.primaryMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  confirmationText: {
-    flex: 1,
-  },
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  loginLink: {
-    marginTop: spacing.lg,
-    alignItems: "center",
-  },
-});

@@ -1,43 +1,48 @@
-import { Ionicons } from "@expo/vector-icons";
-import {
-  formatCurrency,
-  type GroceryBudget,
-  type GroceryCategory,
-  type GroceryItem,
-  type GrocerySummary,
+import type {
+  GroceryBudget,
+  GroceryCategory,
+  GroceryItem,
+  GrocerySummary,
 } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation } from "@react-navigation/native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo, useCallback, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
+  RefreshControl,
   SectionList,
   Share,
   StyleSheet,
-  TouchableOpacity,
   View,
   type SectionListRenderItem,
 } from "react-native";
+import Animated from "react-native-reanimated";
 
+import { PantryItem } from "../../components/domain";
 import {
-  AppHeader,
-  Badge,
+  Card,
+  EmptyState,
+  ErrorState,
   IconButton,
   ProgressBar,
-  Screen,
-  SegmentedToggle,
+  ScreenBackground,
+  SegmentedControl,
+  Skeleton,
   Text,
+  TopBar,
+  useBottomClearance,
+  useScreenInsets,
+  useScrollHeader,
 } from "../../components/ui";
 import { apiFetch } from "../../lib/api-client";
 import {
   GROCERY_CATEGORY_LABELS,
   budgetUsage,
   buildShoppingListMessage,
-  formatQuantity,
 } from "../../lib/grocery-display";
+import { formatMoney } from "../../lib/money-display";
 import { useToastStore } from "../../lib/toast-store";
 import type { AppStackNavigation } from "../../navigation/RootNavigator";
+import { layout, space, useTheme } from "../../theme";
 
 import { GroceryBudgetSheet } from "./GroceryBudgetSheet";
 
@@ -49,9 +54,14 @@ const FILTER_OPTIONS: Array<{ value: Filter; label: string }> = [
 ];
 
 interface Section {
+  // Stable section key: SectionList otherwise keys cells by section index,
+  // so filtering out a whole category would remount the rows after it.
+  key: GroceryCategory;
   category: GroceryCategory;
   data: GroceryItem[];
 }
+
+const AnimatedSectionList = Animated.createAnimatedComponent(SectionList<GroceryItem, Section>);
 
 // Quantity +/- 1 in integer hundredths (1.5 - 1 = 0.5, never below 0).
 function steppedQuantity(current: string, delta: 1 | -1): number {
@@ -62,15 +72,22 @@ const keyExtractor = (item: GroceryItem) => item.id;
 
 function renderSectionHeader({ section }: { section: Section }) {
   return (
-    <Text variant="bodyStrong" style={styles.sectionTitle}>
+    <Text variant="headline" accessibilityRole="header" style={styles.sectionTitle}>
       {GROCERY_CATEGORY_LABELS[section.category]}
     </Text>
   );
 }
 
+// Mercado (design/telas.md §12): the month's budget card (like the
+// reference's budget screen) — budget, shopping estimate, what's left —
+// then the pantry by category, each item a card with its stepper.
 export function GroceryScreen() {
   const navigation = useNavigation<AppStackNavigation>();
   const queryClient = useQueryClient();
+  const { colors } = useTheme();
+  const { scrollY, onScroll } = useScrollHeader();
+  const insets = useScreenInsets();
+  const bottom = useBottomClearance();
   const [filter, setFilter] = useState<Filter>("ALL");
   const [budgetSheetOpen, setBudgetSheetOpen] = useState(false);
 
@@ -150,7 +167,7 @@ export function GroceryScreen() {
     for (const item of visible) {
       const last = grouped[grouped.length - 1];
       if (last && last.category === item.category) last.data.push(item);
-      else grouped.push({ category: item.category, data: [item] });
+      else grouped.push({ key: item.category, category: item.category, data: [item] });
     }
     return grouped;
   }, [itemsQuery.data, filter]);
@@ -162,7 +179,9 @@ export function GroceryScreen() {
   const share = async () => {
     if (!itemsQuery.data || !summaryQuery.data) return;
     if (!itemsQuery.data.some((item) => item.missing)) {
-      useToastStore.getState().show("Não há itens faltando para compartilhar.");
+      useToastStore
+        .getState()
+        .show("Não há itens faltando para compartilhar.", { tone: "neutral" });
       return;
     }
     try {
@@ -178,96 +197,142 @@ export function GroceryScreen() {
   };
 
   const renderItem = useCallback<SectionListRenderItem<GroceryItem, Section>>(
-    ({ item }) => <GroceryRow item={item} onStep={onStep} onEdit={onEdit} />,
+    ({ item }) => (
+      <View style={styles.item}>
+        <PantryItem item={item} onStep={onStep} onEdit={onEdit} />
+      </View>
+    ),
     [onStep, onEdit],
   );
 
   const isError = itemsQuery.isError || budgetQuery.isError || summaryQuery.isError;
   const budget = budgetQuery.data;
   const summary = summaryQuery.data;
+  const ready = !!itemsQuery.data && !!budget && !!summary;
+  const { refetch: refetchItems } = itemsQuery;
+  const { refetch: refetchBudget } = budgetQuery;
+  const { refetch: refetchSummary } = summaryQuery;
+  const refetchAll = useCallback(() => {
+    void refetchItems();
+    void refetchBudget();
+    void refetchSummary();
+  }, [refetchItems, refetchBudget, refetchSummary]);
+  const openBudgetSheet = useCallback(() => setBudgetSheetOpen(true), []);
+
+  const header = ready ? (
+    <View style={styles.header}>
+      <BudgetCard budget={budget} summary={summary} onEdit={openBudgetSheet} />
+      <SegmentedControl
+        testID="grocery-filter"
+        options={FILTER_OPTIONS}
+        value={filter}
+        onChange={setFilter}
+      />
+    </View>
+  ) : isError ? (
+    <ErrorState onRetry={refetchAll} />
+  ) : (
+    // Also covers a paused (offline) query, where isLoading is false.
+    <View style={styles.loading} accessibilityLabel="Carregando o mercado">
+      <Skeleton height={170} radius="lg" />
+      <Skeleton height={48} radius="full" />
+      {[0, 1, 2].map((index) => (
+        <Skeleton key={index} height={84} radius="lg" />
+      ))}
+    </View>
+  );
+
+  const refreshing = itemsQuery.isRefetching;
+  const refreshControl = useMemo(
+    () => (
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={refetchAll}
+        tintColor={colors.primary}
+        colors={[colors.primary]}
+        progressViewOffset={insets.paddingTop}
+      />
+    ),
+    [refreshing, refetchAll, colors.primary, insets.paddingTop],
+  );
+  const contentContainerStyle = useMemo(
+    () => [insets, styles.content, { paddingBottom: bottom }],
+    [insets, bottom],
+  );
 
   return (
-    <Screen scrollable={false}>
-      <AppHeader
-        title="Mercado"
-        onBack={() => navigation.goBack()}
-        rightAccessory={
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              testID="share-grocery-list"
-              accessibilityRole="button"
-              accessibilityLabel="Compartilhar lista de compras"
-              accessibilityState={{ disabled: !canShare }}
-              hitSlop={8}
-              disabled={!canShare}
-              onPress={share}
-            >
-              <Ionicons
-                name="share-social-outline"
-                size={sizeTokens.iconLg}
-                color={canShare ? color.primary : color.textDisabled}
+    <View style={[styles.flex, { backgroundColor: colors.background }]}>
+      <ScreenBackground />
+      <AnimatedSectionList
+        testID="grocery-list"
+        sections={ready ? sections : []}
+        keyExtractor={keyExtractor}
+        stickySectionHeadersEnabled={false}
+        ListHeaderComponent={header}
+        ListEmptyComponent={
+          ready ? (
+            filter === "MISSING" ? (
+              <EmptyState
+                compact
+                icon="checkmark-done-outline"
+                title="Nada faltando por aqui."
+                message="A despensa está em dia."
               />
-            </TouchableOpacity>
-            <TouchableOpacity
-              testID="add-grocery-item-button"
-              accessibilityRole="button"
-              accessibilityLabel="Novo item"
-              hitSlop={8}
-              onPress={() => navigation.navigate("GroceryItemForm", undefined)}
-            >
-              <Ionicons name="add-circle-outline" size={sizeTokens.iconLg} color={color.primary} />
-            </TouchableOpacity>
-          </View>
+            ) : (
+              <EmptyState
+                image="emptyGrocery"
+                icon="cart-outline"
+                title="Nenhum item ainda."
+                message="Cadastre o que a casa usa e o Mony monta a lista do que falta."
+                action={{
+                  label: "Novo item",
+                  onPress: () => navigation.navigate("GroceryItemForm", undefined),
+                }}
+              />
+            )
+          ) : null
         }
+        renderSectionHeader={renderSectionHeader}
+        renderItem={renderItem}
+        refreshControl={refreshControl}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={contentContainerStyle}
       />
 
-      {isError ? (
-        <Text variant="caption" color={color.danger}>
-          Algo deu errado. Tente novamente.
-        </Text>
-      ) : !itemsQuery.data || !budget || !summary ? (
-        // Also covers a paused (offline) query, where isLoading is false.
-        <View style={styles.centered}>
-          <ActivityIndicator color={color.primary} />
-        </View>
-      ) : (
-        <SectionList
-          testID="grocery-list"
-          sections={sections}
-          keyExtractor={keyExtractor}
-          stickySectionHeadersEnabled={false}
-          contentContainerStyle={styles.listContent}
-          ListHeaderComponent={
-            <View style={styles.header}>
-              <BudgetCard
-                budget={budget}
-                summary={summary}
-                onEdit={() => setBudgetSheetOpen(true)}
-              />
-              <SegmentedToggle
-                testID="grocery-filter"
-                options={FILTER_OPTIONS}
-                value={filter}
-                onChange={setFilter}
-              />
-            </View>
-          }
-          ListEmptyComponent={
-            <Text variant="caption" color={color.textSecondary}>
-              {filter === "MISSING" ? "Nada faltando por aqui." : "Nenhum item ainda."}
-            </Text>
-          }
-          renderSectionHeader={renderSectionHeader}
-          renderItem={renderItem}
-        />
-      )}
+      <TopBar
+        scrollY={scrollY}
+        threshold={8}
+        title="Mercado"
+        onBack={() => navigation.goBack()}
+        actions={
+          <>
+            <IconButton
+              testID="share-grocery-list"
+              icon="share-social-outline"
+              variant="soft"
+              accessibilityLabel="Compartilhar lista de compras"
+              disabled={!canShare}
+              onPress={() => void share()}
+            />
+            <IconButton
+              testID="add-grocery-item-button"
+              icon="add"
+              variant="soft"
+              tone="primary"
+              accessibilityLabel="Novo item"
+              onPress={() => navigation.navigate("GroceryItemForm", undefined)}
+            />
+          </>
+        }
+      />
 
       <GroceryBudgetSheet
         visible={budgetSheetOpen}
         currentAmount={budgetQuery.data?.amount ?? null}
         onClose={() => setBudgetSheetOpen(false)}
       />
-    </Screen>
+    </View>
   );
 }
 
@@ -277,168 +342,111 @@ interface BudgetCardProps {
   onEdit: () => void;
 }
 
-function BudgetCard({ budget, summary, onEdit }: BudgetCardProps) {
+// Memoized: stepping an item re-renders the screen, but the card only
+// changes when the budget or the summary does.
+const BudgetCard = memo(function BudgetCard({ budget, summary, onEdit }: BudgetCardProps) {
+  const { colors } = useTheme();
   const amount = budget.amount === null ? null : Number(budget.amount);
   const usage = budgetUsage(amount, Number(summary.estimatedPurchaseTotal));
 
   return (
-    <View style={styles.card} testID="grocery-budget-card">
-      <View style={styles.cardHeader}>
-        <Text variant="caption">Orçamento mensal</Text>
-        <TouchableOpacity
+    <Card testID="grocery-budget-card" style={styles.card}>
+      <View style={styles.cardTop}>
+        <View style={styles.flex}>
+          <Text variant="subhead" tone="muted">
+            Orçamento do mês
+          </Text>
+          <Text variant="numeralLarge" testID="grocery-budget-amount">
+            {amount === null ? "Não definido" : formatMoney(budget.amount ?? "0")}
+          </Text>
+        </View>
+        <View style={styles.estimate}>
+          <Text variant="subhead" tone="muted">
+            Estimativa
+          </Text>
+          <Text variant="numeral" testID="grocery-estimated-total">
+            {formatMoney(summary.estimatedPurchaseTotal)}
+          </Text>
+        </View>
+        <IconButton
           testID="edit-grocery-budget"
-          accessibilityRole="button"
+          icon="pencil"
+          variant="soft"
           accessibilityLabel="Definir orçamento"
-          hitSlop={8}
           onPress={onEdit}
-        >
-          <Ionicons name="pencil-outline" size={sizeTokens.iconMd} color={color.primary} />
-        </TouchableOpacity>
-      </View>
-      <Text variant="title" testID="grocery-budget-amount">
-        {amount === null ? "Não definido" : formatCurrency(budget.amount!)}
-      </Text>
-      <View style={styles.cardRow}>
-        <Text variant="caption">Estimativa de compra</Text>
-        <Text variant="bodyStrong" testID="grocery-estimated-total">
-          {formatCurrency(summary.estimatedPurchaseTotal)}
-        </Text>
-      </View>
-      <ProgressBar testID="grocery-budget-progress" percent={usage.percent} tone={usage.tone} />
-      {amount !== null && (
-        <View style={styles.cardRow}>
-          <Text variant="caption">Saldo disponível</Text>
-          <Text
-            variant="bodyStrong"
-            testID="grocery-remaining"
-            color={usage.overBudget ? color.danger : color.success}
-          >
-            {formatCurrency(usage.remaining.toFixed(2))}
-          </Text>
-        </View>
-      )}
-      <Text variant="caption" testID="grocery-counts">
-        {summary.totalItemCount} {summary.totalItemCount === 1 ? "item" : "itens"} ·{" "}
-        {summary.missingItemCount} faltando
-      </Text>
-    </View>
-  );
-}
-
-interface GroceryRowProps {
-  item: GroceryItem;
-  onStep: (itemId: string, delta: 1 | -1) => void;
-  onEdit: (item: GroceryItem) => void;
-}
-
-// Memoized: a step only re-renders the row whose item object changed.
-const GroceryRow = memo(function GroceryRow({ item, onStep, onEdit }: GroceryRowProps) {
-  const atZero = Number(item.currentQuantity) <= 0;
-
-  return (
-    <View style={styles.row} testID={`grocery-row-${item.id}`}>
-      <TouchableOpacity
-        style={styles.rowMain}
-        accessibilityRole="button"
-        accessibilityLabel={`Editar ${item.name}`}
-        onPress={() => onEdit(item)}
-      >
-        <View style={styles.rowTitle}>
-          <Text variant="bodyStrong" numberOfLines={1} style={styles.rowName}>
-            {item.name}
-          </Text>
-          {item.missing && (
-            <Badge testID={`grocery-missing-${item.id}`} label="Faltando" tone="warning" />
-          )}
-        </View>
-        <Text variant="caption">
-          {formatQuantity(item.currentQuantity)} de {formatQuantity(item.idealQuantity)} {item.unit}{" "}
-          · {formatCurrency(item.estimatedPrice)}/{item.unit}
-        </Text>
-      </TouchableOpacity>
-      <View style={styles.stepper}>
-        <IconButton
-          testID={`grocery-decrement-${item.id}`}
-          icon="remove"
-          accessibilityLabel={`Diminuir ${item.name}`}
-          disabled={atZero}
-          onPress={() => onStep(item.id, -1)}
-        />
-        <IconButton
-          testID={`grocery-increment-${item.id}`}
-          icon="add"
-          accessibilityLabel={`Aumentar ${item.name}`}
-          onPress={() => onStep(item.id, 1)}
         />
       </View>
-    </View>
+      <ProgressBar
+        testID="grocery-budget-progress"
+        percent={usage.percent}
+        tone={usage.tone}
+        height={10}
+      />
+      <View style={styles.cardBottom}>
+        {amount !== null ? (
+          <Text variant="footnote" tone="muted" style={styles.flex}>
+            {/* Spec: the balance is clamped at zero, so over budget reads
+                "Saldo disponível R$ 0,00" in danger — never a fake overrun. */}
+            Saldo disponível{" "}
+            <Text
+              variant="subhead"
+              inline
+              testID="grocery-remaining"
+              color={usage.overBudget ? colors.danger : colors.success}
+            >
+              {formatMoney(usage.remaining)}
+            </Text>
+          </Text>
+        ) : (
+          <View style={styles.flex} />
+        )}
+        <Text variant="footnote" tone="muted" testID="grocery-counts">
+          {summary.totalItemCount} {summary.totalItemCount === 1 ? "item" : "itens"} ·{" "}
+          {summary.missingItemCount} faltando
+        </Text>
+      </View>
+    </Card>
   );
 });
 
 const styles = StyleSheet.create({
-  centered: {
+  flex: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-  },
-  listContent: {
-    gap: spacing.sm,
-    paddingBottom: spacing.lg,
+  content: {
+    flexGrow: 1,
+    width: "100%",
+    maxWidth: layout.maxContentWidth,
+    alignSelf: "center",
   },
   header: {
-    gap: spacing.md,
-    marginBottom: spacing.sm,
+    gap: space.lg,
+    marginBottom: space.xs,
+  },
+  loading: {
+    gap: space.md,
   },
   card: {
-    gap: spacing.sm,
-    padding: spacing.md,
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: color.border,
+    gap: space.md,
   },
-  cardHeader: {
+  cardTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: space.md,
+  },
+  estimate: {
+    alignItems: "flex-end",
+  },
+  cardBottom: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-  },
-  cardRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    gap: space.md,
   },
   sectionTitle: {
-    marginTop: spacing.sm,
+    paddingTop: space.xl,
+    paddingBottom: space.sm,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    padding: spacing.md,
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: color.border,
-  },
-  rowMain: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  rowTitle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  rowName: {
-    flexShrink: 1,
-  },
-  stepper: {
-    flexDirection: "row",
-    gap: spacing.xs,
+  item: {
+    marginBottom: space.sm + 2,
   },
 });

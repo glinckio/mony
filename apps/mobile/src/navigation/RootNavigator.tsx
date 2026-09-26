@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
 import type {
   Category,
+  CategoryType,
   Debt,
   Goal,
   GroceryItem,
@@ -8,19 +8,23 @@ import type {
   Transaction,
   Vehicle,
 } from "@mony/shared-types";
-import { color } from "@mony/ui-tokens";
 import {
   createBottomTabNavigator,
   type BottomTabNavigationProp,
 } from "@react-navigation/bottom-tabs";
 import {
+  DefaultTheme,
   NavigationContainer,
+  createNavigationContainerRef,
   type CompositeNavigationProp,
   type NavigationProp,
+  type Theme as NavigationTheme,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
+import { AppTabBar, type IconName } from "../components/ui";
+import { CATALOG_ON_START, DEV_TOOLS_ENABLED } from "../dev/flags";
 import { apiFetch } from "../lib/api-client";
 import { useAuthStore } from "../lib/auth-store";
 import { useWorkspaceStore } from "../lib/workspace-store";
@@ -46,6 +50,7 @@ import { TransactionsListScreen } from "../screens/transactions/TransactionsList
 import { VehicleDetailScreen } from "../screens/vehicles/VehicleDetailScreen";
 import { VehicleFormScreen } from "../screens/vehicles/VehicleFormScreen";
 import { VehiclesListScreen } from "../screens/vehicles/VehiclesListScreen";
+import { useTheme } from "../theme";
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -59,11 +64,11 @@ export type MainTabParamList = {
   Transactions: undefined;
   Goals: undefined;
   More: undefined;
-  Profile: undefined;
 };
 
 export type AppStackParamList = {
-  MainTabs: undefined;
+  MainTabs: { screen?: keyof MainTabParamList } | undefined;
+  Profile: undefined;
   ChangePassword: undefined;
   Categories: undefined;
   Debts: undefined;
@@ -74,10 +79,19 @@ export type AppStackParamList = {
   Vehicles: undefined;
   VehicleDetail: { vehicleId: string };
   VehicleForm: { vehicle?: Vehicle } | undefined;
-  CategoryForm: { category?: Category } | undefined;
+  CategoryForm: { category?: Category; type?: CategoryType } | undefined;
   TransactionForm: { transaction?: Transaction } | undefined;
   GoalForm: { goal?: Goal } | undefined;
 };
+
+// Dev builds only: the screen catalog, the design system and copies of
+// the auth screens (so they can be previewed while signed in). Kept out
+// of AppStackParamList so app code can't navigate to routes that don't
+// exist in release.
+type DevStackParamList = {
+  Catalog: undefined;
+  DesignSystem: undefined;
+} & AuthStackParamList;
 
 export type AuthStackNavigation = NavigationProp<AuthStackParamList>;
 export type AppStackNavigation = NavigationProp<AppStackParamList>;
@@ -92,34 +106,39 @@ export type MainTabNavigation = CompositeNavigationProp<
   NavigationProp<AppStackParamList>
 >;
 
+export const navigationRef = createNavigationContainerRef<AppStackParamList & DevStackParamList>();
+
+// Catalog + design-system screens: dev builds only (see src/dev/devtools.ts).
+const devtools: typeof import("../dev/devtools") | null =
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  __DEV__ && DEV_TOOLS_ENABLED ? require("../dev/devtools") : null;
+
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
-const AppStack = createNativeStackNavigator<AppStackParamList>();
+const AppStack = createNativeStackNavigator<AppStackParamList & DevStackParamList>();
 const MainTab = createBottomTabNavigator<MainTabParamList>();
 
-const TAB_ICONS: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
+const TAB_ICONS: Record<keyof MainTabParamList, IconName> = {
   Home: "home-outline",
-  Transactions: "swap-horizontal-outline",
+  Transactions: "swap-vertical-outline",
   Goals: "flag-outline",
-  More: "menu-outline",
-  Profile: "person-outline",
+  More: "grid-outline",
 };
 
 function MainTabs() {
   return (
     <MainTab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarActiveTintColor: color.primary,
-        tabBarInactiveTintColor: color.textSecondary,
-        tabBarStyle: { backgroundColor: color.surface, borderTopColor: color.border },
-        tabBarIcon: ({ color: tintColor, size }) => (
-          <Ionicons
-            name={TAB_ICONS[route.name as keyof MainTabParamList]}
-            size={size}
-            color={tintColor}
-          />
-        ),
-      })}
+      screenOptions={{ headerShown: false, animation: "fade" }}
+      tabBar={(props) => (
+        <AppTabBar
+          {...props}
+          icons={TAB_ICONS}
+          launch={{
+            accessibilityLabel: "Novo lançamento",
+            testID: "tab-new-transaction",
+            onPress: () => props.navigation.navigate("TransactionForm"),
+          }}
+        />
+      )}
     >
       <MainTab.Screen
         name="Home"
@@ -129,7 +148,7 @@ function MainTabs() {
       <MainTab.Screen
         name="Transactions"
         component={TransactionsListScreen}
-        options={{ title: "Transações", tabBarButtonTestID: "tab-transactions" }}
+        options={{ title: "Lançamentos", tabBarButtonTestID: "tab-transactions" }}
       />
       <MainTab.Screen
         name="Goals"
@@ -141,19 +160,17 @@ function MainTabs() {
         component={MoreScreen}
         options={{ title: "Mais", tabBarButtonTestID: "tab-more" }}
       />
-      <MainTab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ title: "Perfil", tabBarButtonTestID: "tab-profile" }}
-      />
     </MainTab.Navigator>
   );
 }
+
+const MODAL = { presentation: "modal" } as const;
 
 export function RootNavigator() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const userId = useAuthStore((state) => state.user?.id);
   const setActiveWorkspace = useWorkspaceStore((state) => state.setActiveWorkspace);
+  const { colors } = useTheme();
 
   // Syncs the workspace slice from the source of truth on app start /
   // login, per design.md — the auth token's `activeWorkspace` claim can
@@ -165,56 +182,81 @@ export function RootNavigator() {
     apiFetch<Profile>("/users/me")
       .then((profile) => setActiveWorkspace(profile.activeWorkspace))
       .catch(() => {
-        // Best-effort — the workspace switcher just stays unset until
-        // the next successful fetch.
+        // Best-effort — the notebook switch just stays unset until the
+        // next successful fetch.
       });
   }, [userId, setActiveWorkspace]);
 
+  // Lavender behind every transition, so no white flash between screens.
+  const navigationTheme = useMemo<NavigationTheme>(
+    () => ({
+      ...DefaultTheme,
+      dark: false,
+      colors: {
+        ...DefaultTheme.colors,
+        primary: colors.primary,
+        background: colors.background,
+        card: colors.background,
+        text: colors.text,
+        border: colors.border,
+        notification: colors.danger,
+      },
+    }),
+    [colors],
+  );
+
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef} theme={navigationTheme}>
       {accessToken ? (
-        <AppStack.Navigator screenOptions={{ headerShown: false }}>
+        <AppStack.Navigator
+          initialRouteName={devtools && CATALOG_ON_START ? "Catalog" : "MainTabs"}
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
           <AppStack.Screen name="MainTabs" component={MainTabs} />
-          <AppStack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+          <AppStack.Screen name="Profile" component={ProfileScreen} />
           <AppStack.Screen name="Categories" component={CategoriesScreen} />
           <AppStack.Screen name="Debts" component={DebtsListScreen} />
           <AppStack.Screen name="DebtDetail" component={DebtDetailScreen} />
           <AppStack.Screen name="Grocery" component={GroceryScreen} />
           <AppStack.Screen name="Vehicles" component={VehiclesListScreen} />
           <AppStack.Screen name="VehicleDetail" component={VehicleDetailScreen} />
-          <AppStack.Screen
-            name="CategoryForm"
-            component={CategoryFormScreen}
-            options={{ presentation: "modal" }}
-          />
+          <AppStack.Screen name="ChangePassword" component={ChangePasswordScreen} options={MODAL} />
+          <AppStack.Screen name="CategoryForm" component={CategoryFormScreen} options={MODAL} />
           <AppStack.Screen
             name="TransactionForm"
             component={TransactionFormScreen}
-            options={{ presentation: "modal" }}
+            options={MODAL}
           />
-          <AppStack.Screen
-            name="GoalForm"
-            component={GoalFormScreen}
-            options={{ presentation: "modal" }}
-          />
-          <AppStack.Screen
-            name="DebtForm"
-            component={DebtFormScreen}
-            options={{ presentation: "modal" }}
-          />
+          <AppStack.Screen name="GoalForm" component={GoalFormScreen} options={MODAL} />
+          <AppStack.Screen name="DebtForm" component={DebtFormScreen} options={MODAL} />
           <AppStack.Screen
             name="GroceryItemForm"
             component={GroceryItemFormScreen}
-            options={{ presentation: "modal" }}
+            options={MODAL}
           />
-          <AppStack.Screen
-            name="VehicleForm"
-            component={VehicleFormScreen}
-            options={{ presentation: "modal" }}
-          />
+          <AppStack.Screen name="VehicleForm" component={VehicleFormScreen} options={MODAL} />
+          {devtools ? (
+            <>
+              <AppStack.Screen name="Catalog" component={devtools.CatalogScreen} />
+              <AppStack.Screen name="DesignSystem" component={devtools.DesignSystemScreen} />
+              <AppStack.Screen name="Login" component={LoginScreen} />
+              <AppStack.Screen name="Register" component={RegisterScreen} />
+              <AppStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+              <AppStack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+            </>
+          ) : null}
         </AppStack.Navigator>
       ) : (
-        <AuthStack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+        <AuthStack.Navigator
+          initialRouteName="Login"
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
           <AuthStack.Screen name="Login" component={LoginScreen} />
           <AuthStack.Screen name="Register" component={RegisterScreen} />
           <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />

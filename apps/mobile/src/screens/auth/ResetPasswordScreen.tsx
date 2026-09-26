@@ -1,19 +1,24 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { confirmResetInputSchema, type ConfirmResetInput } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { Button, Screen, Text, TextField } from "../../components/ui";
+import { AuthLayout, Button, IconBadge, InlineNotice, TextField } from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
 import type { AuthStackNavigation, AuthStackParamList } from "../../navigation/RootNavigator";
+import { space, useTheme } from "../../theme";
+import { haptic } from "../../theme/haptics";
 
+import { AuthLink } from "./AuthLink";
+
+// Redefinir senha (design/telas.md §22): code + new password; success
+// turns the card into a confirmation with the way back to Entrar.
 export function ResetPasswordScreen() {
   const navigation = useNavigation<AuthStackNavigation>();
   const route = useRoute<RouteProp<AuthStackParamList, "ResetPassword">>();
+  const { colors } = useTheme();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
@@ -38,8 +43,10 @@ export function ResetPasswordScreen() {
         method: "POST",
         body: JSON.stringify(data),
       });
+      haptic.success();
       setDone(true);
     } catch (error) {
+      haptic.error();
       if (error instanceof ApiError && error.statusCode === 429) {
         setSubmitError("Muitas tentativas. Tente novamente em alguns minutos.");
       } else {
@@ -50,28 +57,37 @@ export function ResetPasswordScreen() {
 
   if (done) {
     return (
-      <Screen>
-        <Text variant="heading">Senha redefinida</Text>
-        <Text variant="caption" style={styles.subtitle}>
-          Sua senha foi atualizada. Entre com sua nova senha para continuar.
-        </Text>
+      <AuthLayout
+        title="Senha redefinida"
+        subtitle="Sua senha foi atualizada. Entre com sua nova senha para continuar."
+      >
+        <View style={styles.done}>
+          <IconBadge icon="checkmark-circle" color={colors.success} size={72} filled />
+        </View>
         <Button
           testID="go-to-login"
           label="Ir para o login"
           onPress={() => navigation.navigate("Login")}
         />
-      </Screen>
+      </AuthLayout>
     );
   }
 
   return (
-    <Screen>
-      <Text variant="heading">Redefinir senha</Text>
-      <Text variant="caption" style={styles.subtitle}>
-        Informe o código enviado por e-mail e escolha uma nova senha.
-      </Text>
-
-      <View style={styles.form}>
+    <AuthLayout
+      title="Redefinir senha"
+      subtitle="Informe o código enviado por e-mail e escolha uma nova senha."
+      onBack={navigation.canGoBack() ? () => navigation.goBack() : undefined}
+      footer={
+        <AuthLink
+          testID="go-to-login"
+          lead="Lembrou a senha?"
+          action="Entrar"
+          onPress={() => navigation.navigate("Login")}
+        />
+      }
+    >
+      <View style={styles.fields}>
         <Controller
           control={control}
           name="email"
@@ -79,15 +95,16 @@ export function ResetPasswordScreen() {
             <TextField
               testID="email-input"
               label="E-mail"
+              leftIcon="mail-outline"
               value={field.value}
               onChangeText={field.onChange}
               autoCapitalize="none"
               keyboardType="email-address"
+              textContentType="emailAddress"
               error={errors.email?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="code"
@@ -95,15 +112,18 @@ export function ResetPasswordScreen() {
             <TextField
               testID="code-input"
               label="Código"
+              leftIcon="keypad-outline"
               value={field.value}
               onChangeText={field.onChange}
               keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              autoComplete="one-time-code"
               maxLength={6}
+              style={styles.code}
               error={errors.code?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="newPassword"
@@ -111,14 +131,15 @@ export function ResetPasswordScreen() {
             <TextField
               testID="new-password-input"
               label="Nova senha"
+              leftIcon="lock-closed-outline"
               value={field.value}
               onChangeText={field.onChange}
               secureToggle
+              textContentType="newPassword"
               error={errors.newPassword?.message}
             />
           )}
         />
-
         <Controller
           control={control}
           name="newPasswordConfirmation"
@@ -126,23 +147,18 @@ export function ResetPasswordScreen() {
             <TextField
               testID="new-password-confirmation-input"
               label="Confirmar nova senha"
+              leftIcon="lock-closed-outline"
               value={field.value}
               onChangeText={field.onChange}
               secureToggle
+              textContentType="newPassword"
               error={errors.newPasswordConfirmation?.message}
             />
           )}
         />
       </View>
 
-      {submitError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {submitError}
-          </Text>
-        </View>
-      )}
+      {submitError ? <InlineNotice tone="danger" message={submitError} /> : null}
 
       <Button
         testID="submit-button"
@@ -150,39 +166,18 @@ export function ResetPasswordScreen() {
         onPress={handleSubmit(onSubmit)}
         loading={isSubmitting}
       />
-
-      <TouchableOpacity
-        testID="go-to-login"
-        style={styles.loginLink}
-        onPress={() => navigation.navigate("Login")}
-      >
-        <Text variant="caption">
-          Lembrou a senha? <Text variant="bodyStrong">Entrar</Text>
-        </Text>
-      </TouchableOpacity>
-    </Screen>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  subtitle: {
-    marginBottom: spacing.sm,
+  fields: {
+    gap: space.lg,
   },
-  form: {
-    gap: spacing.md,
-    marginBottom: spacing.md,
+  code: {
+    letterSpacing: 6,
   },
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  loginLink: {
-    marginTop: spacing.lg,
+  done: {
     alignItems: "center",
   },
 });

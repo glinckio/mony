@@ -1,4 +1,4 @@
-import { color } from "@mony/ui-tokens";
+import { tokens } from "@mony/ui-tokens";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -9,6 +9,8 @@ import { apiFetch } from "../../lib/api-client";
 import { useToastStore } from "../../lib/toast-store";
 
 import { GroceryScreen } from "./GroceryScreen";
+
+const color = tokens.colors.light;
 
 jest.mock("../../lib/api-client", () => ({
   apiFetch: jest.fn(),
@@ -109,6 +111,7 @@ describe("GroceryScreen", () => {
     expect(screen.getByTestId("grocery-budget-amount")).toHaveTextContent(/R\$\s100,00/);
     expect(screen.getByTestId("grocery-estimated-total")).toHaveTextContent(/R\$\s95,00/);
     expect(screen.getByTestId("grocery-remaining")).toHaveTextContent(/R\$\s5,00/);
+    expect(screen.getByText(/^Saldo disponível R\$\s5,00$/)).toBeTruthy();
     expect(screen.getByTestId("grocery-budget-progress").props.accessibilityValue.now).toBe(95);
     expect(progressFill()).toHaveStyle({ backgroundColor: color.danger });
     // Estimate is still within budget: balance in success color.
@@ -117,7 +120,7 @@ describe("GroceryScreen", () => {
     // Grouped under pt-BR category labels, missing badge only on the missing item.
     expect(screen.getByText("Higiene Pessoal")).toBeTruthy();
     expect(screen.getByText("Limpeza")).toBeTruthy();
-    expect(screen.getByTestId("grocery-missing-soap")).toBeTruthy();
+    expect(within(screen.getByTestId("grocery-missing-soap")).getByText("Faltando")).toBeTruthy();
     expect(screen.queryByTestId("grocery-missing-detergent")).toBeNull();
     // Can't go below zero.
     expect(screen.getByTestId("grocery-decrement-soap").props.accessibilityState.disabled).toBe(
@@ -135,6 +138,10 @@ describe("GroceryScreen", () => {
       expect(screen.getByTestId("grocery-remaining")).toHaveTextContent(/R\$\s0,00/);
     });
     expect(screen.getByTestId("grocery-remaining")).toHaveStyle({ color: color.danger });
+    // Spec: the balance is clamped at zero under the same label — no
+    // separate "over budget" wording or negative amount.
+    expect(screen.getByText(/^Saldo disponível R\$\s0,00$/)).toBeTruthy();
+    expect(screen.queryByText(/[−-]\s?R\$/)).toBeNull();
     expect(screen.getByTestId("grocery-budget-progress").props.accessibilityValue.now).toBe(100);
     expect(progressFill()).toHaveStyle({ backgroundColor: color.danger });
     view.unmount();

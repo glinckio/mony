@@ -5,7 +5,7 @@
     "scheme": "mony",
     "version": "0.1.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
@@ -14,11 +14,11 @@
     "android": {
       "package": "com.mony.app",
       "adaptiveIcon": {
-        "backgroundColor": "#166FE3"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "monochromeImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F1F2FA"
       },
-      "blockedPermissions": [
-        "android.permission.WRITE_EXTERNAL_STORAGE"
-      ]
+      "blockedPermissions": ["android.permission.WRITE_EXTERNAL_STORAGE"]
     },
     "plugins": [
       "expo-secure-store",
@@ -29,7 +29,18 @@
           "cameraPermission": false,
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#F1F2FA"
+        }
       ]
-    ]
+    ],
+    "icon": "./assets/icon.png",
+    "backgroundColor": "#F1F2FA"
   }
 }

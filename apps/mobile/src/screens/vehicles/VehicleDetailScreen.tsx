@@ -1,29 +1,50 @@
-import { Ionicons } from "@expo/vector-icons";
 import type { Vehicle } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View, useWindowDimensions } from "react-native";
 
-import { AppHeader, Button, PhotoFrame, Screen, Text } from "../../components/ui";
+import { MercosulPlate, Odometer, VehicleHero } from "../../components/domain";
+import {
+  Button,
+  Card,
+  ConfirmSheet,
+  ErrorState,
+  IconBadge,
+  IconButton,
+  ScrollScreen,
+  Skeleton,
+  Text,
+} from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
 import { formatDateDisplay } from "../../lib/date-mask";
 import { useToastStore } from "../../lib/toast-store";
-import { FUEL_TYPE_LABELS, formatMileage } from "../../lib/vehicle-display";
+import { FUEL_TYPE_LABELS } from "../../lib/vehicle-display";
 import { pickVehiclePhoto, uploadVehiclePhoto, type PickedPhoto } from "../../lib/vehicle-photo";
 import type { AppStackNavigation, AppStackParamList } from "../../navigation/RootNavigator";
+import { space } from "../../theme";
 
 import { UpdateMileageSheet } from "./UpdateMileageSheet";
 
+const HERO_OVERLAP = 32;
+
+// Veículo (design/telas.md §15): the photo bleeding to the top edge (or a
+// gradient with the car when there's none), the name and plate on a card
+// riding over it, the odometer, and the vehicle's details.
 export function VehicleDetailScreen() {
   const navigation = useNavigation<AppStackNavigation>();
   const route = useRoute<RouteProp<AppStackParamList, "VehicleDetail">>();
   const { vehicleId } = route.params;
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
   const [mileageSheetOpen, setMileageSheetOpen] = useState(false);
+  const [confirm, setConfirm] = useState<"delete" | "removePhoto" | null>(null);
 
-  const { data: vehicle, isError } = useQuery({
+  const {
+    data: vehicle,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["vehicle", vehicleId],
     queryFn: () => apiFetch<Vehicle>(`/vehicles/${vehicleId}`),
     // Render straight away from the list's copy while the detail loads.
@@ -77,130 +98,132 @@ export function VehicleDetailScreen() {
 
   const removePhotoMutation = useMutation({
     mutationFn: () => apiFetch<Vehicle>(`/vehicles/${vehicleId}/photo`, { method: "DELETE" }),
-    onSuccess: applyVehicle,
-    onError: (error) =>
+    onSuccess: (updated) => {
+      setConfirm(null);
+      applyVehicle(updated);
+    },
+    onError: (error) => {
+      setConfirm(null);
       useToastStore
         .getState()
-        .show(photoErrorMessage(error, "Não foi possível remover a foto. Tente novamente.")),
+        .show(photoErrorMessage(error, "Não foi possível remover a foto. Tente novamente."));
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: () => apiFetch(`/vehicles/${vehicleId}`, { method: "DELETE" }),
     onSuccess: async () => {
+      setConfirm(null);
       queryClient.removeQueries({ queryKey: ["vehicle", vehicleId] });
       await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       navigation.goBack();
     },
-    onError: () => Alert.alert("Erro", "Não foi possível excluir. Tente novamente."),
+    onError: () => {
+      setConfirm(null);
+      useToastStore.getState().show("Não foi possível excluir. Tente novamente.");
+    },
   });
-
-  const confirmDelete = () => {
-    if (!vehicle) return;
-    Alert.alert("Excluir veículo", `Excluir "${vehicle.displayName}"?`, [
-      { text: "Cancelar", style: "cancel" },
-      { text: "Excluir", style: "destructive", onPress: () => deleteMutation.mutate() },
-    ]);
-  };
-
-  const confirmRemovePhoto = () => {
-    Alert.alert("Remover foto", "Remover a foto deste veículo?", [
-      { text: "Cancelar", style: "cancel" },
-      { text: "Remover", style: "destructive", onPress: () => removePhotoMutation.mutate() },
-    ]);
-  };
 
   const photoBusy = photoMutation.isPending || removePhotoMutation.isPending;
 
   return (
-    <Screen>
-      <AppHeader
-        title={vehicle?.displayName ?? "Veículo"}
-        onBack={() => navigation.goBack()}
-        rightAccessory={
-          vehicle && (
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                testID="edit-vehicle-button"
-                accessibilityRole="button"
-                accessibilityLabel="Editar veículo"
-                hitSlop={8}
-                onPress={() => navigation.navigate("VehicleForm", { vehicle })}
-              >
-                <Ionicons name="pencil-outline" size={sizeTokens.iconLg} color={color.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                testID="delete-vehicle-button"
-                accessibilityRole="button"
-                accessibilityLabel="Excluir veículo"
-                hitSlop={8}
-                disabled={deleteMutation.isPending}
-                onPress={confirmDelete}
-              >
-                <Ionicons name="trash-outline" size={sizeTokens.iconLg} color={color.danger} />
-              </TouchableOpacity>
-            </View>
-          )
-        }
-      />
-
+    <ScrollScreen
+      title={vehicle?.displayName ?? "Veículo"}
+      onBack={() => navigation.goBack()}
+      hero={
+        <VehicleHero
+          testID="vehicle-photo"
+          photoUrl={isError ? null : (vehicle?.photoUrl ?? null)}
+          name={vehicle?.displayName}
+          height={Math.min(360, width * 0.78) + HERO_OVERLAP}
+        />
+      }
+      heroOverlap={HERO_OVERLAP}
+      actions={
+        vehicle && !isError ? (
+          <>
+            <IconButton
+              testID="edit-vehicle-button"
+              icon="pencil"
+              variant="soft"
+              accessibilityLabel="Editar veículo"
+              onPress={() => navigation.navigate("VehicleForm", { vehicle })}
+            />
+            <IconButton
+              testID="delete-vehicle-button"
+              icon="trash-outline"
+              variant="soft"
+              tone="danger"
+              accessibilityLabel="Excluir veículo"
+              disabled={deleteMutation.isPending}
+              onPress={() => setConfirm("delete")}
+            />
+          </>
+        ) : null
+      }
+    >
       {isError ? (
-        <Text variant="caption" color={color.danger}>
-          Algo deu errado. Tente novamente.
-        </Text>
+        <Card>
+          <ErrorState compact onRetry={() => void refetch()} />
+        </Card>
       ) : !vehicle ? (
-        <View style={styles.centered}>
-          <ActivityIndicator color={color.primary} />
+        <View style={styles.stack} accessibilityLabel="Carregando o veículo">
+          <Skeleton height={120} radius="lg" />
+          <Skeleton height={120} radius="lg" />
         </View>
       ) : (
-        <View style={styles.content}>
-          <PhotoFrame
-            testID="vehicle-photo"
-            uri={vehicle.photoUrl}
-            placeholderIcon="car-sport-outline"
-            accessibilityLabel={`Foto de ${vehicle.displayName}`}
-          />
-          <View style={styles.photoActions}>
-            <Button
-              testID="change-photo-button"
-              label={vehicle.photoUrl ? "Trocar foto" : "Adicionar foto"}
-              variant="secondary"
-              fullWidth={false}
-              loading={photoMutation.isPending}
-              disabled={photoBusy}
-              onPress={changePhoto}
-            />
-            {vehicle.photoUrl && (
+        <View style={styles.stack}>
+          <Card style={styles.identity}>
+            <Text variant="title2" numberOfLines={2}>
+              {vehicle.displayName}
+            </Text>
+            {vehicle.licensePlate ? <MercosulPlate plate={vehicle.licensePlate} /> : null}
+            <View style={styles.photoActions}>
               <Button
-                testID="remove-photo-button"
-                label="Remover foto"
-                variant="ghost"
+                testID="change-photo-button"
+                label={vehicle.photoUrl ? "Trocar foto" : "Adicionar foto"}
+                leftIcon="image-outline"
+                variant="secondary"
+                size="sm"
                 fullWidth={false}
-                loading={removePhotoMutation.isPending}
+                loading={photoMutation.isPending}
                 disabled={photoBusy}
-                onPress={confirmRemovePhoto}
+                onPress={() => void changePhoto()}
               />
-            )}
-          </View>
+              {vehicle.photoUrl ? (
+                <Button
+                  testID="remove-photo-button"
+                  label="Remover foto"
+                  variant="dangerGhost"
+                  size="sm"
+                  fullWidth={false}
+                  loading={removePhotoMutation.isPending}
+                  disabled={photoBusy}
+                  onPress={() => setConfirm("removePhoto")}
+                />
+              ) : null}
+            </View>
+          </Card>
 
-          <View style={styles.card}>
-            <View style={styles.mileageRow}>
-              <View>
-                <Text variant="caption">Quilometragem</Text>
-                <Text variant="title" testID="vehicle-mileage">
-                  {formatMileage(vehicle.currentMileage)}
-                </Text>
-              </View>
+          <Card style={styles.mileage}>
+            <View style={styles.mileageHeader}>
+              <IconBadge icon="speedometer" size={40} filled />
+              <Text variant="headline" style={styles.flex}>
+                Quilometragem
+              </Text>
               <Button
                 testID="update-mileage-button"
                 label="Atualizar"
-                variant="secondary"
+                size="sm"
                 fullWidth={false}
                 onPress={() => setMileageSheetOpen(true)}
               />
             </View>
-          </View>
+            <Odometer testID="vehicle-mileage" km={vehicle.currentMileage} />
+          </Card>
 
-          <View style={styles.card} testID="vehicle-details">
+          <Card testID="vehicle-details" style={styles.details}>
+            <Text variant="headline">Ficha</Text>
             <Detail label="Placa" value={vehicle.licensePlate} />
             <Detail label="Ano" value={`${vehicle.manufactureYear}/${vehicle.modelYear}`} />
             <Detail label="Cor" value={vehicle.color} />
@@ -212,13 +235,18 @@ export function VehicleDetailScreen() {
               label="Aquisição"
               value={vehicle.acquisitionDate ? formatDateDisplay(vehicle.acquisitionDate) : null}
             />
-          </View>
+          </Card>
 
           {/* Filled in by the vehicle-maintenance feature (roadmap #12). */}
-          <View style={styles.card}>
-            <Text variant="bodyStrong">Manutenções</Text>
-            <Text variant="caption">Em breve: histórico e alertas de manutenção.</Text>
-          </View>
+          <Card style={styles.maintenance}>
+            <IconBadge icon="construct-outline" size={40} />
+            <View style={styles.flex}>
+              <Text variant="headline">Manutenções</Text>
+              <Text variant="footnote" tone="muted">
+                Em breve: histórico e alertas de manutenção.
+              </Text>
+            </View>
+          </Card>
 
           <UpdateMileageSheet
             vehicle={vehicle}
@@ -227,53 +255,81 @@ export function VehicleDetailScreen() {
           />
         </View>
       )}
-    </Screen>
+
+      <ConfirmSheet
+        visible={confirm === "delete"}
+        title={vehicle ? `Excluir "${vehicle.displayName}"?` : ""}
+        message="A foto e os dados dele saem do Mony."
+        confirmLabel="Excluir veículo"
+        busy={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate()}
+        onClose={() => setConfirm(null)}
+      />
+      <ConfirmSheet
+        visible={confirm === "removePhoto"}
+        title="Remover a foto deste veículo?"
+        message="Você pode escolher outra depois."
+        confirmLabel="Remover foto"
+        busy={removePhotoMutation.isPending}
+        onConfirm={() => removePhotoMutation.mutate()}
+        onClose={() => setConfirm(null)}
+      />
+    </ScrollScreen>
   );
 }
 
 function Detail({ label, value }: { label: string; value: string | null }) {
   return (
     <View style={styles.detailRow}>
-      <Text variant="caption">{label}</Text>
-      <Text variant="body">{value ?? "—"}</Text>
+      <Text variant="callout" tone="muted">
+        {label}
+      </Text>
+      <Text variant="bodyStrong" style={styles.detailValue} numberOfLines={1}>
+        {value ?? "—"}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  centered: {
+  flex: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
+  stack: {
+    gap: space.lg,
   },
-  content: {
-    gap: spacing.md,
+  identity: {
+    gap: space.md,
   },
   photoActions: {
     flexDirection: "row",
-    gap: spacing.sm,
+    flexWrap: "wrap",
+    gap: space.sm,
   },
-  card: {
-    gap: spacing.sm,
-    padding: spacing.md,
-    backgroundColor: color.surface,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: color.border,
+  mileage: {
+    gap: space.lg,
   },
-  mileageRow: {
+  mileageHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: space.md,
+  },
+  details: {
+    gap: space.md,
   },
   detailRow: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    gap: spacing.md,
+    gap: space.md,
+  },
+  detailValue: {
+    flexShrink: 1,
+    textAlign: "right",
+  },
+  maintenance: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
   },
 });

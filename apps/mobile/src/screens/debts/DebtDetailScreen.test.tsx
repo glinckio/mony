@@ -104,7 +104,7 @@ describe("DebtDetailScreen", () => {
     expect(screen.queryByTestId("pay-installment-1")).toBeNull();
     expect(screen.getByTestId("pay-installment-2")).toBeTruthy();
     expect(within(screen.getByTestId("installment-status-1")).getByText("Paga")).toBeTruthy();
-    expect(within(screen.getByTestId("installment-status-2")).getByText("Pendente")).toBeTruthy();
+    expect(within(screen.getByTestId("installment-status-2")).getByText("A pagar")).toBeTruthy();
     // Pending and past due.
     expect(within(screen.getByTestId("installment-status-3")).getByText("Vencida")).toBeTruthy();
     expect(screen.getByText(/apenas informativo/)).toBeTruthy();

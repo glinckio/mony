@@ -1,19 +1,17 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   setGroceryBudgetInputSchema,
   type GroceryBudget,
   type SetGroceryBudgetInput,
 } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, View } from "react-native";
 
-import { BottomSheet, Button, Text, TextField } from "../../components/ui";
+import { AmountField } from "../../components/domain";
+import { Button, InlineNotice, PaperSheet, Text } from "../../components/ui";
 import { apiFetch } from "../../lib/api-client";
-import { formatAmountDisplay, parseAmountInput } from "../../lib/currency-mask";
+import { haptic } from "../../theme/haptics";
 
 interface GroceryBudgetSheetProps {
   visible: boolean;
@@ -39,6 +37,7 @@ export function GroceryBudgetSheet({ visible, currentAmount, onClose }: GroceryB
     mutationFn: (input: SetGroceryBudgetInput) =>
       apiFetch<GroceryBudget>("/grocery/budget", { method: "POST", body: JSON.stringify(input) }),
     onSuccess: async (budget) => {
+      haptic.success();
       queryClient.setQueryData(["grocery", "budget"], budget);
       onClose();
     },
@@ -53,55 +52,41 @@ export function GroceryBudgetSheet({ visible, currentAmount, onClose }: GroceryB
   }, [visible, currentAmount, reset, resetMutation]);
 
   return (
-    <BottomSheet
+    <PaperSheet
       testID="grocery-budget-sheet"
       visible={visible}
       title="Orçamento mensal"
       onClose={onClose}
     >
-      <Text variant="caption">
+      <Text variant="callout" tone="muted">
         Apenas informativo — o app avisa quando a estimativa passa do orçamento, mas nunca bloqueia.
       </Text>
       <Controller
         control={control}
         name="amount"
         render={({ field }) => (
-          <TextField
+          <AmountField
             testID="grocery-budget-input"
-            label="Valor"
-            value={formatAmountDisplay(field.value)}
-            onChangeText={(text) => field.onChange(parseAmountInput(text) ?? 0)}
-            keyboardType="number-pad"
-            placeholder="R$ 0,00"
+            size="compact"
+            label="Valor do orçamento"
+            value={field.value}
+            onChangeValue={(value) => field.onChange(value ?? 0)}
             error={errors.amount?.message}
           />
         )}
       />
-      {mutation.isError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            Não foi possível salvar o orçamento. Tente novamente.
-          </Text>
-        </View>
-      )}
+      {mutation.isError ? (
+        <InlineNotice
+          tone="danger"
+          message="Não foi possível salvar o orçamento. Tente novamente."
+        />
+      ) : null}
       <Button
         testID="save-grocery-budget"
         label="Salvar orçamento"
         loading={mutation.isPending}
         onPress={handleSubmit((input) => mutation.mutate(input))}
       />
-    </BottomSheet>
+    </PaperSheet>
   );
 }
-
-const styles = StyleSheet.create({
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-  },
-});

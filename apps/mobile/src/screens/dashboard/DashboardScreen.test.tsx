@@ -7,20 +7,6 @@ import { apiFetch } from "../../lib/api-client";
 
 import { DashboardScreen } from "./DashboardScreen";
 
-// react-native-gifted-charts schedules Animated timers (label-appear,
-// bar-grow) that outlive the test's render/unmount cycle and crash the
-// Jest worker with "environment torn down" once they fire — same class
-// of issue as TanStack Query's global listeners (see tech.md). The
-// chart's own rendering isn't under test here, so replace it with an
-// inert stand-in. `mock`-prefixed names are the one exception jest's
-// module-factory hoisting allows for out-of-scope references.
-jest.mock("react-native-gifted-charts", () => {
-  const mockReactNative = jest.requireActual("react-native");
-  return {
-    BarChart: (props: { testID?: string }) => <mockReactNative.View testID={props.testID} />,
-  };
-});
-
 jest.mock("../../lib/api-client", () => ({
   apiFetch: jest.fn(),
   logout: jest.fn(),
@@ -99,8 +85,8 @@ describe("DashboardScreen", () => {
     });
 
     expect(screen.getByText("R$ 400,00")).toBeTruthy();
-    expect(screen.getByText("R$ 1.000,00")).toBeTruthy();
-    expect(screen.getByText("R$ 600,00")).toBeTruthy();
+    expect(screen.getByText("+ R$ 1.000,00")).toBeTruthy();
+    expect(screen.getByText("− R$ 600,00")).toBeTruthy();
 
     view.unmount();
     await flush();
@@ -114,7 +100,7 @@ describe("DashboardScreen", () => {
     await waitFor(() => {
       expect(screen.getByTestId("dashboard-comparison-badge")).toBeTruthy();
     });
-    expect(screen.getByText(/12\.5% de receita/)).toBeTruthy();
+    expect(screen.getByText(/12,5% de receita/)).toBeTruthy();
 
     view.unmount();
     await flush();
@@ -191,9 +177,7 @@ describe("DashboardScreen", () => {
     fireEvent.changeText(screen.getByTestId("dashboard-date-to"), "31012026");
 
     await waitFor(() => {
-      expect(mockedApiFetch).toHaveBeenCalledWith(
-        expect.stringContaining("dateFrom=2026-01-01"),
-      );
+      expect(mockedApiFetch).toHaveBeenCalledWith(expect.stringContaining("dateFrom=2026-01-01"));
     });
 
     view.unmount();

@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createDebtInputSchema,
@@ -8,16 +7,26 @@ import {
   type DebtWithInstallments,
   type UpdateDebtInput,
 } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { Button, Screen, Text, TextField } from "../../components/ui";
+import { AmountField } from "../../components/domain";
+import {
+  Button,
+  Card,
+  Field,
+  FormScreen,
+  IconBadge,
+  InlineNotice,
+  SelectChip,
+  Text,
+  TextField,
+  type IconName,
+} from "../../components/ui";
 import { ApiError, apiFetch } from "../../lib/api-client";
-import { formatAmountDisplay, parseAmountInput } from "../../lib/currency-mask";
 import { formatDateDisplay, formatDateInputDigits, parseDateInputToISO } from "../../lib/date-mask";
 import { DEBT_RELATED_QUERY_KEYS } from "../../lib/debt-display";
 import {
@@ -25,9 +34,14 @@ import {
   parseDecimalInput,
   sanitizeDecimalInput,
 } from "../../lib/decimal-input";
+import { useToastStore } from "../../lib/toast-store";
 import { useRefetchOnFocus } from "../../lib/use-refetch-on-focus";
 import type { AppStackNavigation, AppStackParamList } from "../../navigation/RootNavigator";
+import { space } from "../../theme";
+import { haptic } from "../../theme/haptics";
 
+// Dívida (form) (design/telas.md §11): total as the hero, the split into
+// installments previewed live, then dates, interest and category.
 export function DebtFormScreen() {
   const navigation = useNavigation<AppStackNavigation>();
   const queryClient = useQueryClient();
@@ -129,8 +143,13 @@ export function DebtFormScreen() {
           queryClient.invalidateQueries({ queryKey }),
         ),
       );
+      haptic.success();
+      useToastStore
+        .getState()
+        .show(editing ? "Dívida atualizada." : "Dívida registrada.", { tone: "success" });
       navigation.goBack();
     } catch (error) {
+      haptic.error();
       setSubmitError(
         error instanceof ApiError && error.statusCode === 400
           ? "Não foi possível salvar. Verifique os dados e tente novamente."
@@ -140,67 +159,66 @@ export function DebtFormScreen() {
   };
 
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text variant="heading">{editing ? "Editar dívida" : "Nova dívida"}</Text>
-        <TouchableOpacity
-          testID="header-close"
-          accessibilityRole="button"
-          accessibilityLabel="Fechar"
-          hitSlop={8}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="close-outline" size={sizeTokens.iconLg} color={color.textPrimary} />
-        </TouchableOpacity>
-      </View>
-
-      {noExpenseCategory && (
-        <View style={styles.warningBanner} testID="no-expense-category-banner">
-          <Text variant="caption" color={color.textPrimary}>
-            Cada parcela vira uma despesa, então você precisa de pelo menos uma categoria de despesa
-            para registrar uma dívida.
-          </Text>
+    <FormScreen
+      title={editing ? "Editar dívida" : "Nova dívida"}
+      onClose={() => navigation.goBack()}
+      footer={
+        <>
+          {submitError ? <InlineNotice tone="danger" message={submitError} /> : null}
           <Button
-            testID="create-category-shortcut"
-            label="Criar categoria"
-            variant="secondary"
-            onPress={() => navigation.navigate("CategoryForm", undefined)}
+            testID="submit-button"
+            label={editing ? "Salvar alterações" : "Criar dívida"}
+            onPress={handleSubmit(onSubmit)}
+            loading={isSubmitting}
+            disabled={noExpenseCategory}
           />
-        </View>
-      )}
-
-      <View style={styles.form}>
-        <Controller
-          control={control}
-          name="name"
-          render={({ field }) => (
-            <TextField
-              testID="name-input"
-              label="Nome"
-              value={field.value}
-              onChangeText={field.onChange}
-              placeholder="Ex.: Financiamento do carro"
-              error={errors.name?.message}
-            />
-          )}
+        </>
+      }
+    >
+      {noExpenseCategory ? (
+        <InlineNotice
+          testID="no-expense-category-banner"
+          tone="warning"
+          title="Falta uma categoria de despesa"
+          message="Cada parcela vira uma despesa, então você precisa de pelo menos uma categoria de despesa para registrar uma dívida."
+          action={{
+            label: "Criar categoria",
+            testID: "create-category-shortcut",
+            onPress: () => navigation.navigate("CategoryForm", undefined),
+          }}
         />
+      ) : null}
 
-        <Controller
-          control={control}
-          name="totalAmount"
-          render={({ field }) => (
-            <TextField
-              testID="total-amount-input"
-              label="Valor total"
-              value={formatAmountDisplay(field.value)}
-              onChangeText={(text) => field.onChange(parseAmountInput(text))}
-              keyboardType="number-pad"
-              placeholder="R$ 0,00"
-              error={errors.totalAmount?.message}
-            />
-          )}
-        />
+      <Controller
+        control={control}
+        name="name"
+        render={({ field }) => (
+          <TextField
+            testID="name-input"
+            label="Nome"
+            value={field.value}
+            onChangeText={field.onChange}
+            placeholder="Ex.: Financiamento do carro"
+            error={errors.name?.message}
+          />
+        )}
+      />
 
+      <Controller
+        control={control}
+        name="totalAmount"
+        render={({ field }) => (
+          <AmountField
+            testID="total-amount-input"
+            label="Valor total"
+            value={field.value}
+            onChangeValue={field.onChange}
+            error={errors.totalAmount?.message}
+          />
+        )}
+      />
+
+      <Card style={styles.split}>
         <Controller
           control={control}
           name="totalInstallments"
@@ -220,13 +238,17 @@ export function DebtFormScreen() {
             />
           )}
         />
-        {installmentPreview !== null && (
-          <Text variant="caption" testID="installment-preview">
-            {totalInstallments}x de {formatCurrency(installmentPreview.toFixed(2))} (a última
-            parcela ajusta os centavos)
-          </Text>
-        )}
-
+        {installmentPreview !== null ? (
+          <View style={styles.preview}>
+            <IconBadge icon="layers-outline" size={36} />
+            <Text variant="callout" style={styles.flex} testID="installment-preview">
+              {totalInstallments}x de {formatCurrency(installmentPreview.toFixed(2))}{" "}
+              <Text variant="footnote" tone="muted" inline>
+                (a última parcela ajusta os centavos)
+              </Text>
+            </Text>
+          </View>
+        ) : null}
         <Controller
           control={control}
           name="startDate"
@@ -234,6 +256,7 @@ export function DebtFormScreen() {
             <TextField
               testID="start-date-input"
               label="Vencimento da 1ª parcela"
+              leftIcon="calendar-outline"
               value={startDateDisplay}
               onChangeText={(text) => {
                 setStartDateDisplay(formatDateInputDigits(text));
@@ -241,193 +264,129 @@ export function DebtFormScreen() {
               }}
               keyboardType="number-pad"
               placeholder="DD/MM/AAAA"
+              maxLength={10}
               editable={!structureLocked}
               error={errors.startDate?.message}
             />
           )}
         />
-        {structureLocked && (
-          <Text variant="caption" testID="structure-locked-hint">
-            Como já há parcelas pagas, o número de parcelas e o vencimento da 1ª não podem mais ser
-            alterados.
-          </Text>
+        {structureLocked ? (
+          <InlineNotice
+            testID="structure-locked-hint"
+            tone="neutral"
+            message="Como já há parcelas pagas, o número de parcelas e o vencimento da 1ª não podem mais ser alterados."
+          />
+        ) : null}
+      </Card>
+
+      <Controller
+        control={control}
+        name="endDate"
+        render={({ field }) => (
+          <TextField
+            testID="end-date-input"
+            label="Data final (opcional)"
+            leftIcon="calendar-outline"
+            value={endDateDisplay}
+            onChangeText={(text) => {
+              setEndDateDisplay(formatDateInputDigits(text));
+              // Empty clears it; a half-typed date is kept as-is so the
+              // schema flags it ("Data inválida") instead of silently
+              // dropping — and, on edit, clearing — the stored date.
+              field.onChange(text ? parseDateInputToISO(text) || text : undefined);
+            }}
+            keyboardType="number-pad"
+            placeholder="DD/MM/AAAA"
+            maxLength={10}
+            error={errors.endDate?.message}
+          />
         )}
-
-        <Controller
-          control={control}
-          name="endDate"
-          render={({ field }) => (
-            <TextField
-              testID="end-date-input"
-              label="Data final (opcional)"
-              value={endDateDisplay}
-              onChangeText={(text) => {
-                setEndDateDisplay(formatDateInputDigits(text));
-                // Empty clears it; a half-typed date is kept as-is so the
-                // schema flags it ("Data inválida") instead of silently
-                // dropping — and, on edit, clearing — the stored date.
-                field.onChange(text ? parseDateInputToISO(text) || text : undefined);
-              }}
-              keyboardType="number-pad"
-              placeholder="DD/MM/AAAA"
-              error={errors.endDate?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="interestRate"
-          render={({ field }) => (
-            <TextField
-              testID="interest-rate-input"
-              label="Juros ao mês em % (opcional)"
-              value={rateDisplay}
-              onChangeText={(text) => {
-                const sanitized = sanitizeDecimalInput(text);
-                setRateDisplay(sanitized);
-                field.onChange(parseDecimalInput(sanitized));
-              }}
-              keyboardType="decimal-pad"
-              placeholder="0,00"
-              error={errors.interestRate?.message}
-            />
-          )}
-        />
-        <Text variant="caption">
-          Apenas informativo — as parcelas são sempre divididas em valores iguais.
-        </Text>
-
-        <View>
-          <Text variant="caption" style={styles.fieldLabel}>
-            Categoria
-          </Text>
-          <View style={styles.categoryList} testID="category-picker">
-            <TouchableOpacity
-              testID="category-option-none"
-              accessibilityRole="button"
-              accessibilityState={{ selected: !categoryId }}
-              style={[styles.categoryChip, !categoryId && styles.categoryChipSelected]}
-              onPress={() => setValue("categoryId", undefined, { shouldValidate: true })}
-            >
-              <Text variant="caption" color={!categoryId ? color.onPrimary : color.textPrimary}>
-                Automática
-              </Text>
-            </TouchableOpacity>
-            {(categories ?? []).map((category) => {
-              const selected = category.id === categoryId;
-              return (
-                <TouchableOpacity
-                  key={category.id}
-                  testID={`category-option-${category.id}`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  style={[styles.categoryChip, selected && styles.categoryChipSelected]}
-                  onPress={() => setValue("categoryId", category.id, { shouldValidate: true })}
-                >
-                  <Ionicons
-                    name={category.icon}
-                    size={sizeTokens.iconSm}
-                    color={selected ? color.onPrimary : category.color}
-                  />
-                  <Text variant="caption" color={selected ? color.onPrimary : color.textPrimary}>
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          {!categoryId && (
-            <Text variant="caption" style={styles.categoryHint}>
-              Automática: as despesas das parcelas usam sua categoria de despesa mais antiga.
-            </Text>
-          )}
-        </View>
-
-        <Controller
-          control={control}
-          name="notes"
-          render={({ field }) => (
-            <TextField
-              testID="notes-input"
-              label="Observações (opcional)"
-              value={field.value ?? ""}
-              onChangeText={field.onChange}
-              multiline
-              error={errors.notes?.message}
-            />
-          )}
-        />
-      </View>
-
-      {submitError && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {submitError}
-          </Text>
-        </View>
-      )}
-
-      <Button
-        testID="submit-button"
-        label={editing ? "Salvar alterações" : "Criar dívida"}
-        onPress={handleSubmit(onSubmit)}
-        loading={isSubmitting}
-        disabled={noExpenseCategory}
       />
-    </Screen>
+
+      <Controller
+        control={control}
+        name="interestRate"
+        render={({ field }) => (
+          <TextField
+            testID="interest-rate-input"
+            label="Juros ao mês em % (opcional)"
+            value={rateDisplay}
+            onChangeText={(text) => {
+              const sanitized = sanitizeDecimalInput(text);
+              setRateDisplay(sanitized);
+              field.onChange(parseDecimalInput(sanitized));
+            }}
+            keyboardType="decimal-pad"
+            placeholder="0,00"
+            hint="Apenas informativo — as parcelas são sempre divididas em valores iguais."
+            error={errors.interestRate?.message}
+          />
+        )}
+      />
+
+      <Field
+        label="Categoria"
+        hint={
+          !categoryId
+            ? "Automática: as despesas das parcelas usam sua categoria de despesa mais antiga."
+            : undefined
+        }
+      >
+        <View style={styles.chips} testID="category-picker" accessibilityRole="radiogroup">
+          <SelectChip
+            testID="category-option-none"
+            label="Automática"
+            dashed
+            selected={!categoryId}
+            onPress={() => setValue("categoryId", undefined, { shouldValidate: true })}
+          />
+          {(categories ?? []).map((category) => (
+            <SelectChip
+              key={category.id}
+              testID={`category-option-${category.id}`}
+              label={category.name}
+              icon={category.icon as IconName}
+              iconColor={category.color}
+              selected={category.id === categoryId}
+              onPress={() => setValue("categoryId", category.id, { shouldValidate: true })}
+            />
+          ))}
+        </View>
+      </Field>
+
+      <Controller
+        control={control}
+        name="notes"
+        render={({ field }) => (
+          <TextField
+            testID="notes-input"
+            label="Observações (opcional)"
+            value={field.value ?? ""}
+            onChangeText={field.onChange}
+            multiline
+            error={errors.notes?.message}
+          />
+        )}
+      />
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
+  flex: {
+    flex: 1,
+  },
+  split: {
+    gap: space.lg,
+  },
+  preview: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: space.md,
   },
-  warningBanner: {
-    gap: spacing.sm,
-    backgroundColor: color.warningMuted,
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  form: {
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  fieldLabel: {
-    marginBottom: spacing.xs,
-    marginLeft: spacing.xxs,
-  },
-  categoryList: {
+  chips: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  categoryChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.surfaceAlt,
-    borderRadius: radius.sm,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  categoryChipSelected: {
-    backgroundColor: color.primary,
-  },
-  categoryHint: {
-    marginTop: spacing.xs,
-    marginLeft: spacing.xxs,
-  },
-  submitError: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
+    gap: space.sm,
   },
 });

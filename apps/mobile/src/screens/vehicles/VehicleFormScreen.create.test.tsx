@@ -5,7 +5,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import * as ImagePicker from "expo-image-picker";
 import { Text } from "react-native";
 
-import { Toast } from "../../components/ui";
+import { AppToast } from "../../components/ui";
 import { apiFetch } from "../../lib/api-client";
 import { useToastStore } from "../../lib/toast-store";
 
@@ -83,7 +83,7 @@ it("saves the vehicle even when the photo upload fails, telling the user in pt-B
           <Stack.Screen name="VehicleForm" component={VehicleFormScreen} />
         </Stack.Navigator>
       </NavigationContainer>
-      <Toast />
+      <AppToast />
     </QueryClientProvider>,
   );
 

@@ -1,24 +1,23 @@
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  formatCurrency,
   payInstallmentInputSchema,
   type DebtInstallment,
   type PayInstallmentInput,
 } from "@mony/shared-types";
-import { color, radius, size as sizeTokens, spacing } from "@mony/ui-tokens";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 
-import { BottomSheet, Button, Text, TextField } from "../../components/ui";
-import { formatAmountDisplay, parseAmountInput } from "../../lib/currency-mask";
+import { AmountField } from "../../components/domain";
+import { Button, IconBadge, InlineNotice, PaperSheet, Text, TextField } from "../../components/ui";
 import {
   formatDateDisplay,
   formatDateInputDigits,
   localTodayISO,
   parseDateInputToISO,
 } from "../../lib/date-mask";
+import { formatMoney } from "../../lib/money-display";
+import { radius, space, useTheme } from "../../theme";
 
 interface PayInstallmentSheetProps {
   // null = closed.
@@ -39,6 +38,7 @@ export function PayInstallmentSheet({
   onClose,
   onSubmit,
 }: PayInstallmentSheetProps) {
+  const { colors } = useTheme();
   const [dateDisplay, setDateDisplay] = useState("");
   const {
     control,
@@ -59,17 +59,44 @@ export function PayInstallmentSheet({
   }, [installment, reset]);
 
   return (
-    <BottomSheet
+    <PaperSheet
       testID="pay-installment-sheet"
       visible={installment !== null}
       title={installment ? `Pagar parcela ${installment.installmentNo}` : ""}
       onClose={onClose}
     >
-      {installment && (
-        <Text variant="caption">
-          Vencimento {formatDateDisplay(installment.dueDate)} · {formatCurrency(installment.amount)}
-        </Text>
-      )}
+      {installment ? (
+        <View style={[styles.summary, { backgroundColor: colors.surfaceMuted }]}>
+          <IconBadge icon="calendar" size={40} filled />
+          <View style={styles.flex}>
+            <Text variant="footnote" tone="muted">
+              Vencimento
+            </Text>
+            <Text variant="bodyStrong">{formatDateDisplay(installment.dueDate)}</Text>
+          </View>
+          <View style={styles.amount}>
+            <Text variant="footnote" tone="muted">
+              Parcela
+            </Text>
+            <Text variant="numeral">{formatMoney(installment.amount)}</Text>
+          </View>
+        </View>
+      ) : null}
+
+      <Controller
+        control={control}
+        name="paidAmount"
+        render={({ field }) => (
+          <AmountField
+            testID="paid-amount-input"
+            size="compact"
+            label="Valor pago"
+            value={field.value}
+            onChangeValue={field.onChange}
+            error={errors.paidAmount?.message}
+          />
+        )}
+      />
 
       <Controller
         control={control}
@@ -78,6 +105,7 @@ export function PayInstallmentSheet({
           <TextField
             testID="payment-date-input"
             label="Data do pagamento"
+            leftIcon="calendar-outline"
             value={dateDisplay}
             onChangeText={(text) => {
               setDateDisplay(formatDateInputDigits(text));
@@ -85,53 +113,37 @@ export function PayInstallmentSheet({
             }}
             keyboardType="number-pad"
             placeholder="DD/MM/AAAA"
+            maxLength={10}
             error={errors.paymentDate?.message}
           />
         )}
       />
 
-      <Controller
-        control={control}
-        name="paidAmount"
-        render={({ field }) => (
-          <TextField
-            testID="paid-amount-input"
-            label="Valor pago"
-            value={formatAmountDisplay(field.value)}
-            onChangeText={(text) => field.onChange(parseAmountInput(text))}
-            keyboardType="number-pad"
-            placeholder="R$ 0,00"
-            error={errors.paidAmount?.message}
-          />
-        )}
-      />
-
-      {error && (
-        <View style={styles.submitError}>
-          <Ionicons name="alert-circle-outline" size={sizeTokens.iconSm} color={color.danger} />
-          <Text variant="caption" color={color.danger}>
-            {error}
-          </Text>
-        </View>
-      )}
+      {error ? <InlineNotice tone="danger" message={error} /> : null}
 
       <Button
         testID="confirm-payment-button"
         label="Registrar pagamento"
+        leftIcon="checkmark-circle"
         onPress={handleSubmit(onSubmit)}
         loading={submitting}
       />
-    </BottomSheet>
+    </PaperSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  submitError: {
+  summary: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
-    backgroundColor: color.dangerMuted,
-    borderRadius: radius.sm,
-    padding: spacing.sm,
+    gap: space.md,
+    padding: space.md,
+    borderRadius: radius.lg,
+  },
+  flex: {
+    flex: 1,
+  },
+  amount: {
+    alignItems: "flex-end",
   },
 });
