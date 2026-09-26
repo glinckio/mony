@@ -77,4 +77,5 @@ below.
 - **Apple Developer Program membership** — not required for Expo Go dev
   testing, only before the TestFlight step in Release hardening.
 - ~~**Mobile charting library** for #8 (`dashboard`) and #14 (`reports`)~~
-  — decided: `react-native-gifted-charts`, recorded in `tech.md`.
+  — decided: `react-native-gifted-charts`, recorded in `tech.md`; replaced
+  by the hand-rolled `YearChart` in the 2026-09 redesign.

@@ -1,114 +1,97 @@
 # Design System — Mony Mobile
 
-Source of truth for every visual decision in `apps/mobile`. Tokens live in
-`packages/ui-tokens/src/index.ts`; a small component library in
-`apps/mobile/src/components/ui/` is built from them. **No screen writes a
-raw hex color, a raw pixel number for spacing/radius, or hand-rolls its
-own `SafeAreaView`/`KeyboardAvoidingView`/button/input — it imports from
-`@mony/ui-tokens` and `../components/ui` instead.** This is enforced by
-`code-reviewer` on every feature going forward.
+Source of truth for every visual decision in `apps/mobile`. The direction
+("Índigo Suave": lavender page, floating white cards, the brand's
+blue→indigo gradient, pastel icon badges) and the full rationale live in
+`design/` at the repo root (PT-BR, owned by the app-design workflow):
+`design/style-guide.md`, `design/componentes.md`, `design/telas.md`.
+**No screen writes a raw hex color, a raw pixel number for
+spacing/radius/type, or hand-rolls its own safe-area/keyboard handling,
+buttons or inputs — it builds from the theme and the components below.**
+Enforced by `code-reviewer` on every feature.
 
-## Where the palette came from
+## Tokens
 
-The client already has a brand palette — extracted from
-`legacy_php_reference/_public_html/como-usar/assets/*.css` (a built
-Tailwind/shadcn stylesheet, `:root` CSS custom properties) and
-cross-checked against the Mony "M" logo
-(`legacy_php_reference/_public_html/app/logo.png`, a teal-to-blue
-gradient mark). The extracted `--primary`/`--accent` value, `hsl(214 82%
-49%)` → `#166FE3`, is the app's brand blue. This was a **light** theme
-(`--background: 0 0% 98%`) — that's what Mony ships. The legacy CSS also
-defines a full `.dark` variant; those HSL values aren't wired into
-`ui-tokens` yet since dark mode hasn't been requested, but are recorded
-here in case it is later:
+- `design/tokens.json` is the single source of truth (colors, gradients,
+  type scale, spacing, radius, elevation, motion).
+- `pnpm --filter @mony/ui-tokens sync` generates
+  `packages/ui-tokens/src/generated.ts`; the package exports it as the
+  `tokens` namespace. `python .claude/skills/app-design/scripts/validar_tokens.py`
+  checks WCAG contrast of every semantic pair.
+- The app ships **light theme only** (owner decision). `color.dark` in the
+  JSON mirrors `color.light` just for the validator.
 
-| Token | Light (shipped) | Dark (legacy value, unused) |
-|---|---|---|
-| background | `#FAFAFA` | `hsl(222.2 84% 4.9%)` → `#020817` |
-| foreground | `#2B303B` | `hsl(210 40% 98%)` → `#F8FAFC` |
-| primary | `#166FE3` | `hsl(210 40% 98%)` (inverted — light primary on dark bg) |
-| border | `#E1E7EF` | `hsl(217.2 32.6% 17.5%)` → `#1E293B` |
-| destructive | `#EF4444` | `hsl(0 62.8% 30.6%)` → `#7F1D1D` |
+In the app, read tokens through `apps/mobile/src/theme`:
 
-## Tokens (`packages/ui-tokens`)
+| Import                                                          | What                                                                                                                                                                                                                              |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useTheme()`                                                    | `{ colors, gradients, elevation(level) }` — semantic colors (`text`, `textMuted`, `primary`, `surface`, `success`, `danger`, `onGlass`…), the gradients (`brand`, `balance`, `progress`, `income`, `screen`) and platform shadows |
+| `space`, `radius`, `layout`, `typeScale`, `iconSize`            | theme-independent tokens, safe in module-level `StyleSheet.create`                                                                                                                                                                |
+| `useMotion()`                                                   | `{ reduced }` — OS "reduce motion" (+ DesignLab override in dev); every animation reads it                                                                                                                                        |
+| `theme/haptics` → `haptic.selection/tick/stamp/success/error()` | haptics by intent                                                                                                                                                                                                                 |
+| `theme/images`                                                  | generated image registry (`processar_imagens.py`)                                                                                                                                                                                 |
 
-### Color
+Typography: **Manrope only** (400–800), loaded file by file in
+`theme/fonts.ts`. Every type token has a line height ≥ 1.4× its size —
+Manrope's tall ascenders/descenders clip on Android below that. A `Text`
+nested inside another `Text` must pass `inline` (no own line height), or
+Android applies the inner line height to the whole line and clips it.
 
-| Token | Value | Use |
-|---|---|---|
-| `primary` | `#166FE3` | CTAs, links, active/focus states, brand accents |
-| `primaryPressed` | `#125BBA` | Pressed/active state of a primary control |
-| `primaryMuted` | `#E8F1FD` | Soft background for badges, selected chips |
-| `onPrimary` | `#FFFFFF` | Text/icons on top of `primary` |
-| `background` | `#FAFAFA` | Screen background |
-| `surface` | `#FFFFFF` | Cards, inputs, sheets |
-| `surfaceAlt` | `#F1F5F9` | Secondary fill (disabled inputs, subtle sections) |
-| `overlay` | `rgba(15,23,42,.45)` | Modal/sheet backdrops |
-| `border` / `borderFocus` | `#E1E7EF` / `#166FE3` | Default vs. focused input/card border |
-| `textPrimary` / `textSecondary` / `textDisabled` | `#2B303B` / `#65758B` / `#9AA5B1` | Body text hierarchy |
-| `success` / `successMuted` | `#1DAF52` / `#E5FBED` | Positive states, confirmations |
-| `danger` / `dangerMuted` | `#EF4444` / `#FDE8E8` | Errors, destructive actions |
-| `warning` / `warningMuted` | `#D97706` / `#FFFAEB` | Caution states (muted value is the legacy "tip" callout background) |
-| `info` / `infoMuted` | `#3B82F6` / `#E7EFFE` | Informational banners, distinct from `primary` CTAs |
+## Components
 
-### Spacing, radius, sizing
+- `apps/mobile/src/components/ui/` — primitives and chrome.
+- `apps/mobile/src/components/domain/` — the app's own pieces.
+- `apps/mobile/src/components/effects/` — shared motion helpers (`useCountUp`).
 
-- `spacing`: `xxs`(2) `xs`(4) `sm`(8) `md`(16) `lg`(24) `xl`(32) `xxl`(48) — 4px-based scale, use these for every margin/padding/gap.
-- `radius`: `sm`(8) `md`(12) `lg`(16) `xl`(24) `pill`(999) — `md`/12px matches the legacy `--radius: .75rem`, used on inputs/buttons/cards by default.
-- `size.touchTarget` (44) / `size.controlHeight` (52) — every tappable control (`Button`, `TextField`) respects these so nothing falls below the iOS HIG / Material minimum hit area.
-- `size.maxContentWidth` (480) — caps form/card width on tablets; `Screen` applies it automatically.
+### Primitives & chrome (`components/ui`)
 
-### Typography
+| Component                                                                            | Purpose                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Text`                                                                               | type scale variants (`display`, `title1`–`title3`, `headline`, `body`, `bodyStrong`, `callout`, `subhead`, `footnote`, `caption`, `label`, `numeral`, `numeralLarge`, `amountInput`, …) + `tone`/`color`; `inline` for nested runs          |
+| `Icon`                                                                               | Ionicons (the icon set stored for categories); `filled` swaps `-outline`                                                                                                                                                                    |
+| `Touchable`                                                                          | Pressable with per-kind feedback: `sink` (cards/buttons), `row`, `fade`, `none`; optional haptic                                                                                                                                            |
+| `Button`                                                                             | `primary` (brand gradient), `secondary` (soft indigo), `ghost`, `danger`, `dangerGhost`; `loading`, `disabled`, `leftIcon`, `size`                                                                                                          |
+| `IconButton`                                                                         | `plain`, `soft` (white circle + shadow — header actions/back), `overlay`, `ink` (stepper); a11y label required                                                                                                                              |
+| `TextField`                                                                          | label, `leftIcon`, `error`/`hint`, `secureToggle` (`${testID}-toggle-visibility`)                                                                                                                                                           |
+| `SegmentedControl`                                                                   | pill track; the gradient pill glides to the selection; `variant="glass"` on gradients; option testIDs `${testID}-${value}`                                                                                                                  |
+| `SelectChip`                                                                         | selectable pill chip (`dashed` for "none/automatic")                                                                                                                                                                                        |
+| `Checkbox`                                                                           | row checkbox (`accessibilityState.checked/selected`)                                                                                                                                                                                        |
+| `Card` · `IconBadge` · `ProgressBar` · `Gradient` · `ScreenBackground` · `withAlpha` | surfaces: white card with soft shadow, pastel circle with a colored glyph, gradient bar, gradient fill, the lavender page                                                                                                                   |
+| `ScrollScreen`                                                                       | standard scrolling screen: lavender page, floating `TopBar` (centered title, soft circle buttons, white backdrop on scroll), tab-bar clearance; optional `largeTitle`, full-bleed `hero` (+`heroOverlap`), `keyboardAware`, pull-to-refresh |
+| `TopBar`, `useScrollHeader`, `useScreenInsets`, `useBottomClearance`                 | building blocks for list screens (`SectionList`/`FlatList`) that can't use `ScrollScreen`                                                                                                                                                   |
+| `FormScreen`                                                                         | modal forms: `SheetHeader` (close `header-close`), keyboard-aware scroll, CTA footer glued above the keyboard                                                                                                                               |
+| `AuthLayout`                                                                         | entry screens: gradient hero with the Mony mark, form card over its edge                                                                                                                                                                    |
+| `PaperSheet`                                                                         | bottom sheet (spring in, drag/backdrop/back to close, own keyboard avoidance)                                                                                                                                                               |
+| `ConfirmSheet`                                                                       | replaces `Alert.alert` for consequential actions — preview of the affected item, question title, consequence, verb buttons (`${testID}-confirm`/`-cancel`, default `confirm-sheet`)                                                         |
+| `AppToast`                                                                           | global toast (`useToastStore.getState().show(message, { tone, action, receipt })`)                                                                                                                                                          |
+| `InlineNotice`                                                                       | persistent inline message (form errors, warnings, success)                                                                                                                                                                                  |
+| `EmptyState`, `ErrorState`, `Skeleton`, `MarkLoader`                                 | empty (illustration slot or big badge + action), error (+ "Tentar de novo"), shaped skeletons, in-button loader                                                                                                                             |
+| `MenuRow`, `SwipeRow`, `ColorPicker`, `IconPicker`, `AppImage`, `Rule`               | settings-style rows, swipe-to-delete, category pickers, registry images, separators                                                                                                                                                         |
+| `AppTabBar`                                                                          | the custom tab bar (4 tabs + raised gradient "+"); reports its height, hides with the keyboard                                                                                                                                              |
 
-`typography.size`/`lineHeight` scale: `xs`(12) `sm`(14) `md`(16) `lg`(18)
-`xl`(22) `xxl`(28) `display`(34). `weight`: `regular`(400) `medium`(500)
-`semibold`(600) `bold`(700). `fontFamily: "System"` — no custom font
-bundled (legacy didn't use one either, just the system-ui stack), so this
-maps to San Francisco on iOS / Roboto on Android for free.
+### Domain components (`components/domain`)
 
-### Shadow
+`BalanceHero` (Início hero), `PeriodSummary`, `MoneyHero` (amount with
+small "R$"/cents, counts to new values), `GoalProgress`, `YearChart`,
+`StatusPill` (paid / to pay / overdue / paid off / reached…),
+`TransactionItem`, `AmountField` (the amount as a form's hero),
+`DebtCard`, `PantryItem`, `VehiclePhoto`, `MercosulPlate`, `Odometer`,
+`NotebookSwitch` (workspace), `Initials`.
 
-`shadow.sm` / `shadow.md` — platform-aware style objects (`shadowColor`/
-`shadowOffset`/`shadowOpacity`/`shadowRadius` for iOS, `elevation` for
-Android). Spread into a `StyleSheet` entry: `{ ...shadow.md, ... }`.
+## Rules of thumb
 
-## Components (`apps/mobile/src/components/ui`)
-
-| Component | Purpose |
-|---|---|
-| `Screen` | Wraps `SafeAreaView` + optional `KeyboardAvoidingView` + optional `ScrollView`. Every screen renders through this — see `docs/steering/structure.md` "Mobile screen conventions" for the safe-area/keyboard reasoning. Props: `scrollable`, `keyboardAvoiding`, `edges`, `centered`, `contentStyle`. **Don't pass `centered` on a screen that has text inputs** — centering makes the content's vertical position depend on available height, and that height changes when the keyboard opens, so the field you just tapped visibly jumps/lags instead of tracking the keyboard smoothly. `centered` is for static content only (e.g. `HomeScreen`, which also sets `keyboardAvoiding={false}` since it has no inputs at all). A form screen (`LoginScreen`, `RegisterScreen`) stays top-aligned, non-centered. |
-| `Text` | Typography variants: `display` `heading` `title` `body` `bodyStrong` `caption`. Optional `color` override for semantic colors (danger, secondary, etc). |
-| `Button` | Variants `primary` `secondary` `ghost`; `loading`, `disabled`, `leftIcon`, `fullWidth` props. Always meets `size.controlHeight`. |
-| `TextField` | Labeled input with inline `error` text, focus/error border states, optional `secureToggle` (adds an eye icon via `@expo/vector-icons` `Ionicons` to reveal/hide a password field). `editable={false}` renders the disabled look (`surfaceAlt` fill, `textDisabled` text). |
-| `AppHeader` | Screen title + workspace switcher + optional `rightAccessory`. `onBack` adds a back chevron (`testID="header-back"`) for screens pushed on the app stack, which have no native header. |
-| `ProgressBar` | Thin track + fill; `percent` clamped 0–100, optional `tone` (`primary` default, `success` `warning` `danger`) — e.g. the grocery budget bar colored by legacy thresholds. Exposes `accessibilityRole="progressbar"` + `accessibilityValue`. |
-| `PhotoFrame` | 4:3 photo slot (`uri` or tokenized placeholder icon), `variant` `thumb` (touch-target tall) or `full` (fills width) — vehicle photos, later receipts. |
-| `IconButton` | Touch-target-sized square icon control on a `primaryMuted` fill (`icon`, required `accessibilityLabel`, `disabled`) — e.g. the grocery −/+ stepper. Bare header icons keep using `TouchableOpacity` + `hitSlop`. |
-| `Badge` | Small status pill; `tone` = `success` `danger` `warning` `info` `neutral`, each a muted background + matching foreground from the palette. |
-| `ListRow` | Tappable menu row (icon badge + label + optional description + chevron) — the `Mais` tab's entries. |
-| `BottomSheet` | Bottom-anchored modal sheet over the `overlay` backdrop, for short forms that belong to the screen underneath (e.g. paying a debt installment). Owns its own `KeyboardAvoidingView` — a RN `Modal` is a separate native window with no `Screen` ScrollView to hand keyboard insets to. |
-
-Icons: `@expo/vector-icons` (bundled with Expo) — default to `Ionicons`
-unless a specific icon only exists in another set.
-
-## Example: how `auth-register`'s `RegisterScreen` uses this
-
-- `Screen` (default scrollable + keyboard-avoiding) as the root.
-- A `primaryMuted` circular badge with an `Ionicons` glyph as a light
-  visual anchor above the title (no logo image asset exists yet).
-- `Text variant="heading"` for the title, `variant="caption"` for the
-  subtitle.
-- One `TextField` per form field, `secureToggle` on both password fields.
-- A `dangerMuted` banner (icon + `Text variant="caption" color={danger}`)
-  for the generic submit-failure case; field-level errors go through
-  `TextField`'s own `error` prop instead (see `docs/steering/tech.md`
-  language policy for why these are always pt-BR copy, never a raw API
-  string).
-- `Button variant="primary"` with `loading={isSubmitting}` as the submit
-  control.
-
-Every future screen should reach for this same vocabulary before
-inventing new patterns — if a screen needs something `ui/` doesn't have
-yet (a select/dropdown, a date picker, a segmented control for the
-workspace switcher, etc.), add it there as a proper token-driven
-component, don't one-off it inline in the screen file.
+- Deleting or undoing something goes through `ConfirmSheet`, never
+  `Alert.alert`. Failures of background actions go to the toast; form
+  submit failures to an `InlineNotice` next to the CTA.
+- Lists of cards: one white card per row (`TransactionItem`,
+  `PantryItem`, goals) or rows inside one card with hairline dividers
+  (`MenuRow`, summaries). Swipe left to delete where the row offers it, and
+  expose the same action as an accessibility action.
+- Money: `lib/money-display` (`formatMoney`, `formatSigned`,
+  `spokenMoney`) — sign + color for income/expense, tabular figures.
+- Reanimated worklets (`useAnimatedStyle`, `useAnimatedReaction`, gesture
+  callbacks) may only capture plain values — never React elements, props
+  objects or class instances.
+- Dev tools (`src/dev/`: Screen Catalog, DesignLab, in-memory mock API)
+  load only under `__DEV__` through a constant-folded `require`; they never
+  ship in release bundles.

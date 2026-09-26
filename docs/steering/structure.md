@@ -9,12 +9,19 @@ mony/
 │   └── mobile/                    # Expo React Native
 │       └── src/
 │           ├── screens/<feature>/
-│           ├── components/        # shared, dumb components only
+│           ├── components/
+│           │   ├── ui/            # design-system primitives (see design-system.md)
+│           │   ├── domain/        # money/debt/vehicle pieces built from ui/
+│           │   └── effects/       # count-up and other motion helpers
+│           ├── theme/             # ThemeProvider, useMotion, fonts, haptics, images registry
+│           ├── dev/               # dev-build-only catalog, design lab, mock API (not in release)
+│           ├── navigation/
 │           └── lib/                # api client, stores, hooks
 ├── packages/
 │   ├── shared-types/               # DTOs / zod schemas shared api <-> mobile
-│   ├── ui-tokens/                   # design tokens (placeholder until client design lands)
+│   ├── ui-tokens/                   # design tokens generated from design/tokens.json
 │   └── config/                      # eslint, prettier, tsconfig bases
+├── design/                          # app-design workflow docs (pt-BR): brief, style guide, tokens.json, screens
 ├── docs/
 │   ├── steering/                    # this file, product.md, tech.md
 │   ├── specs/<feature>/             # requirements.md, design.md, tasks.md per feature
@@ -27,19 +34,20 @@ mony/
 ## Mobile screen conventions
 
 - `App.tsx` wraps everything in a single root-level `SafeAreaProvider`
-  (from `react-native-safe-area-context`) — screens don't each create
+  (from `react-native-safe-area-context`) and a `KeyboardProvider`
+  (from `react-native-keyboard-controller`) — screens don't create
   their own.
-- Every screen navigated to with `headerShown: false` (all of them, so
-  far) wraps its own content in `SafeAreaView` (also from
-  `react-native-safe-area-context`, not the older core-RN one) — there's
-  no navigation header to already account for the notch/home-indicator
-  insets.
-- Screens with text inputs additionally wrap in `KeyboardAvoidingView`
-  (`behavior="padding"` on iOS, `undefined` on Android — Android usually
-  handles this via `windowSoftInputMode` instead) so the keyboard doesn't
-  cover the focused field. Screens with no inputs (e.g. a pure display
-  screen) skip it — this is a per-screen judgment call, not a blanket
-  rule.
+- Screens don't hand-roll `SafeAreaView`/`KeyboardAvoidingView`. They are
+  built from the screen shells in `components/ui/Screens.tsx`
+  (`ScrollScreen`, `FormScreen`), or, for lists, a `SectionList`/
+  `FlatList` padded with `useScreenInsets()` + `useBottomClearance()` and
+  the floating `TopBar`. The shells apply the insets per piece (top bar,
+  content, tab bar clearance) and handle the keyboard
+  (`KeyboardAwareScrollView`; the form CTA stays above the keyboard).
+- Sheets (`PaperSheet`, `ConfirmSheet`) live in their own `Modal` and
+  carry their own keyboard avoidance.
+- Full rules (tokens, components, copy) in
+  `docs/steering/design-system.md`.
 
 ## Module boundary rules
 

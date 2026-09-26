@@ -24,10 +24,10 @@
 | Payment gateway | **Stripe** (confirmed) | Checkout + webhooks for `subscriptions` feature only |
 | Object storage | **MinIO** (S3-compatible, self-hosted) | Vehicle photos (`vehicles`) and maintenance receipts (`vehicle-maintenance`), via the AWS S3 SDK (`@aws-sdk/client-s3`) pointed at MinIO's S3-compatible endpoint |
 | Transactional email | **Brevo** (`@getbrevo/brevo` Node SDK) | Password reset codes (`auth-password-reset`) — same provider as legacy |
-| Mobile charting | `react-native-gifted-charts` | `dashboard` yearly chart, reused by `reports` |
-| UI tokens | `@mony/ui-tokens` — client's real brand palette | Extracted from the legacy app's
-  built Tailwind/shadcn CSS + logo (see `docs/steering/design-system.md`) — not a placeholder.
-  Component library in `apps/mobile/src/components/ui/` built on top of it; every screen uses both. |
+| Mobile charting | Hand-rolled `YearChart` (`apps/mobile/src/components/domain/YearChart.tsx`) | `dashboard` yearly chart (Reanimated + `expo-linear-gradient` bars). Replaced `react-native-gifted-charts` in the 2026-09 redesign — its fixed chart styling couldn't match the design; `reports` should reuse `YearChart` or follow the same approach. |
+| Mobile motion & gestures | `react-native-reanimated` 4 (+ `react-native-worklets`), `react-native-gesture-handler`, `react-native-keyboard-controller`, `expo-haptics` | Press feedback, sheets, swipe-to-delete, count-ups, keyboard-aware forms. Every animation honors the OS "reduce motion" setting through `useMotion()` (`apps/mobile/src/theme/motion.ts`). |
+| UI tokens | `@mony/ui-tokens`, generated from `design/tokens.json` | "Índigo Suave" redesign (2026-09, light only). `pnpm --filter @mony/ui-tokens sync` regenerates `src/generated.ts`; never edit that file by hand.
+  Component library in `apps/mobile/src/components/ui/` (primitives) and `components/domain/` (money/debt/vehicle pieces) is built on top of it; every screen uses both — see `docs/steering/design-system.md`. |
 | Unit tests | Jest (both apps) | |
 | API integration tests | Jest + Supertest | |
 | Mobile E2E | Maestro | Lighter to maintain than Detox, YAML flows |
@@ -121,6 +121,37 @@ pnpm --filter @mony/api test:e2e      # Supertest e2e
   `nodeModulesPaths` pointing at the monorepo root — required for Metro
   to see workspace packages (`@mony/ui-tokens`, `@mony/shared-types`) and
   the hoisted root `node_modules`.
+- **Keep Metro's hierarchical lookup enabled** (don't set
+  `resolver.disableHierarchicalLookup`). pnpm keeps each package's own
+  dependencies next to it in `.pnpm/<pkg>/node_modules`, and some differ
+  from the hoisted copy: `react-native-reanimated` needs semver 7 while
+  the root has 6. With the lookup disabled, Metro resolves only against
+  `nodeModulesPaths` and fails with
+  `Unable to resolve "semver/functions/satisfies"`.
+- **Reanimated worklets must only capture plain values.** A worklet
+  (`useAnimatedStyle`, `useAnimatedReaction`, gesture callbacks) that
+  closes over a React element or component instance tries to copy
+  React's internal `FiberNode` to the UI thread and crashes the screen.
+  Derive a boolean/number first (e.g. `const hasHero = !!hero`) and
+  capture that.
+- **Reanimated 4 in Jest** needs `react-native-worklets/jest/resolver.js`
+  as the jest `resolver` (otherwise:
+  `Cannot read properties of undefined (reading 'loadUnpackers')`) and
+  `require("react-native-reanimated").setUpTests()` in
+  `jest.setup-after-env.js`. The full suite is flaky with the default
+  worker count on Windows; run it with `--maxWorkers=4`.
+- **Manrope clips on Android when a line height is under ~1.4× the font
+  size**, and a nested `<Text>` with its own line height clips the
+  whole line. The type scale in `design/tokens.json` already respects
+  1.4×; a nested run of text must use the `inline` prop of the app's
+  `Text` (it drops the nested line height).
+- **On iOS, a native-stack `presentation: "modal"` screen covers
+  everything mounted at the app root**, including `AppToast`. Feedback
+  for something that fails *inside* a modal screen goes inline
+  (`InlineNotice`, or `ConfirmSheet`'s `error` prop), not in a toast.
+  iOS also refuses to present a second RN `Modal` while one is still on
+  screen: open a follow-up sheet from the first sheet's `onDismissed`
+  callback, not in the same tick as closing it.
 - **`apps/mobile/jest.config.js`** sets `transformIgnorePatterns: []`
   instead of jest-expo's default pattern. The default regex assumes a
   flat `node_modules` tree; pnpm's nested `.pnpm/<pkg>/node_modules/...`
