@@ -49,3 +49,5 @@ android/
 
 # Ignore
 legacy_php_reference
+# app-design visual review screenshots (may capture real account data)
+design/revisao/

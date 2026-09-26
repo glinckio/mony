@@ -1,0 +1,201 @@
+{
+  "stack": "expo",
+  "origem": "design/img-original",
+  "destino": "apps/mobile/assets/images",
+  "larguraTela": 430,
+  "alturaTela": 932,
+  "fundo": "#F1F2FA",
+  "registro": {
+    "arquivo": "apps/mobile/src/theme/images.ts",
+    "linguagem": "ts",
+    "idioma": "en"
+  },
+  "assets": [
+    {
+      "arquivo": "icone_simbolo.png",
+      "nome": "icon",
+      "slot": "Ícone do app (app.json > icon): o M do cliente sobre papel (aprovado)",
+      "tipo": "icone",
+      "conjunto": "marca",
+      "prioridade": "essencial",
+      "gerar": "não gerar: logo do cliente",
+      "exibicao": {
+        "largura": 1024,
+        "altura": 1024
+      },
+      "densidades": [1],
+      "ampliar": true,
+      "destino": "apps/mobile/assets",
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.2,
+      "transparente": false,
+      "formato": "png",
+      "registro": false,
+      "status": "integrado",
+      "cor_media": "#DEE7F6"
+    },
+    {
+      "arquivo": "icone_simbolo.png",
+      "nome": "adaptive-icon",
+      "slot": "Android adaptive icon foreground + monochrome",
+      "tipo": "simbolo",
+      "conjunto": "marca",
+      "prioridade": "essencial",
+      "gerar": "não gerar: logo do cliente",
+      "exibicao": {
+        "largura": 1024,
+        "altura": 1024
+      },
+      "densidades": [1],
+      "ampliar": true,
+      "destino": "apps/mobile/assets",
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.27,
+      "transparente": true,
+      "formato": "png",
+      "registro": false,
+      "status": "integrado",
+      "cor_media": "#2F7BD4"
+    },
+    {
+      "arquivo": "icone_simbolo.png",
+      "nome": "splash-icon",
+      "slot": "Splash (plugin expo-splash-screen > image)",
+      "tipo": "simbolo",
+      "conjunto": "marca",
+      "prioridade": "essencial",
+      "gerar": "não gerar: logo do cliente",
+      "exibicao": {
+        "largura": 1024,
+        "altura": 1024
+      },
+      "densidades": [1],
+      "ampliar": true,
+      "destino": "apps/mobile/assets",
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.1,
+      "transparente": true,
+      "formato": "png",
+      "registro": false,
+      "status": "integrado",
+      "cor_media": "#2F7BD4"
+    },
+    {
+      "arquivo": "capa_caderno.png",
+      "nome": "notebookCover",
+      "slot": "Entrar / Criar conta > topo",
+      "tipo": "ilustracao",
+      "conjunto": "traco",
+      "prioridade": "essencial",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 220,
+        "altura": 160
+      },
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.03,
+      "transparente": true,
+      "formato": "png",
+      "status": "pendente"
+    },
+    {
+      "arquivo": "vazio_lancamentos.png",
+      "nome": "emptyTransactions",
+      "slot": "Lançamentos > estado vazio",
+      "tipo": "ilustracao",
+      "conjunto": "traco",
+      "prioridade": "essencial",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 240,
+        "altura": 180
+      },
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.03,
+      "transparente": true,
+      "formato": "png",
+      "status": "pendente"
+    },
+    {
+      "arquivo": "vazio_metas.png",
+      "nome": "emptyGoals",
+      "slot": "Metas > estado vazio",
+      "tipo": "ilustracao",
+      "conjunto": "traco",
+      "prioridade": "complementar",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 200,
+        "altura": 150
+      },
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.03,
+      "transparente": true,
+      "formato": "png",
+      "status": "pendente"
+    },
+    {
+      "arquivo": "vazio_dividas.png",
+      "nome": "emptyDebts",
+      "slot": "Dívidas > estado vazio",
+      "tipo": "ilustracao",
+      "conjunto": "traco",
+      "prioridade": "complementar",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 200,
+        "altura": 150
+      },
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.03,
+      "transparente": true,
+      "formato": "png",
+      "status": "pendente"
+    },
+    {
+      "arquivo": "vazio_mercado.png",
+      "nome": "emptyGrocery",
+      "slot": "Mercado > lista vazia",
+      "tipo": "ilustracao",
+      "conjunto": "traco",
+      "prioridade": "complementar",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 200,
+        "altura": 150
+      },
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.03,
+      "transparente": true,
+      "formato": "png",
+      "status": "pendente"
+    },
+    {
+      "arquivo": "vazio_veiculos.png",
+      "nome": "emptyVehicles",
+      "slot": "Veículos > estado vazio",
+      "tipo": "ilustracao",
+      "conjunto": "traco",
+      "prioridade": "complementar",
+      "gerar": "1024x1024",
+      "exibicao": {
+        "largura": 220,
+        "altura": 150
+      },
+      "ajuste": "conter",
+      "aparar": true,
+      "margem": 0.03,
+      "transparente": true,
+      "formato": "png",
+      "status": "pendente"
+    }
+  ]
+}
