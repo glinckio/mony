@@ -46,8 +46,8 @@ export type CategoryIcon = (typeof CATEGORY_ICONS)[number];
 
 // Shared source of truth for the color picker/default-assignment palette
 // on both sides of the API boundary — see apps/api/src/categories/
-// categories.service.ts and apps/mobile/src/components/ui/
-// ColorSwatchPicker.tsx.
+// categories.service.ts and apps/mobile/src/components/ui/Pickers.tsx
+// (which also holds the pt-BR screen-reader name of each color and icon).
 export const CATEGORY_COLORS = [
   "#3B82F6",
   "#EF4444",
