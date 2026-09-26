@@ -5,7 +5,11 @@ module.exports = {
   // tree), so react-native's own Flow-typed internals end up un-transformed and throw
   // a syntax error. Transforming everything is the reliable fix in a pnpm monorepo.
   transformIgnorePatterns: [],
-  setupFiles: ["<rootDir>/jest.setup.js"],
+  setupFiles: ["react-native-gesture-handler/jestSetup.js", "<rootDir>/jest.setup.js"],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup-after-env.js"],
+  // Resolves react-native-worklets to its non-native (JS) implementation
+  // under Jest, as the Worklets testing guide prescribes.
+  resolver: "react-native-worklets/jest/resolver.js",
   collectCoverageFrom: ["src/**/*.{ts,tsx}"],
   coverageDirectory: "coverage",
 };

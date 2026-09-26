@@ -8,6 +8,6 @@ export default [
     },
   },
   {
-    ignores: ["jest.setup.js"],
+    ignores: ["jest.setup.js", "jest.setup-after-env.js"],
   },
 ];
