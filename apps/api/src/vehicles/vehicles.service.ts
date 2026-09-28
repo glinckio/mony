@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common";
 import type { Vehicle } from "@prisma/client";
 
+import { createAlertsForVehicle } from "../common/maintenance-alerts/alert-sync";
 import { detectImageType } from "../common/storage/image-type";
 import { normalizePhoto, type NormalizedPhoto } from "../common/storage/normalize-photo";
 import { StorageService } from "../common/storage/storage.service";
@@ -62,19 +63,25 @@ export class VehiclesService {
 
   async create(userId: string, dto: CreateVehicleDto): Promise<VehicleDto> {
     this.assertYears(dto.manufactureYear, dto.modelYear);
-    const vehicle = await this.prisma.vehicle.create({
-      data: {
-        userId,
-        make: dto.make,
-        model: dto.model,
-        manufactureYear: dto.manufactureYear,
-        modelYear: dto.modelYear,
-        currentMileage: dto.currentMileage,
-        licensePlate: blankToNull(dto.licensePlate),
-        acquisitionDate: dto.acquisitionDate ? parseDateOnly(dto.acquisitionDate) : undefined,
-        color: blankToNull(dto.color),
-        fuelType: dto.fuelType,
-      },
+    // Same transaction as the alerts for the user's maintenance types, so a
+    // vehicle never exists without them (docs/specs/vehicle-maintenance).
+    const vehicle = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.vehicle.create({
+        data: {
+          userId,
+          make: dto.make,
+          model: dto.model,
+          manufactureYear: dto.manufactureYear,
+          modelYear: dto.modelYear,
+          currentMileage: dto.currentMileage,
+          licensePlate: blankToNull(dto.licensePlate),
+          acquisitionDate: dto.acquisitionDate ? parseDateOnly(dto.acquisitionDate) : undefined,
+          color: blankToNull(dto.color),
+          fuelType: dto.fuelType,
+        },
+      });
+      await createAlertsForVehicle(tx, created);
+      return created;
     });
     return this.toDto(vehicle);
   }

@@ -2772,7 +2772,7 @@
               },
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 36200,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\",\n  \"photoUrl\": \"http://192.168.0.10:9010/mony/vehicles/a613208e-0ccf-4433-804d-46cfea879e8b/147e9264-9070-481f-9b81-5128285f7f3c/fc0735bf-fb32-4b93-bfc2-06592a689a22.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:35:02.749Z\"\n}"
+              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 36200,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\",\n  \"photoUrl\": \"https://minio.example.com/mony/vehicles/a613208e-0ccf-4433-804d-46cfea879e8b/147e9264-9070-481f-9b81-5128285f7f3c/fc0735bf-fb32-4b93-bfc2-06592a689a22.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:35:02.749Z\"\n}"
             },
             {
               "name": "404 Not Found — not this user's vehicle",
@@ -3034,7 +3034,7 @@
               },
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 36200,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\",\n  \"photoUrl\": \"http://192.168.0.10:9010/mony/vehicles/a613208e-0ccf-4433-804d-46cfea879e8b/147e9264-9070-481f-9b81-5128285f7f3c/fc0735bf-fb32-4b93-bfc2-06592a689a22.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:35:02.749Z\"\n}"
+              "body": "{\n  \"id\": \"147e9264-9070-481f-9b81-5128285f7f3c\",\n  \"make\": \"Jeep\",\n  \"model\": \"Renegade\",\n  \"displayName\": \"Jeep Renegade 2022\",\n  \"manufactureYear\": 2021,\n  \"modelYear\": 2022,\n  \"currentMileage\": 36200,\n  \"licensePlate\": \"ABC1D23\",\n  \"acquisitionDate\": \"2022-03-15\",\n  \"color\": \"Prata\",\n  \"fuelType\": \"FLEX\",\n  \"photoUrl\": \"https://minio.example.com/mony/vehicles/a613208e-0ccf-4433-804d-46cfea879e8b/147e9264-9070-481f-9b81-5128285f7f3c/fc0735bf-fb32-4b93-bfc2-06592a689a22.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n  \"createdAt\": \"2026-09-25T19:35:02.567Z\",\n  \"updatedAt\": \"2026-09-25T19:35:02.749Z\"\n}"
             },
             {
               "name": "400 Bad Request — not a JPEG/PNG/WebP image",
@@ -3152,6 +3152,662 @@
               "status": "Not Found",
               "code": 404,
               "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Vehicle not found.\"\n  ],\n  \"path\": \"/vehicles/00000000-0000-4000-8000-000000000000/photo\",\n  \"timestamp\": \"2026-09-25T19:46:27.433Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Vehicle Maintenance",
+      "item": [
+        {
+          "name": "List Maintenance Types",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/maintenance-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["maintenance-types"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — by system (types without one last), then name",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/maintenance-types",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["maintenance-types"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": \"ab9476da-2199-4d1d-9104-d0646f679f71\",\n    \"name\": \"Pastilhas de freio\",\n    \"description\": null,\n    \"system\": \"BRAKES\",\n    \"kmInterval\": 30000,\n    \"monthsInterval\": null,\n    \"createdAt\": \"2026-09-27T01:11:12.044Z\"\n  },\n  {\n    \"id\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n    \"name\": \"Troca de óleo e filtro\",\n    \"description\": \"Óleo 5W30 sintético\",\n    \"system\": \"LUBRICATION\",\n    \"kmInterval\": 10000,\n    \"monthsInterval\": 12,\n    \"createdAt\": \"2026-09-27T01:11:12.023Z\"\n  },\n  {\n    \"id\": \"dd63e728-0915-45e5-b8f9-2b05927f9830\",\n    \"name\": \"Rodízio de pneus\",\n    \"description\": null,\n    \"system\": \"WHEELS_TIRES\",\n    \"kmInterval\": 10000,\n    \"monthsInterval\": null,\n    \"createdAt\": \"2026-09-27T01:11:12.064Z\"\n  },\n  {\n    \"id\": \"57504550-80f6-47e6-b996-51e065c3deb6\",\n    \"name\": \"Filtro do ar-condicionado\",\n    \"description\": null,\n    \"system\": \"CLIMATE\",\n    \"kmInterval\": 15000,\n    \"monthsInterval\": 12,\n    \"createdAt\": \"2026-09-27T01:11:12.055Z\"\n  },\n  {\n    \"id\": \"1b3ad95b-7e63-4514-87fe-4f7dce18229b\",\n    \"name\": \"Revisão geral\",\n    \"description\": \"Revisão completa na concessionária\",\n    \"system\": null,\n    \"kmInterval\": 20000,\n    \"monthsInterval\": 12,\n    \"createdAt\": \"2026-09-27T01:11:12.073Z\"\n  }\n]"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/maintenance-types",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["maintenance-types"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\n    \"Unauthorized\"\n  ],\n  \"path\": \"/maintenance-types\",\n  \"timestamp\": \"2026-09-27T01:11:12.010Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Maintenance Type",
+          "request": {
+            "method": "POST",
+            "description": "Also creates the type's alert on every vehicle the user owns, due at that vehicle's current mileage + kmInterval. There are no system default types.",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Troca de óleo e filtro\",\n  \"kmInterval\": 10000,\n  \"monthsInterval\": 12,\n  \"system\": \"LUBRICATION\",\n  \"description\": \"Óleo 5W30 sintético\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/maintenance-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["maintenance-types"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Troca de óleo e filtro\",\n  \"kmInterval\": 10000,\n  \"monthsInterval\": 12,\n  \"system\": \"LUBRICATION\",\n  \"description\": \"Óleo 5W30 sintético\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/maintenance-types",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["maintenance-types"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n  \"name\": \"Troca de óleo e filtro\",\n  \"description\": \"Óleo 5W30 sintético\",\n  \"system\": \"LUBRICATION\",\n  \"kmInterval\": 10000,\n  \"monthsInterval\": 12,\n  \"createdAt\": \"2026-09-27T01:11:12.023Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — validation failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Troca de óleo e filtro\",\n  \"kmInterval\": 0,\n  \"system\": \"Lubrificação\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/maintenance-types",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["maintenance-types"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"kmInterval must not be less than 1\",\n    \"system must be one of the following values: ENGINE, BRAKES, SUSPENSION, TRANSMISSION, ELECTRICAL, COOLING, FUEL, LUBRICATION, STEERING, WHEELS_TIRES, CLIMATE, BODY, OTHER\"\n  ],\n  \"path\": \"/maintenance-types\",\n  \"timestamp\": \"2026-09-27T01:11:12.037Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Maintenance Type",
+          "request": {
+            "method": "DELETE",
+            "description": "Refused (409) while the type has maintenance records — history is never deleted implicitly. Its alerts go with it.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/maintenance-types/44bf7e6b-2355-4e7c-855c-02e1df0d93c5",
+              "host": ["{{baseUrl}}"],
+              "path": ["maintenance-types", "44bf7e6b-2355-4e7c-855c-02e1df0d93c5"]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content — its alerts deleted too",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/maintenance-types/44bf7e6b-2355-4e7c-855c-02e1df0d93c5",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["maintenance-types", "44bf7e6b-2355-4e7c-855c-02e1df0d93c5"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "404 Not Found — not this user's type",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/maintenance-types/00000000-0000-4000-8000-000000000000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["maintenance-types", "00000000-0000-4000-8000-000000000000"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Maintenance type not found.\"\n  ],\n  \"path\": \"/maintenance-types/00000000-0000-4000-8000-000000000000\",\n  \"timestamp\": \"2026-09-27T01:11:12.139Z\"\n}"
+            },
+            {
+              "name": "409 Conflict — the type has maintenance records",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/maintenance-types/bba6f9a9-8b30-492a-87c6-8c9fd5249027",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["maintenance-types", "bba6f9a9-8b30-492a-87c6-8c9fd5249027"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"statusCode\": 409,\n  \"error\": \"CONFLICT\",\n  \"message\": [\n    \"This maintenance type has maintenance records. Delete them before deleting the type.\"\n  ],\n  \"path\": \"/maintenance-types/bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n  \"timestamp\": \"2026-09-27T01:11:12.541Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Maintenance Alerts",
+          "request": {
+            "method": "GET",
+            "description": "One entry per maintenance type of the user, computed on every request (never stored). status is the more urgent of the km and time signals; a type never serviced on this vehicle is OVERDUE. Sorted by percent (desc), then kmRemaining (asc).",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "e278a2a4-cdb5-4839-bed7-92a977784412", "maintenance-alerts"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — live status, most urgent first",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-alerts",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "e278a2a4-cdb5-4839-bed7-92a977784412", "maintenance-alerts"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"maintenanceTypeId\": \"ab9476da-2199-4d1d-9104-d0646f679f71\",\n    \"name\": \"Pastilhas de freio\",\n    \"system\": \"BRAKES\",\n    \"kmInterval\": 30000,\n    \"monthsInterval\": null,\n    \"status\": \"OVERDUE\",\n    \"percent\": 100,\n    \"nextMileage\": 71200,\n    \"kmRemaining\": 29050,\n    \"nextDate\": null,\n    \"daysRemaining\": null,\n    \"lastService\": null\n  },\n  {\n    \"maintenanceTypeId\": \"57504550-80f6-47e6-b996-51e065c3deb6\",\n    \"name\": \"Filtro do ar-condicionado\",\n    \"system\": \"CLIMATE\",\n    \"kmInterval\": 15000,\n    \"monthsInterval\": 12,\n    \"status\": \"URGENT\",\n    \"percent\": 90,\n    \"nextMileage\": 43000,\n    \"kmRemaining\": 850,\n    \"nextDate\": \"2026-10-06\",\n    \"daysRemaining\": 9,\n    \"lastService\": {\n      \"date\": \"2025-10-06\",\n      \"mileage\": 28000\n    }\n  },\n  {\n    \"maintenanceTypeId\": \"dd63e728-0915-45e5-b8f9-2b05927f9830\",\n    \"name\": \"Rodízio de pneus\",\n    \"system\": \"WHEELS_TIRES\",\n    \"kmInterval\": 10000,\n    \"monthsInterval\": null,\n    \"status\": \"WARNING\",\n    \"percent\": 80,\n    \"nextMileage\": 43800,\n    \"kmRemaining\": 1650,\n    \"nextDate\": null,\n    \"daysRemaining\": null,\n    \"lastService\": {\n      \"date\": \"2026-04-30\",\n      \"mileage\": 33800\n    }\n  },\n  {\n    \"maintenanceTypeId\": \"1b3ad95b-7e63-4514-87fe-4f7dce18229b\",\n    \"name\": \"Revisão geral\",\n    \"system\": null,\n    \"kmInterval\": 20000,\n    \"monthsInterval\": 12,\n    \"status\": \"WARNING\",\n    \"percent\": 80,\n    \"nextMileage\": 58000,\n    \"kmRemaining\": 15850,\n    \"nextDate\": \"2026-10-22\",\n    \"daysRemaining\": 25,\n    \"lastService\": {\n      \"date\": \"2025-10-22\",\n      \"mileage\": 38000\n    }\n  },\n  {\n    \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n    \"name\": \"Troca de óleo e filtro\",\n    \"system\": \"LUBRICATION\",\n    \"kmInterval\": 10000,\n    \"monthsInterval\": 12,\n    \"status\": \"ON_TRACK\",\n    \"percent\": 0,\n    \"nextMileage\": 52150,\n    \"kmRemaining\": 10000,\n    \"nextDate\": \"2027-09-27\",\n    \"daysRemaining\": 365,\n    \"lastService\": {\n      \"date\": \"2026-09-27\",\n      \"mileage\": 42150\n    }\n  }\n]"
+            },
+            {
+              "name": "404 Not Found — not this user's vehicle",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/00000000-0000-4000-8000-000000000000/maintenance-alerts",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["vehicles", "00000000-0000-4000-8000-000000000000", "maintenance-alerts"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Vehicle not found.\"\n  ],\n  \"path\": \"/vehicles/00000000-0000-4000-8000-000000000000/maintenance-alerts\",\n  \"timestamp\": \"2026-09-27T01:11:12.759Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Maintenance Records",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "e278a2a4-cdb5-4839-bed7-92a977784412", "maintenance-records"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — newest first; receipt.url is a short-lived signed URL, 60–90 min (signature elided)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": \"e0ae8fd8-b746-4837-a8ea-05f3cb55d061\",\n    \"vehicleId\": \"e278a2a4-cdb5-4839-bed7-92a977784412\",\n    \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n    \"type\": {\n      \"name\": \"Troca de óleo e filtro\",\n      \"system\": \"LUBRICATION\"\n    },\n    \"mileage\": 42150,\n    \"date\": \"2026-09-27\",\n    \"cost\": \"289.90\",\n    \"location\": \"Auto Center Silva\",\n    \"notes\": \"Trocado também o filtro de ar.\",\n    \"receipt\": {\n      \"url\": \"https://minio.example.com/mony/vehicles/fd0a355b-4acf-4027-a05a-f1368adb86c7/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance/e0ae8fd8-b746-4837-a8ea-05f3cb55d061/0857c47b-733b-4d0a-a3a3-fd266a165878.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n      \"kind\": \"IMAGE\"\n    },\n    \"createdAt\": \"2026-09-27T01:11:12.207Z\"\n  },\n  {\n    \"id\": \"05084580-3a83-4f05-a06a-4e5407db6647\",\n    \"vehicleId\": \"e278a2a4-cdb5-4839-bed7-92a977784412\",\n    \"maintenanceTypeId\": \"dd63e728-0915-45e5-b8f9-2b05927f9830\",\n    \"type\": {\n      \"name\": \"Rodízio de pneus\",\n      \"system\": \"WHEELS_TIRES\"\n    },\n    \"mileage\": 33800,\n    \"date\": \"2026-04-30\",\n    \"cost\": \"80.00\",\n    \"location\": \"Pneus Center Moema\",\n    \"notes\": \"Alinhamento e balanceamento incluídos.\",\n    \"receipt\": null,\n    \"createdAt\": \"2026-09-27T01:11:12.181Z\"\n  },\n  {\n    \"id\": \"57b0ddab-e4bc-4098-b380-b794b1020afe\",\n    \"vehicleId\": \"e278a2a4-cdb5-4839-bed7-92a977784412\",\n    \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n    \"type\": {\n      \"name\": \"Troca de óleo e filtro\",\n      \"system\": \"LUBRICATION\"\n    },\n    \"mileage\": 32000,\n    \"date\": \"2026-01-27\",\n    \"cost\": \"259.90\",\n    \"location\": \"Auto Center Silva\",\n    \"notes\": null,\n    \"receipt\": null,\n    \"createdAt\": \"2026-09-27T01:11:12.153Z\"\n  },\n  {\n    \"id\": \"ebdda8de-0206-4caf-8b2a-a0ec165f668d\",\n    \"vehicleId\": \"e278a2a4-cdb5-4839-bed7-92a977784412\",\n    \"maintenanceTypeId\": \"1b3ad95b-7e63-4514-87fe-4f7dce18229b\",\n    \"type\": {\n      \"name\": \"Revisão geral\",\n      \"system\": null\n    },\n    \"mileage\": 38000,\n    \"date\": \"2025-10-22\",\n    \"cost\": \"1450.00\",\n    \"location\": \"Concessionária Silva Veículos\",\n    \"notes\": \"Revisão de 36 mil km.\",\n    \"receipt\": {\n      \"url\": \"https://minio.example.com/mony/vehicles/fd0a355b-4acf-4027-a05a-f1368adb86c7/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance/ebdda8de-0206-4caf-8b2a-a0ec165f668d/d8080711-eeeb-4ebf-846e-4b8b938a6342.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n      \"kind\": \"PDF\"\n    },\n    \"createdAt\": \"2026-09-27T01:11:12.193Z\"\n  },\n  {\n    \"id\": \"0dd2d20f-15dc-467a-b483-3d408c9ca66e\",\n    \"vehicleId\": \"e278a2a4-cdb5-4839-bed7-92a977784412\",\n    \"maintenanceTypeId\": \"57504550-80f6-47e6-b996-51e065c3deb6\",\n    \"type\": {\n      \"name\": \"Filtro do ar-condicionado\",\n      \"system\": \"CLIMATE\"\n    },\n    \"mileage\": 28000,\n    \"date\": \"2025-10-06\",\n    \"cost\": \"89.90\",\n    \"location\": \"Refrigeração Polar\",\n    \"notes\": null,\n    \"receipt\": null,\n    \"createdAt\": \"2026-09-27T01:11:12.169Z\"\n  }\n]"
+            },
+            {
+              "name": "404 Not Found — not this user's vehicle",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/00000000-0000-4000-8000-000000000000/maintenance-records",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "00000000-0000-4000-8000-000000000000",
+                    "maintenance-records"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Vehicle not found.\"\n  ],\n  \"path\": \"/vehicles/00000000-0000-4000-8000-000000000000/maintenance-records\",\n  \"timestamp\": \"2026-09-27T01:11:12.778Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Maintenance Record",
+          "request": {
+            "method": "POST",
+            "description": "Raises the vehicle's currentMileage if the service's mileage is higher (never lowers it; a lower mileage is kept as a past service) and moves the type's alert to its latest record's mileage + kmInterval, in one transaction.",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n  \"mileage\": 42150,\n  \"date\": \"2026-09-27\",\n  \"cost\": 289.9,\n  \"location\": \"Auto Center Silva\",\n  \"notes\": \"Trocado também o filtro de ar.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "e278a2a4-cdb5-4839-bed7-92a977784412", "maintenance-records"]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created — vehicle mileage raised from 41200 to 42150",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n  \"mileage\": 42150,\n  \"date\": \"2026-09-27\",\n  \"cost\": 289.9,\n  \"location\": \"Auto Center Silva\",\n  \"notes\": \"Trocado também o filtro de ar.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"e0ae8fd8-b746-4837-a8ea-05f3cb55d061\",\n  \"vehicleId\": \"e278a2a4-cdb5-4839-bed7-92a977784412\",\n  \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n  \"type\": {\n    \"name\": \"Troca de óleo e filtro\",\n    \"system\": \"LUBRICATION\"\n  },\n  \"mileage\": 42150,\n  \"date\": \"2026-09-27\",\n  \"cost\": \"289.90\",\n  \"location\": \"Auto Center Silva\",\n  \"notes\": \"Trocado também o filtro de ar.\",\n  \"receipt\": null,\n  \"createdAt\": \"2026-09-27T01:11:12.207Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — date in the future",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n  \"mileage\": 42150,\n  \"date\": \"2026-09-28\",\n  \"cost\": 289.9,\n  \"location\": \"Auto Center Silva\",\n  \"notes\": \"Trocado também o filtro de ar.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"date cannot be in the future.\"\n  ],\n  \"path\": \"/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records\",\n  \"timestamp\": \"2026-09-27T01:11:12.215Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — maintenanceTypeId isn't one of the user's types",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"maintenanceTypeId\": \"00000000-0000-4000-8000-000000000000\",\n  \"mileage\": 42150,\n  \"date\": \"2026-09-27\",\n  \"cost\": 289.9,\n  \"location\": \"Auto Center Silva\",\n  \"notes\": \"Trocado também o filtro de ar.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"maintenanceTypeId is not one of your maintenance types.\"\n  ],\n  \"path\": \"/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records\",\n  \"timestamp\": \"2026-09-27T01:11:12.222Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — validation failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n  \"mileage\": 0,\n  \"date\": \"20/09/2026\",\n  \"cost\": 289.905\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"mileage must not be less than 1\",\n    \"date must be a date in YYYY-MM-DD format\",\n    \"date must be a valid ISO 8601 date string\",\n    \"cost must be a number conforming to the specified constraints\"\n  ],\n  \"path\": \"/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records\",\n  \"timestamp\": \"2026-09-27T01:11:12.227Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — not this user's vehicle",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n  \"mileage\": 42150,\n  \"date\": \"2026-09-27\",\n  \"cost\": 289.9,\n  \"location\": \"Auto Center Silva\",\n  \"notes\": \"Trocado também o filtro de ar.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/00000000-0000-4000-8000-000000000000/maintenance-records",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "00000000-0000-4000-8000-000000000000",
+                    "maintenance-records"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Vehicle not found.\"\n  ],\n  \"path\": \"/vehicles/00000000-0000-4000-8000-000000000000/maintenance-records\",\n  \"timestamp\": \"2026-09-27T01:11:12.233Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Maintenance Record",
+          "request": {
+            "method": "DELETE",
+            "description": "The type's alert is recalculated from the remaining records (none left: the vehicle's current mileage + kmInterval). The receipt is deleted from storage.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/2898dbaa-29a2-42a6-809e-075c797d444f",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "vehicles",
+                "e278a2a4-cdb5-4839-bed7-92a977784412",
+                "maintenance-records",
+                "2898dbaa-29a2-42a6-809e-075c797d444f"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content — alert recalculated, receipt deleted from storage",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/2898dbaa-29a2-42a6-809e-075c797d444f",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records",
+                    "2898dbaa-29a2-42a6-809e-075c797d444f"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": null
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/2898dbaa-29a2-42a6-809e-075c797d444f",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records",
+                    "2898dbaa-29a2-42a6-809e-075c797d444f"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Maintenance record not found.\"\n  ],\n  \"path\": \"/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/2898dbaa-29a2-42a6-809e-075c797d444f\",\n  \"timestamp\": \"2026-09-27T01:11:12.266Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set Maintenance Receipt",
+          "request": {
+            "method": "PUT",
+            "description": "Multipart field 'receipt', nothing else. JPEG/PNG/WebP (re-encoded to JPEG, max 2560 px, EXIF/GPS removed) or a complete PDF (stored as uploaded), detected from the file content, up to 10 MB. Replaces (and deletes) the previous receipt.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "receipt", "type": "file", "src": "nota-fiscal.jpg" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/e0ae8fd8-b746-4837-a8ea-05f3cb55d061/receipt",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "vehicles",
+                "e278a2a4-cdb5-4839-bed7-92a977784412",
+                "maintenance-records",
+                "e0ae8fd8-b746-4837-a8ea-05f3cb55d061",
+                "receipt"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — image re-encoded as JPEG, ≤ 10 MB (signature elided)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "receipt", "type": "file", "src": "nota-fiscal.jpg" }]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/e0ae8fd8-b746-4837-a8ea-05f3cb55d061/receipt",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records",
+                    "e0ae8fd8-b746-4837-a8ea-05f3cb55d061",
+                    "receipt"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"e0ae8fd8-b746-4837-a8ea-05f3cb55d061\",\n  \"vehicleId\": \"e278a2a4-cdb5-4839-bed7-92a977784412\",\n  \"maintenanceTypeId\": \"bba6f9a9-8b30-492a-87c6-8c9fd5249027\",\n  \"type\": {\n    \"name\": \"Troca de óleo e filtro\",\n    \"system\": \"LUBRICATION\"\n  },\n  \"mileage\": 42150,\n  \"date\": \"2026-09-27\",\n  \"cost\": \"289.90\",\n  \"location\": \"Auto Center Silva\",\n  \"notes\": \"Trocado também o filtro de ar.\",\n  \"receipt\": {\n    \"url\": \"https://minio.example.com/mony/vehicles/fd0a355b-4acf-4027-a05a-f1368adb86c7/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance/e0ae8fd8-b746-4837-a8ea-05f3cb55d061/0857c47b-733b-4d0a-a3a3-fd266a165878.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n    \"kind\": \"IMAGE\"\n  },\n  \"createdAt\": \"2026-09-27T01:11:12.207Z\"\n}"
+            },
+            {
+              "name": "200 OK — PDF stored as uploaded (signature elided)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "receipt", "type": "file", "src": "nota-fiscal.pdf" }]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/ebdda8de-0206-4caf-8b2a-a0ec165f668d/receipt",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records",
+                    "ebdda8de-0206-4caf-8b2a-a0ec165f668d",
+                    "receipt"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"ebdda8de-0206-4caf-8b2a-a0ec165f668d\",\n  \"vehicleId\": \"e278a2a4-cdb5-4839-bed7-92a977784412\",\n  \"maintenanceTypeId\": \"1b3ad95b-7e63-4514-87fe-4f7dce18229b\",\n  \"type\": {\n    \"name\": \"Revisão geral\",\n    \"system\": null\n  },\n  \"mileage\": 38000,\n  \"date\": \"2025-10-22\",\n  \"cost\": \"1450.00\",\n  \"location\": \"Concessionária Silva Veículos\",\n  \"notes\": \"Revisão de 36 mil km.\",\n  \"receipt\": {\n    \"url\": \"https://minio.example.com/mony/vehicles/fd0a355b-4acf-4027-a05a-f1368adb86c7/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance/ebdda8de-0206-4caf-8b2a-a0ec165f668d/d8080711-eeeb-4ebf-846e-4b8b938a6342.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=3600&X-Amz-Signature=…\",\n    \"kind\": \"PDF\"\n  },\n  \"createdAt\": \"2026-09-27T01:11:12.193Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — not a JPEG/PNG/WebP image or a PDF",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "receipt", "type": "file", "src": "orcamento.txt" }]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/57b0ddab-e4bc-4098-b380-b794b1020afe/receipt",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records",
+                    "57b0ddab-e4bc-4098-b380-b794b1020afe",
+                    "receipt"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"Receipt must be a JPEG, PNG or WebP image, or a PDF.\"\n  ],\n  \"path\": \"/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/57b0ddab-e4bc-4098-b380-b794b1020afe/receipt\",\n  \"timestamp\": \"2026-09-27T01:11:12.449Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — no file in the 'receipt' field",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": { "mode": "formdata", "formdata": [] },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/57b0ddab-e4bc-4098-b380-b794b1020afe/receipt",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records",
+                    "57b0ddab-e4bc-4098-b380-b794b1020afe",
+                    "receipt"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"A receipt file is required (multipart field 'receipt').\"\n  ],\n  \"path\": \"/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/57b0ddab-e4bc-4098-b380-b794b1020afe/receipt\",\n  \"timestamp\": \"2026-09-27T01:11:12.464Z\"\n}"
+            },
+            {
+              "name": "413 Payload Too Large — file over 10 MB (Multer limit)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "receipt", "type": "file", "src": "nota-fiscal-12mb.jpg" }]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/57b0ddab-e4bc-4098-b380-b794b1020afe/receipt",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records",
+                    "57b0ddab-e4bc-4098-b380-b794b1020afe",
+                    "receipt"
+                  ]
+                }
+              },
+              "status": "Payload Too Large",
+              "code": 413,
+              "body": "{\n  \"statusCode\": 413,\n  \"error\": \"PAYLOAD_TOO_LARGE\",\n  \"message\": [\n    \"File too large\"\n  ],\n  \"path\": \"/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/57b0ddab-e4bc-4098-b380-b794b1020afe/receipt\",\n  \"timestamp\": \"2026-09-27T01:11:12.525Z\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [{ "key": "receipt", "type": "file", "src": "nota-fiscal.jpg" }]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/00000000-0000-4000-8000-000000000000/receipt",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "vehicles",
+                    "e278a2a4-cdb5-4839-bed7-92a977784412",
+                    "maintenance-records",
+                    "00000000-0000-4000-8000-000000000000",
+                    "receipt"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Maintenance record not found.\"\n  ],\n  \"path\": \"/vehicles/e278a2a4-cdb5-4839-bed7-92a977784412/maintenance-records/00000000-0000-4000-8000-000000000000/receipt\",\n  \"timestamp\": \"2026-09-27T01:11:12.534Z\"\n}"
             }
           ]
         }

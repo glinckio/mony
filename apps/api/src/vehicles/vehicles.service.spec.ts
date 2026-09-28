@@ -36,6 +36,9 @@ describe("VehiclesService", () => {
       updateMany: jest.Mock;
       deleteMany: jest.Mock;
     };
+    maintenanceType: { findMany: jest.Mock };
+    maintenanceAlert: { createMany: jest.Mock };
+    $transaction: jest.Mock;
   };
 
   const buildVehicle = (overrides: Partial<Record<string, unknown>> = {}) => ({
@@ -67,7 +70,12 @@ describe("VehiclesService", () => {
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
+      maintenanceType: { findMany: jest.fn().mockResolvedValue([]) },
+      maintenanceAlert: { createMany: jest.fn().mockResolvedValue({ count: 0 }) },
+      // Interactive transactions run against the same mock.
+      $transaction: jest.fn(),
     };
+    prisma.$transaction.mockImplementation((run: (tx: typeof prisma) => unknown) => run(prisma));
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -147,6 +155,33 @@ describe("VehiclesService", () => {
       });
       expect(vehicle.displayName).toBe("Jeep Renegade 2022");
       expect(vehicle.photoUrl).toBeNull();
+    });
+
+    it("creates an alert per maintenance type the user has, due at mileage + interval", async () => {
+      prisma.maintenanceType.findMany.mockResolvedValue([
+        { id: "type-oil", kmInterval: 10000 },
+        { id: "type-tires", kmInterval: 8000 },
+      ]);
+
+      await service.create("user-1", createDto);
+
+      expect(prisma.maintenanceType.findMany).toHaveBeenCalledWith({
+        where: { userId: "user-1" },
+        select: { id: true, kmInterval: true },
+      });
+      expect(prisma.maintenanceAlert.createMany).toHaveBeenCalledWith({
+        data: [
+          { vehicleId: "veh-1", maintenanceTypeId: "type-oil", mileageAlert: 45000 },
+          { vehicleId: "veh-1", maintenanceTypeId: "type-tires", mileageAlert: 43000 },
+        ],
+        skipDuplicates: true,
+      });
+    });
+
+    it("creates no alerts when the user has no maintenance types", async () => {
+      await service.create("user-1", createDto);
+
+      expect(prisma.maintenanceAlert.createMany).not.toHaveBeenCalled();
     });
 
     it("rejects a model year before the manufacture year, or a year after next year", async () => {

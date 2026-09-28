@@ -95,6 +95,7 @@ model User {
   groceryItems       GroceryItem[]
   groceryBudgets     GroceryBudget[]
   vehicles           Vehicle[]
+  maintenanceTypes   MaintenanceType[]
 }
 
 model PasswordResetCode {
@@ -261,6 +262,90 @@ model Vehicle {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  maintenanceAlerts  MaintenanceAlert[]
+  maintenanceRecords VehicleMaintenance[]
+
   // Serves the list: WHERE userId ORDER BY createdAt DESC.
   @@index([userId, createdAt])
+}
+
+// Legacy `tipos_manutencao.sistema` (a fixed <select>); optional.
+enum MaintenanceSystem {
+  ENGINE
+  BRAKES
+  SUSPENSION
+  TRANSMISSION
+  ELECTRICAL
+  COOLING
+  FUEL
+  LUBRICATION
+  STEERING
+  WHEELS_TIRES
+  CLIMATE
+  BODY
+  OTHER
+}
+
+// Always user-defined: there are no system default types (owner decision
+// — legacy's database had none). See docs/specs/vehicle-maintenance.
+model MaintenanceType {
+  id             String             @id @default(uuid())
+  userId         String
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String             @db.VarChar(100)
+  description    String?            @db.VarChar(255)
+  system         MaintenanceSystem?
+  kmInterval     Int
+  monthsInterval Int?
+  createdAt      DateTime           @default(now())
+
+  alerts  MaintenanceAlert[]
+  records VehicleMaintenance[]
+
+  // Serves the list: WHERE userId ORDER BY system, name.
+  @@index([userId, system, name])
+}
+
+// One per (vehicle, type): the mileage the next service is due at. The
+// status (overdue/urgent/…) is computed on every read, never stored.
+model MaintenanceAlert {
+  id                String          @id @default(uuid())
+  vehicleId         String
+  vehicle           Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  maintenanceTypeId String
+  maintenanceType   MaintenanceType @relation(fields: [maintenanceTypeId], references: [id], onDelete: Cascade)
+  mileageAlert      Int
+
+  @@unique([vehicleId, maintenanceTypeId])
+  @@index([maintenanceTypeId])
+}
+
+model VehicleMaintenance {
+  id                String          @id @default(uuid())
+  vehicleId         String
+  vehicle           Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  maintenanceTypeId String
+  // Cascade at the DB level so deleting a user always works, whatever
+  // order Postgres fires the User → Vehicle and User → MaintenanceType
+  // cascades in (NO ACTION/RESTRICT here made it depend on trigger
+  // names). History is still never deleted implicitly: the type-delete
+  // endpoint locks the type row and refuses (409) while records exist.
+  maintenanceType   MaintenanceType @relation(fields: [maintenanceTypeId], references: [id], onDelete: Cascade)
+  mileage           Int
+  date              DateTime        @db.Date
+  cost              Decimal?        @db.Decimal(12, 2)
+  location          String?         @db.VarChar(100)
+  notes             String?         @db.VarChar(500)
+  // Object key in private storage — never a URL (same rule as
+  // Vehicle.photoKey).
+  receiptKey        String?         @db.VarChar(200)
+  createdAt         DateTime        @default(now())
+
+  // History list: WHERE vehicleId ORDER BY date DESC, createdAt DESC.
+  @@index([vehicleId, date])
+  // Latest record per type: WHERE vehicleId [AND maintenanceTypeId]
+  // ORDER BY mileage DESC, date DESC.
+  @@index([vehicleId, maintenanceTypeId, mileage])
+  // Type delete checks for history: WHERE maintenanceTypeId.
+  @@index([maintenanceTypeId])
 }

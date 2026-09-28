@@ -12,6 +12,7 @@ import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./prisma/prisma.module";
 import { TransactionsModule } from "./transactions/transactions.module";
 import { UsersModule } from "./users/users.module";
+import { VehicleMaintenanceModule } from "./vehicle-maintenance/vehicle-maintenance.module";
 import { VehiclesModule } from "./vehicles/vehicles.module";
 
 @Module({
@@ -33,6 +34,7 @@ import { VehiclesModule } from "./vehicles/vehicles.module";
     DebtsModule,
     GroceryModule,
     VehiclesModule,
+    VehicleMaintenanceModule,
     DashboardModule,
   ],
   controllers: [HealthController],
