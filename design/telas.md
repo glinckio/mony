@@ -34,35 +34,40 @@ Feito na Fase 0 a partir do código (`apps/mobile/src/screens/`, commit `fa6ac49
 
 Componentes com comportamento (não são telas): `WorkspaceSwitcher` (Pessoal / Empresarial em todo `AppHeader`, otimista, reverte com toast), `Toast` global.
 
-Sem uso aparente: nada. (`Manutenções: Em breve` é um espaço reservado para a feature 12 do roadmap e continua.)
+Sem uso aparente: nada. (`Manutenções: Em breve` era um espaço reservado para a feature 12 do roadmap; foi substituído pelas telas 23–27 em 2026-09-27, ver `docs/specs/vehicle-maintenance/`.)
 
 ## Progresso
 
-| #   | Tela                              | Origem     | Fluxo   | Prioridade | Status |
-| --- | --------------------------------- | ---------- | ------- | ---------- | ------ |
-| 0   | Design system (catálogo)          | nova (dev) | Dev     | P1         | Pronta |
-| 1   | Início ★ tela-chave               | existente  | Núcleo  | P1         | Pronta |
-| 2   | Lançamentos                       | existente  | Núcleo  | P1         | Pronta |
-| 3   | Lançamento (form)                 | existente  | Núcleo  | P1         | Pronta |
-| 4   | Entrar                            | existente  | Entrada | P1         | Pronta |
-| 5   | Criar conta                       | existente  | Entrada | P1         | Pronta |
-| 6   | Metas                             | existente  | Núcleo  | P2         | Pronta |
-| 7   | Meta (form)                       | existente  | Núcleo  | P2         | Pronta |
-| 8   | Mais                              | existente  | Conta   | P2         | Pronta |
-| 9   | Dívidas                           | existente  | Casa    | P2         | Pronta |
-| 10  | Dívida (detalhe) + Pagar parcela  | existente  | Casa    | P2         | Pronta |
-| 11  | Dívida (form)                     | existente  | Casa    | P2         | Pronta |
-| 12  | Mercado + Orçamento               | existente  | Casa    | P2         | Pronta |
-| 13  | Item do mercado (form)            | existente  | Casa    | P2         | Pronta |
-| 14  | Veículos                          | existente  | Casa    | P2         | Pronta |
-| 15  | Veículo (detalhe) + Quilometragem | existente  | Casa    | P2         | Pronta |
-| 16  | Veículo (form)                    | existente  | Casa    | P2         | Pronta |
-| 17  | Categorias                        | existente  | Conta   | P3         | Pronta |
-| 18  | Categoria (form)                  | existente  | Conta   | P3         | Pronta |
-| 19  | Perfil                            | existente  | Conta   | P3         | Pronta |
-| 20  | Alterar senha                     | existente  | Conta   | P3         | Pronta |
-| 21  | Esqueci a senha                   | existente  | Entrada | P3         | Pronta |
-| 22  | Redefinir senha                   | existente  | Entrada | P3         | Pronta |
+| #   | Tela                              | Origem     | Fluxo   | Prioridade | Status     |
+| --- | --------------------------------- | ---------- | ------- | ---------- | ---------- |
+| 0   | Design system (catálogo)          | nova (dev) | Dev     | P1         | Pronta     |
+| 1   | Início ★ tela-chave               | existente  | Núcleo  | P1         | Pronta     |
+| 2   | Lançamentos                       | existente  | Núcleo  | P1         | Pronta     |
+| 3   | Lançamento (form)                 | existente  | Núcleo  | P1         | Pronta     |
+| 4   | Entrar                            | existente  | Entrada | P1         | Pronta     |
+| 5   | Criar conta                       | existente  | Entrada | P1         | Pronta     |
+| 6   | Metas                             | existente  | Núcleo  | P2         | Pronta     |
+| 7   | Meta (form)                       | existente  | Núcleo  | P2         | Pronta     |
+| 8   | Mais                              | existente  | Conta   | P2         | Pronta     |
+| 9   | Dívidas                           | existente  | Casa    | P2         | Pronta     |
+| 10  | Dívida (detalhe) + Pagar parcela  | existente  | Casa    | P2         | Pronta     |
+| 11  | Dívida (form)                     | existente  | Casa    | P2         | Pronta     |
+| 12  | Mercado + Orçamento               | existente  | Casa    | P2         | Pronta     |
+| 13  | Item do mercado (form)            | existente  | Casa    | P2         | Pronta     |
+| 14  | Veículos                          | existente  | Casa    | P2         | Pronta     |
+| 15  | Veículo (detalhe) + Quilometragem | existente  | Casa    | P2         | Pronta     |
+| 16  | Veículo (form)                    | existente  | Casa    | P2         | Pronta     |
+| 17  | Categorias                        | existente  | Conta   | P3         | Pronta     |
+| 18  | Categoria (form)                  | existente  | Conta   | P3         | Pronta     |
+| 19  | Perfil                            | existente  | Conta   | P3         | Pronta     |
+| 20  | Alterar senha                     | existente  | Conta   | P3         | Pronta     |
+| 21  | Esqueci a senha                   | existente  | Entrada | P3         | Pronta     |
+| 22  | Redefinir senha                   | existente  | Entrada | P3         | Pronta     |
+| 23  | Veículo › cartão Manutenções      | nova       | Casa    | P2         | Em revisão |
+| 24  | Manutenções (alertas + histórico) | nova       | Casa    | P2         | Em revisão |
+| 25  | Registrar manutenção (form)       | nova       | Casa    | P2         | Em revisão |
+| 26  | Tipos de manutenção               | nova       | Casa    | P3         | Em revisão |
+| 27  | Tipo de manutenção (form)         | nova       | Casa    | P3         | Em revisão |
 
 Status: Pendente → Em progresso → Em revisão → Pronta (só depois de ≥ 2 rodadas de revisão visual)
 
@@ -515,8 +520,10 @@ Caminho secundário: **Lançamentos** → **[toque]** no carimbo A PAGAR → bat
     │ [0][3][6][2][0][0] km [Atualizar]│ Odometer
     │ Ano 2021/2022 · Prata · Flex     │ ficha em frases
     │ Aquisição 12/05/2023             │
-    │ MANUTENÇÕES                      │
-    │ Em breve: histórico e alertas…   │
+    │ MANUTENÇÕES  2 atrasadas · 1 urg.│ cartão da tela 23
+    │ Óleo      [Atrasada] ▓▓▓▓▓▓▓▓▓▓  │ 3 mais urgentes
+    │ Faltam 1.200 km · Vence em 12 d  │
+    │ [+ Registrar]      [Ver todas]   │
     ```
   - Quilometragem (sheet): `Odometer` atual + campo da nova km (teclado numérico) + CTA "Salvar".
 - **Bordas:** **herói sangrando** (a foto vai até o topo, por trás da status bar; voltar/editar/excluir em círculos `overlay` abaixo do inset; status bar clara sobre a foto, automática depois de rolar).
@@ -558,3 +565,35 @@ Caminho secundário: **Lançamentos** → **[toque]** no carimbo A PAGAR → bat
 
 - **Rota:** `ResetPassword` (auth) · **Origem:** `auth/ResetPasswordScreen.tsx` · P3
 - **Composição:** capa compacta → e-mail → código (campo único de 6 dígitos com `textContentType="oneTimeCode"` e espaçamento largo entre os algarismos, para o preenchimento automático do SMS/e-mail funcionar) → nova senha → confirmar → CTA. Sucesso: estado próprio com carimbo "PRONTO" + "Ir para o login".
+
+## 23 — Veículo › cartão Manutenções
+
+- **Rota:** dentro de `VehicleDetail` · **Origem:** `vehicles/MaintenanceSummaryCard.tsx` (nova, feature 12) · P2
+- **Composição:** `IconBadge` de chave + "Manutenções" e a contagem ("2 atrasadas · 1 urgente", ou "Tudo em dia" em verde) → as 3 mais urgentes (`MaintenanceAlertRow`: nome, sistema, `StatusPill`, barra fina no tom do status, "Faltam 1.200 km · Vence em 12 dias") → "Registrar" + "Ver todas (N)".
+- **Estados:** sem tipos (texto explicando o que acompanhar + "Cadastrar tipo de manutenção") · carregando (skeleton) · erro (compacto, tentar de novo).
+- **Regras:** nunca feita = "Atrasada" (igual ao legado); toque numa linha abre o registro já com o tipo escolhido.
+
+## 24 — Manutenções
+
+- **Rota:** `Maintenance { vehicleId, tab? }` · **Origem:** `vehicles/MaintenanceScreen.tsx` · P2
+- **Composição:** `SegmentedControl` Alertas / Histórico. Alertas: um cartão com todas as linhas de status, da mais urgente para a menos. Histórico: "N manutenções · Gasto R$ X" e as linhas (tipo, data · km, ícone de comprovante, valor). Topo: voltar, "Tipos" (ícone de ajustes) e "+" (registrar).
+- **Registro (sheet):** detalhes (sistema, data, km, valor, onde, observações), comprovante (foto na própria sheet; PDF abre no navegador do app) e "Excluir manutenção" — a confirmação troca o conteúdo da mesma sheet (o iOS não abre um segundo modal por cima).
+- **Estados:** sem tipos (vazio com "Cadastrar tipo") · sem registros (vazio com "Registrar manutenção") · carregando · erro.
+
+## 25 — Registrar manutenção
+
+- **Rota:** `MaintenanceRecordForm { vehicleId, maintenanceTypeId? }` (modal) · **Origem:** `vehicles/MaintenanceRecordFormScreen.tsx` · P2
+- **Composição:** "Qual manutenção" (chips agrupados por sistema + chip tracejado "Novo tipo") → km no dia (vem com a do veículo) e data (hoje) → aviso se a km for menor que a atual ("vai ficar registrada como manutenção passada", igual ao legado) → valor (`AmountField` compacto) → onde e observações → comprovante: Câmera · Galeria · PDF, com prévia e remover → CTA grudado.
+- **Regras:** data no futuro é recusada no próprio campo; o comprovante sobe depois do registro (falha não perde a manutenção: toast de aviso); foto ou PDF de até 10 MB.
+
+## 26 — Tipos de manutenção
+
+- **Rota:** `MaintenanceTypes` · **Origem:** `vehicles/MaintenanceTypesScreen.tsx` · P3
+- **Composição:** blocos por sistema (título + cartão de linhas: nome, "a cada 10.000 km ou 12 meses", descrição) com excluir; "+" no topo.
+- **Mensagens:** excluir → `ConfirmSheet`; tipo com registros → erro na própria sheet ("Esse tipo tem manutenções registradas. Exclua esses registros antes.").
+- **Estados:** vazio (o que acompanhar + "Novo tipo") · carregando · erro.
+
+## 27 — Tipo de manutenção (form)
+
+- **Rota:** `MaintenanceTypeForm` (modal) · **Origem:** `vehicles/MaintenanceTypeFormScreen.tsx` · P3
+- **Composição:** nome → "A cada (km)" e "Ou a cada (meses)" lado a lado + nota "vale o que vencer primeiro" → sistema (13 chips, toque de novo desmarca) → descrição → CTA grudado. Ao criar, o tipo passa a ser acompanhado em todos os veículos.

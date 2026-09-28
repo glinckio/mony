@@ -75,8 +75,10 @@ Android applies the inner line height to the whole line and clips it.
 small "R$"/cents, counts to new values), `GoalProgress`, `YearChart`,
 `StatusPill` (paid / to pay / overdue / paid off / reached…),
 `TransactionItem`, `AmountField` (the amount as a form's hero),
-`DebtCard`, `PantryItem`, `VehiclePhoto`, `MercosulPlate`, `Odometer`,
-`NotebookSwitch` (workspace), `Initials`.
+`DebtCard`, `PantryItem`, `VehiclePhoto`, `VehicleHero`, `MercosulPlate`,
+`Odometer`, `MaintenanceAlertRow` (a maintenance type's status on a
+vehicle: pill, bar in the status tone, km/days left), `NotebookSwitch`
+(workspace), `Initials`.
 
 ## Rules of thumb
 

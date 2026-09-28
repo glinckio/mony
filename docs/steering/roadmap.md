@@ -20,7 +20,7 @@ building the whole API first and the whole app after.
 | 9 | `debts` | ✅ Done | Debts with auto-generated installments, payment tracking | 5, 6 |
 | 10 | `grocery` | ✅ Done | Household grocery list + informational budget | 2 |
 | 11 | `vehicles` | ✅ Done | Vehicle registry, mileage tracking | 2 |
-| 12 | `vehicle-maintenance` | ⬜ Not started | Maintenance types, history, km/date-based alerts | 11 |
+| 12 | `vehicle-maintenance` | ✅ Done | Maintenance types, history, km/date-based alerts | 11 |
 | 13 | `subscriptions` | ⬜ Not started | Plan display + Stripe checkout, status sync | 4 |
 | 14 | `reports` | ⬜ Not started | Charts/aggregations over a date range | 6 |
 | 15 | `changelog` | ⬜ Not started | In-app changelog banner + admin CRUD + read tracking | 4 |
@@ -38,9 +38,22 @@ below.
 - Account deletion + personal-data export endpoints (LGPD data-subject
   rights — flagged in `user-profile`'s spec as deferred here, not
   dropped). The DB cascade from `User` does NOT reach object storage:
-  deletion must also remove everything under `vehicles/{userId}/` (and
-  the receipts prefix from `vehicle-maintenance`), and the export must
-  include those files.
+  after the commit, deletion must sweep `vehicles/{userId}/` — that one
+  prefix holds vehicle photos and maintenance receipts
+  (`…/{vehicleId}/maintenance/{recordId}/`) — plus a scheduled orphan
+  reconciliation, since sweep failures are only logged. The export must
+  include vehicles, maintenance types (with descriptions), maintenance
+  records (date, mileage, cost, place, notes, type) and the stored files
+  (photos and receipts: JPEG as stored, PDF as uploaded).
+- Object storage hardening (receipts may carry CPF, address, plate):
+  encryption at rest on MinIO (SSE via KES/KMS, or disk encryption);
+  bucket versioning off, or a noncurrent-version expiry so deletes really
+  erase; documented backup retention for deleted objects.
+- On-device data: on logout and account deletion, clear the app's cache
+  directory (picker/manipulator copies) and the image disk cache.
+- Privacy policy: cover maintenance receipts (may contain CPF, address,
+  plate and third parties' data), their purpose, retention (until the
+  record, vehicle or account is deleted) and camera use.
 - Full LGPD review pass (`lgpd-security-reviewer`) across the whole app.
 - Full Maestro E2E suite run together (not just per-feature flows).
 - Performance audit pass (`performance-auditor`) end to end.
