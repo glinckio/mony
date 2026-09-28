@@ -11,3 +11,4 @@ export * from "./money";
 export * from "./transaction";
 export * from "./user";
 export * from "./vehicle";
+export * from "./vehicle-maintenance";
