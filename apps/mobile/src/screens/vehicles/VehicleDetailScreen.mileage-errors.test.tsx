@@ -55,6 +55,8 @@ it("maps failures to pt-BR copy, never the API message, and refreshes the stored
   mockedApiFetch.mockImplementation((path: string, init?: { method?: string }) => {
     if (path === "/vehicles/veh-1" && init?.method === "PATCH") return Promise.reject(patchError);
     if (path === "/vehicles/veh-1") return Promise.resolve(stored);
+    // The maintenance card (no types yet) isn't under test here.
+    if (path === "/vehicles/veh-1/maintenance-alerts") return Promise.resolve([]);
     return Promise.reject(new Error(`unexpected ${path}`));
   });
   const queryClient = new QueryClient({

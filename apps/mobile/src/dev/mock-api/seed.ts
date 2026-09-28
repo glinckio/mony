@@ -7,6 +7,8 @@ import type {
   Goal,
   GroceryCategory,
   GroceryItem,
+  MaintenanceRecord,
+  MaintenanceType,
   Profile,
   Transaction,
   Vehicle,
@@ -743,3 +745,100 @@ export const yearlyHistory: Record<number, [number, number]> = {
   11: [5200, 3920.4],
   12: [7800, 6012.2],
 };
+
+// Maintenance: what the fictional user tracks, and the Renegade's history
+// (36.200 km) chosen so every status shows up — alignment urgent by km,
+// wipers urgent by date, oil to keep an eye on, brakes on track, coolant
+// never done (overdue).
+export const seedMaintenanceTypes: MaintenanceType[] = [
+  maintenanceType(
+    "mt-oil",
+    "Troca de óleo e filtro",
+    "LUBRICATION",
+    10000,
+    12,
+    "Óleo 5W30 sintético",
+  ),
+  maintenanceType("mt-align", "Alinhamento e balanceamento", "WHEELS_TIRES", 10000, 12),
+  maintenanceType("mt-brakes", "Pastilhas de freio", "BRAKES", 30000, null),
+  maintenanceType("mt-coolant", "Líquido de arrefecimento", "COOLING", 40000, 24),
+  maintenanceType("mt-wipers", "Palhetas do limpador", null, 15000, 12),
+];
+
+export const seedMaintenanceRecords: MaintenanceRecord[] = [
+  maintenanceRecord(
+    "mr-1",
+    "veh-renegade",
+    "mt-oil",
+    27400,
+    daysAgo(150),
+    "289.90",
+    "Auto Center Silva",
+  ),
+  maintenanceRecord(
+    "mr-2",
+    "veh-renegade",
+    "mt-align",
+    26900,
+    daysAgo(330),
+    "120.00",
+    "Pneus & Cia",
+  ),
+  maintenanceRecord(
+    "mr-3",
+    "veh-renegade",
+    "mt-brakes",
+    18000,
+    daysAgo(520),
+    "410.00",
+    "Freios Express",
+    "Trocados os discos também.",
+  ),
+  maintenanceRecord("mr-4", "veh-renegade", "mt-wipers", 30000, daysAgo(360), null, null),
+  maintenanceRecord(
+    "mr-5",
+    "veh-renegade",
+    "mt-oil",
+    17600,
+    daysAgo(520),
+    "259.90",
+    "Auto Center Silva",
+  ),
+];
+
+function maintenanceType(
+  id: string,
+  name: string,
+  system: MaintenanceType["system"],
+  kmInterval: number,
+  monthsInterval: number | null,
+  description: string | null = null,
+): MaintenanceType {
+  return { id, name, description, system, kmInterval, monthsInterval, createdAt: STAMP };
+}
+
+function maintenanceRecord(
+  id: string,
+  vehicleId: string,
+  maintenanceTypeId: string,
+  mileage: number,
+  date: string,
+  cost: string | null,
+  location: string | null,
+  notes: string | null = null,
+): MaintenanceRecord {
+  const type = seedMaintenanceTypes.find((candidate) => candidate.id === maintenanceTypeId)!;
+  return {
+    id,
+    vehicleId,
+    maintenanceTypeId,
+    type: { name: type.name, system: type.system },
+    mileage,
+    date,
+    cost,
+    location,
+    notes,
+    receipt: null,
+    createdAt: `${date}T12:00:00.000Z`,
+  };
+}

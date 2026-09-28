@@ -3,6 +3,7 @@ export { BalanceHero, type BalanceHeroState } from "./BalanceHero";
 export { DebtCard } from "./DebtCard";
 export { GoalProgress } from "./GoalProgress";
 export { Initials, initialsOf } from "./Initials";
+export { MaintenanceAlertRow } from "./MaintenanceAlertRow";
 export { MercosulPlate, Odometer, VehicleHero, VehiclePhoto } from "./VehicleParts";
 export { MoneyHero } from "./MoneyHero";
 export { NotebookSwitch } from "./NotebookSwitch";

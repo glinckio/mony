@@ -25,8 +25,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "O Mony acessa suas fotos só quando você escolhe uma foto para o seu veículo.",
-          "cameraPermission": false,
+          "photosPermission": "O Mony acessa suas fotos só quando você escolhe uma foto do seu veículo ou de um comprovante de manutenção.",
+          "cameraPermission": "O Mony usa a câmera só quando você fotografa um comprovante de manutenção.",
           "microphonePermission": false
         }
       ],

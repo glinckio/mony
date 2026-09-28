@@ -53,6 +53,8 @@ export function UpdateMileageSheet({ vehicle, visible, onClose }: UpdateMileageS
     onSuccess: (updated) => {
       queryClient.setQueryData(["vehicle", vehicle.id], updated);
       void queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      // Maintenance status depends on the mileage.
+      void queryClient.invalidateQueries({ queryKey: ["maintenance-alerts", vehicle.id] });
       onClose();
     },
     onError: async (error, input) => {

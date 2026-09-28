@@ -83,6 +83,8 @@ export function VehicleFormScreen() {
   const applySaved = (saved: Vehicle) => {
     queryClient.setQueryData(["vehicle", saved.id], saved);
     void queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+    // An edited mileage changes the maintenance status.
+    void queryClient.invalidateQueries({ queryKey: ["maintenance-alerts", saved.id] });
   };
 
   const onSubmit = async (data: CreateVehicleInput) => {

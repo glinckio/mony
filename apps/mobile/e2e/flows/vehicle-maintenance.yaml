@@ -1,0 +1,163 @@
+appId: com.mony.app
+---
+# Registers a fresh account and a vehicle, creates a maintenance type from
+# the vehicle screen (it starts "Atrasada" — never serviced, legacy rule),
+# registers a maintenance with a higher mileage (the alert leaves
+# "Atrasada" and the vehicle's odometer is raised), checks that a type
+# with history can't be deleted, then deletes the record and the type.
+# The record sheet's "Anexar comprovante" is opened to its source choice
+# (Câmera / Galeria / PDF) but no source is tapped: the system camera/file
+# pickers aren't scriptable reliably.
+- launchApp:
+    clearState: true
+- evalScript: ${output.testEmail = 'maestro-maint-' + Date.now() + '@example.com'}
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Maintenance Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Maestro Maintenance Tester"
+
+# A vehicle at 35.000 km.
+- tapOn:
+    id: "tab-more"
+- tapOn:
+    id: "more-vehicles"
+- tapOn:
+    id: "add-vehicle-button"
+- tapOn:
+    id: "make-input"
+- inputText: "Fiat"
+- tapOn:
+    id: "model-input"
+- inputText: "Argo"
+- tapOn:
+    id: "manufacture-year-input"
+- inputText: "2021"
+- tapOn:
+    id: "model-year-input"
+- inputText: "2022"
+- tapOn:
+    id: "current-mileage-input"
+- inputText: "35000"
+- hideKeyboard
+- tapOn:
+    id: "submit-button"
+- tapOn: "Fiat Argo 2022"
+
+# No types yet: the card offers the first one.
+- scrollUntilVisible:
+    element:
+      id: "create-first-maintenance-type"
+- tapOn:
+    id: "create-first-maintenance-type"
+- assertVisible: "Novo tipo de manutenção"
+- tapOn:
+    id: "name-input"
+- inputText: "Troca de oleo"
+- tapOn:
+    id: "km-interval-input"
+- inputText: "10000"
+- hideKeyboard
+- tapOn:
+    id: "system-option-LUBRICATION"
+- tapOn:
+    id: "submit-button"
+
+# Never serviced: overdue from day one.
+- scrollUntilVisible:
+    element:
+      id: "maintenance-card"
+- assertVisible: "Nunca registrada"
+- assertVisible: "Atrasada"
+
+# Register it at 36.500 km: the alert leaves "Atrasada", the odometer rises.
+- tapOn:
+    id: "register-maintenance-button"
+- assertVisible: "Registrar manutenção"
+- tapOn: "Troca de oleo"
+- tapOn:
+    id: "mileage-input"
+- eraseText
+- inputText: "36500"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "location-input"
+- tapOn:
+    id: "location-input"
+- inputText: "Auto Center Maestro"
+- hideKeyboard
+- tapOn:
+    id: "submit-button"
+- scrollUntilVisible:
+    element:
+      id: "maintenance-card"
+- assertVisible: "Faltam 10.000 km"
+- assertNotVisible: "Atrasada"
+- assertVisible: "Tudo em dia"
+- scrollUntilVisible:
+    element:
+      text: "36.500 km"
+    direction: UP
+
+# A type with history can't be deleted.
+- scrollUntilVisible:
+    element:
+      id: "see-maintenance-button"
+- assertVisible: "Ver manutenções"
+- tapOn:
+    id: "see-maintenance-button"
+- tapOn:
+    id: "maintenance-types-button"
+- tapOn:
+    id: "delete-maintenance-type-.*"
+- tapOn:
+    id: "confirm-sheet-confirm"
+- assertVisible: "Esse tipo tem manutenções registradas. Exclua esses registros antes."
+- tapOn:
+    id: "confirm-sheet-cancel"
+- tapOn:
+    id: "header-back"
+
+# Delete the record from the history, then the type goes.
+- tapOn:
+    id: "maintenance-tab-history"
+- assertVisible: "1 manutenção"
+# By id: the row's accessible label is "name, date, km", not just the name.
+- tapOn:
+    id: "maintenance-record-.*"
+- assertVisible: "Auto Center Maestro"
+# No receipt yet: the sheet offers to attach one (camera, gallery or PDF).
+- assertVisible: "Anexar comprovante"
+- tapOn:
+    id: "attach-receipt-button"
+- assertVisible:
+    id: "attach-receipt-camera"
+- assertVisible:
+    id: "attach-receipt-library"
+- assertVisible:
+    id: "attach-receipt-pdf"
+- tapOn:
+    id: "delete-record-button"
+- tapOn:
+    id: "confirm-delete-record"
+- assertVisible: "Nenhuma manutenção registrada."
+- tapOn:
+    id: "maintenance-types-button"
+- tapOn:
+    id: "delete-maintenance-type-.*"
+- tapOn:
+    id: "confirm-sheet-confirm"
+- assertVisible: "Nenhum tipo de manutenção ainda."

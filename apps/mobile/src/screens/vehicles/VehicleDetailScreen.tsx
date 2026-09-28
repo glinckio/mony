@@ -24,6 +24,7 @@ import { pickVehiclePhoto, uploadVehiclePhoto, type PickedPhoto } from "../../li
 import type { AppStackNavigation, AppStackParamList } from "../../navigation/RootNavigator";
 import { space } from "../../theme";
 
+import { MaintenanceSummaryCard } from "./MaintenanceSummaryCard";
 import { UpdateMileageSheet } from "./UpdateMileageSheet";
 
 const HERO_OVERLAP = 32;
@@ -237,16 +238,7 @@ export function VehicleDetailScreen() {
             />
           </Card>
 
-          {/* Filled in by the vehicle-maintenance feature (roadmap #12). */}
-          <Card style={styles.maintenance}>
-            <IconBadge icon="construct-outline" size={40} />
-            <View style={styles.flex}>
-              <Text variant="headline">Manutenções</Text>
-              <Text variant="footnote" tone="muted">
-                Em breve: histórico e alertas de manutenção.
-              </Text>
-            </View>
-          </Card>
+          <MaintenanceSummaryCard vehicleId={vehicle.id} />
 
           <UpdateMileageSheet
             vehicle={vehicle}
@@ -326,10 +318,5 @@ const styles = StyleSheet.create({
   detailValue: {
     flexShrink: 1,
     textAlign: "right",
-  },
-  maintenance: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
   },
 });

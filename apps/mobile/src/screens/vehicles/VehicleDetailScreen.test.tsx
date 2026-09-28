@@ -14,6 +14,12 @@ jest.mock("../../lib/api-client", () => ({
 }));
 
 const mockedApiFetch = apiFetch as jest.Mock;
+// The vehicle for its own path; the maintenance card (no types yet) gets
+// an empty list — it isn't under test here.
+const resolveVehicle = (vehicle: unknown) =>
+  mockedApiFetch.mockImplementation(async (path: string) =>
+    path.endsWith("/maintenance-alerts") ? [] : vehicle,
+  );
 const Stack = createNativeStackNavigator();
 
 const VEHICLE = {
@@ -61,7 +67,7 @@ describe("VehicleDetailScreen", () => {
   });
 
   it("shows the vehicle's details with pt-BR labels and a photo placeholder", async () => {
-    mockedApiFetch.mockResolvedValue(VEHICLE);
+    resolveVehicle(VEHICLE);
     const view = await renderScreen();
 
     await waitFor(() => {
@@ -81,7 +87,7 @@ describe("VehicleDetailScreen", () => {
   });
 
   it("offers to change or remove an existing photo", async () => {
-    mockedApiFetch.mockResolvedValue({ ...VEHICLE, photoUrl: "http://minio/signed.jpg" });
+    resolveVehicle({ ...VEHICLE, photoUrl: "http://minio/signed.jpg" });
     const view = await renderScreen();
 
     await waitFor(() => {

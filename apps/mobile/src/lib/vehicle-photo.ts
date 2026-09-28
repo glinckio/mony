@@ -26,15 +26,21 @@ export async function pickVehiclePhoto(): Promise<PickedPhoto | null> {
     quality: 1,
   });
   if (result.canceled || !result.assets[0]) return null;
-  const asset = result.assets[0];
+  return downscaleToJpeg(result.assets[0]);
+}
 
+// Downscales a picked image (longest side at most `maxDimension`, the
+// same cap the API stores at) and re-encodes it as JPEG 0.7 — shared with
+// maintenance receipts, which keep more pixels so small print stays legible.
+export async function downscaleToJpeg(
+  asset: { uri: string; width: number; height: number },
+  maxDimension = MAX_PHOTO_DIMENSION,
+): Promise<PickedPhoto> {
   const context = ImageManipulator.manipulate(asset.uri);
   const longest = Math.max(asset.width, asset.height);
-  if (longest > MAX_PHOTO_DIMENSION) {
+  if (longest > maxDimension) {
     context.resize(
-      asset.width >= asset.height
-        ? { width: MAX_PHOTO_DIMENSION }
-        : { height: MAX_PHOTO_DIMENSION },
+      asset.width >= asset.height ? { width: maxDimension } : { height: maxDimension },
     );
   }
   const image = await context.renderAsync();

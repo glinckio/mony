@@ -6,6 +6,10 @@ import type {
   DebtWithInstallments,
   Goal,
   GroceryItem,
+  MaintenanceAlertStatus,
+  MaintenanceRecord,
+  MaintenanceStatus,
+  MaintenanceType,
   Profile,
   Transaction,
   Vehicle,
@@ -22,6 +26,8 @@ import {
   seedGoals,
   seedGroceryBudget,
   seedGroceryItems,
+  seedMaintenanceRecords,
+  seedMaintenanceTypes,
   seedProfile,
   seedTransactions,
   seedVehicles,
@@ -47,6 +53,10 @@ const db = {
   groceryItems: clone(seedGroceryItems),
   groceryBudget: clone(seedGroceryBudget) as { amount: string | null; setAt: string | null },
   vehicles: clone(seedVehicles),
+  maintenanceTypes: clone(seedMaintenanceTypes),
+  maintenanceRecords: clone(seedMaintenanceRecords),
+  // vehicleId -> typeId -> mileage the next service is due at.
+  maintenanceAlerts: {} as Record<string, Record<string, number>>,
   nextId: 1000,
 };
 
@@ -807,6 +817,213 @@ const routes: Route[] = [
     },
   },
 ];
+
+// Vehicle maintenance — the same rules as the API's alert-status.ts
+// (dev-only copy): latest record per type, km signal, time signal, the
+// more urgent wins.
+const STATUS_RANK: MaintenanceStatus[] = ["ON_TRACK", "WARNING", "URGENT", "OVERDUE"];
+
+function latestRecord(vehicleId: string, typeId: string): MaintenanceRecord | undefined {
+  return db.maintenanceRecords
+    .filter((record) => record.vehicleId === vehicleId && record.maintenanceTypeId === typeId)
+    .sort((a, b) => b.mileage - a.mileage || b.date.localeCompare(a.date))[0];
+}
+
+function syncMockAlert(vehicleId: string, type: MaintenanceType): void {
+  const vehicle = db.vehicles.find((candidate) => candidate.id === vehicleId);
+  const base = latestRecord(vehicleId, type.id)?.mileage ?? vehicle?.currentMileage ?? 0;
+  db.maintenanceAlerts[vehicleId] = {
+    ...db.maintenanceAlerts[vehicleId],
+    [type.id]: base + type.kmInterval,
+  };
+}
+
+function timeSignal(daysRemaining: number): [MaintenanceStatus, number] | null {
+  if (daysRemaining <= 0) return ["OVERDUE", 100];
+  if (daysRemaining <= 15) return ["URGENT", 90];
+  if (daysRemaining <= 30) return ["WARNING", 80];
+  return null;
+}
+
+function mockAlerts(vehicle: Vehicle): MaintenanceAlertStatus[] {
+  const today = isoDate(new Date());
+  return db.maintenanceTypes
+    .map((type) => {
+      const latest = latestRecord(vehicle.id, type.id);
+      const nextMileage =
+        db.maintenanceAlerts[vehicle.id]?.[type.id] ??
+        (latest?.mileage ?? vehicle.currentMileage) + type.kmInterval;
+      const kmRemaining = nextMileage - vehicle.currentMileage;
+      let status: MaintenanceStatus;
+      let percent: number;
+      if (!latest || kmRemaining <= 0) [status, percent] = ["OVERDUE", 100];
+      else if (kmRemaining <= type.kmInterval * 0.1) [status, percent] = ["URGENT", 90];
+      else if (kmRemaining <= type.kmInterval * 0.2) [status, percent] = ["WARNING", 80];
+      else {
+        const wear = Math.floor(
+          ((vehicle.currentMileage - latest.mileage) / type.kmInterval) * 100,
+        );
+        [status, percent] = ["ON_TRACK", Math.min(70, Math.max(0, wear))];
+      }
+      let nextDate: string | null = null;
+      let daysRemaining: number | null = null;
+      if (latest && type.monthsInterval) {
+        const [year, month, day] = latest.date.split("-").map(Number);
+        nextDate = isoDate(new Date(Date.UTC(year!, month! - 1 + type.monthsInterval, day)));
+        daysRemaining = Math.round(
+          (Date.parse(`${nextDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000,
+        );
+        const time = timeSignal(daysRemaining);
+        if (time) {
+          if (STATUS_RANK.indexOf(time[0]) > STATUS_RANK.indexOf(status)) status = time[0];
+          percent = Math.max(percent, time[1]);
+        }
+      }
+      return {
+        maintenanceTypeId: type.id,
+        name: type.name,
+        system: type.system,
+        kmInterval: type.kmInterval,
+        monthsInterval: type.monthsInterval,
+        status,
+        percent,
+        nextMileage,
+        kmRemaining,
+        nextDate,
+        daysRemaining,
+        lastService: latest ? { date: latest.date, mileage: latest.mileage } : null,
+      };
+    })
+    .sort((a, b) => b.percent - a.percent || a.kmRemaining - b.kmRemaining);
+}
+
+function vehicleRecord(vehicleId: string | undefined, id: string | undefined, path: string) {
+  return findOr404(
+    db.maintenanceRecords.filter((record) => record.vehicleId === vehicleId),
+    id,
+    path,
+  );
+}
+
+routes.push(
+  {
+    method: "GET",
+    pattern: /^\/maintenance-types$/,
+    // Same order as the API: by system (none last), then name.
+    handler: () =>
+      clone(
+        [...db.maintenanceTypes].sort(
+          (a, b) =>
+            (a.system === null ? 1 : 0) - (b.system === null ? 1 : 0) ||
+            (a.system ?? "").localeCompare(b.system ?? "") ||
+            a.name.localeCompare(b.name, "pt-BR"),
+        ),
+      ),
+    empty: () => [],
+  },
+  {
+    method: "POST",
+    pattern: /^\/maintenance-types$/,
+    handler: ({ body }) => {
+      const created: MaintenanceType = {
+        id: newId("mt"),
+        name: String(body.name),
+        description: (body.description as string | undefined) || null,
+        system: (body.system as MaintenanceType["system"] | undefined) ?? null,
+        kmInterval: Number(body.kmInterval),
+        monthsInterval: body.monthsInterval === undefined ? null : Number(body.monthsInterval),
+        createdAt: now(),
+      };
+      db.maintenanceTypes.push(created);
+      for (const vehicle of db.vehicles) {
+        db.maintenanceAlerts[vehicle.id] = {
+          ...db.maintenanceAlerts[vehicle.id],
+          [created.id]: vehicle.currentMileage + created.kmInterval,
+        };
+      }
+      return clone(created);
+    },
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/maintenance-types\/([^/]+)$/,
+    handler: ({ params, path }) => {
+      findOr404(db.maintenanceTypes, params[0], path);
+      if (db.maintenanceRecords.some((record) => record.maintenanceTypeId === params[0])) {
+        fail(409, "This maintenance type has maintenance records.", path);
+      }
+      db.maintenanceTypes = db.maintenanceTypes.filter((type) => type.id !== params[0]);
+      return undefined;
+    },
+  },
+  {
+    method: "GET",
+    pattern: /^\/vehicles\/([^/]+)\/maintenance-alerts$/,
+    handler: ({ params, path }) => mockAlerts(findOr404(db.vehicles, params[0], path)),
+    empty: () => [],
+  },
+  {
+    method: "GET",
+    pattern: /^\/vehicles\/([^/]+)\/maintenance-records$/,
+    handler: ({ params, path }) => {
+      findOr404(db.vehicles, params[0], path);
+      return clone(
+        db.maintenanceRecords
+          .filter((record) => record.vehicleId === params[0])
+          .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)),
+      );
+    },
+    empty: () => [],
+  },
+  {
+    method: "POST",
+    pattern: /^\/vehicles\/([^/]+)\/maintenance-records$/,
+    handler: ({ params, body, path }) => {
+      const vehicle = findOr404(db.vehicles, params[0], path);
+      const type = db.maintenanceTypes.find((candidate) => candidate.id === body.maintenanceTypeId);
+      if (!type) fail(400, "maintenanceTypeId is not one of your maintenance types.", path);
+      const mileage = Number(body.mileage);
+      if (mileage > vehicle.currentMileage) vehicle.currentMileage = mileage;
+      const created: MaintenanceRecord = {
+        id: newId("mr"),
+        vehicleId: vehicle.id,
+        maintenanceTypeId: type.id,
+        type: { name: type.name, system: type.system },
+        mileage,
+        date: String(body.date),
+        cost: body.cost === undefined ? null : money(Number(body.cost)),
+        location: (body.location as string | undefined) || null,
+        notes: (body.notes as string | undefined) || null,
+        receipt: null,
+        createdAt: now(),
+      };
+      db.maintenanceRecords.push(created);
+      syncMockAlert(vehicle.id, type);
+      return clone(created);
+    },
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/vehicles\/([^/]+)\/maintenance-records\/([^/]+)$/,
+    handler: ({ params, path }) => {
+      const record = vehicleRecord(params[0], params[1], path);
+      db.maintenanceRecords = db.maintenanceRecords.filter(
+        (candidate) => candidate.id !== record.id,
+      );
+      const type = db.maintenanceTypes.find(
+        (candidate) => candidate.id === record.maintenanceTypeId,
+      );
+      if (type) syncMockAlert(record.vehicleId, type);
+      return undefined;
+    },
+  },
+  {
+    method: "PUT",
+    pattern: /^\/vehicles\/([^/]+)\/maintenance-records\/([^/]+)\/receipt$/,
+    // The mock can't store the upload; keeps the record as it is.
+    handler: ({ params, path }) => clone(vehicleRecord(params[0], params[1], path)),
+  },
+);
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 

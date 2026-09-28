@@ -26,6 +26,10 @@ export type StatusKind =
   | "goalLate"
   | "goalReached"
   | "missing" // item de mercado faltando
+  | "maintenanceOverdue"
+  | "maintenanceUrgent"
+  | "maintenanceWarning"
+  | "maintenanceOnTrack"
   | "done";
 
 type Tone = "success" | "warning" | "danger" | "brand";
@@ -42,6 +46,10 @@ const KINDS: Record<StatusKind, { label: string; tone: Tone; icon: IconName }> =
   goalLate: { label: "Atrasada", tone: "danger", icon: "alert-circle" },
   goalReached: { label: "Alcançada", tone: "success", icon: "trophy" },
   missing: { label: "Faltando", tone: "warning", icon: "cart" },
+  maintenanceOverdue: { label: "Atrasada", tone: "danger", icon: "alert-circle" },
+  maintenanceUrgent: { label: "Urgente", tone: "danger", icon: "hourglass" },
+  maintenanceWarning: { label: "Atenção", tone: "warning", icon: "time" },
+  maintenanceOnTrack: { label: "Em dia", tone: "success", icon: "checkmark-circle" },
   done: { label: "Pronto", tone: "success", icon: "checkmark-circle" },
 };
 
