@@ -21,17 +21,25 @@ export interface NormalizedPhoto {
 // - caps size at MAX_PHOTO_DIMENSION, flattening any transparency onto
 //   white (JPEG has no alpha).
 // Throws if the bytes don't decode as an image.
-export async function normalizePhoto(input: Buffer): Promise<NormalizedPhoto> {
+//
+// Options: `maxDimension` (receipts keep more pixels so small print stays
+// legible) and `mozjpeg` (~10–15% smaller files for >10x the encode time
+// — worth it for vehicle photos, which are downloaded over and over; not
+// for receipts, which are written once and rarely opened).
+export async function normalizePhoto(
+  input: Buffer,
+  { maxDimension = MAX_PHOTO_DIMENSION, mozjpeg = true } = {},
+): Promise<NormalizedPhoto> {
   const body = await sharp(input, { limitInputPixels: MAX_INPUT_PIXELS, failOn: "error" })
     .rotate()
     .resize({
-      width: MAX_PHOTO_DIMENSION,
-      height: MAX_PHOTO_DIMENSION,
+      width: maxDimension,
+      height: maxDimension,
       fit: "inside",
       withoutEnlargement: true,
     })
     .flatten({ background: "#ffffff" })
-    .jpeg({ quality: 80, mozjpeg: true })
+    .jpeg({ quality: 80, mozjpeg })
     .toBuffer();
   return { body, contentType: "image/jpeg", extension: "jpg" };
 }

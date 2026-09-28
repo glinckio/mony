@@ -23,6 +23,8 @@ export class MinioStorageService extends StorageService {
   private readonly client: S3Client;
   private readonly signingClient: S3Client;
   private readonly bucket: string;
+  private readonly signedUrlCache = new Map<string, string>();
+  private cachedWindowStart = 0;
 
   constructor(config: ConfigService) {
     super();
@@ -51,10 +53,25 @@ export class MinioStorageService extends StorageService {
   // image cache (keyed by full URL) hits instead of re-downloading the
   // photo on every refetch. A URL is valid for ttl .. ttl + window.
   // Objects are immutable (fresh key per upload), hence the cache header.
-  getSignedUrl(key: string, ttlSeconds: number): Promise<string> {
+  //
+  // Within a window the URL for a key is always the same, so it's cached:
+  // presigning costs ~1 ms of event-loop CPU per URL, and list responses
+  // (vehicles, maintenance history) mint one per item on every fetch. The
+  // cache is dropped whenever the window changes, so it never grows past
+  // one window's worth of keys.
+  async getSignedUrl(key: string, ttlSeconds: number): Promise<string> {
     const windowMs = SIGNING_WINDOW_SECONDS * 1000;
-    const signingDate = new Date(Math.floor(Date.now() / windowMs) * windowMs);
-    return getSignedUrl(
+    const windowStart = Math.floor(Date.now() / windowMs) * windowMs;
+    if (windowStart !== this.cachedWindowStart) {
+      this.signedUrlCache.clear();
+      this.cachedWindowStart = windowStart;
+    }
+    const cacheKey = `${ttlSeconds}|${key}`;
+    const cached = this.signedUrlCache.get(cacheKey);
+    if (cached) return cached;
+
+    const signingDate = new Date(windowStart);
+    const url = await getSignedUrl(
       this.signingClient,
       new GetObjectCommand({
         Bucket: this.bucket,
@@ -66,6 +83,8 @@ export class MinioStorageService extends StorageService {
         signingDate,
       },
     );
+    this.signedUrlCache.set(cacheKey, url);
+    return url;
   }
 
   async delete(key: string): Promise<void> {
@@ -88,12 +107,19 @@ export class MinioStorageService extends StorageService {
         object.Key ? [{ Key: object.Key }] : [],
       );
       if (objects.length > 0) {
-        await this.client.send(
+        const result = await this.client.send(
           new DeleteObjectsCommand({
             Bucket: this.bucket,
             Delete: { Objects: objects, Quiet: true },
           }),
         );
+        // A batch delete "succeeds" even when some keys fail — this sweep
+        // is how deleted personal data gets erased, so surface them.
+        if (result.Errors?.length) {
+          throw new Error(
+            `Couldn't delete ${result.Errors.length} object(s) under ${prefix}: ${result.Errors.map((error) => `${error.Key} (${error.Code})`).join(", ")}`,
+          );
+        }
       }
       continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
     } while (continuationToken);
