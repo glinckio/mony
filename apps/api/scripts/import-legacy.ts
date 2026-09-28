@@ -1,9 +1,11 @@
 // One-off ETL: imports the legacy PHP app's MySQL dump
 // (legacy_php_reference/u676707464_monitorizze.sql) into this repo's
-// Postgres schema, for the tables the rebuilt app actually covers so
-// far: usuarios -> User, categorias -> Category, transacoes ->
-// Transaction, metas -> Goal. Debts/vehicles/subscriptions/grocery
-// aren't ported here — those features don't exist yet.
+// Postgres schema: usuarios -> User, categorias -> Category, transacoes
+// -> Transaction, metas -> Goal, dividas -> Debt, dividas_parcelas ->
+// DebtInstallment. The dump has no rows for grocery, vehicles,
+// maintenance, subscriptions or changelog, so there's nothing to port
+// there; codigos_recuperacao (short-lived reset codes) are left behind.
+// See docs/specs/*/design.md for each table's column mapping.
 //
 // Usage:
 //   pnpm --filter @mony/api run import:legacy -- --dry-run   (default, no writes)
@@ -18,6 +20,8 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import { Prisma, PrismaClient } from "@prisma/client";
+
+import { computeDebtTotals } from "../src/common/debt-sync/debt-sync";
 
 const prisma = new PrismaClient();
 
@@ -122,16 +126,23 @@ function parseLegacyDateTime(value: string): Date {
 // The legacy dump has no foreign-key-safe structure to query (it's a
 // flat .sql file, not a live DB) — parsed directly rather than spun up
 // in a throwaway MySQL instance just to run `SELECT * FROM x`.
+// Every row of a table. phpMyAdmin splits big tables into several
+// `INSERT INTO … VALUES` statements (chunks of rows), so ALL of them are
+// read — reading only the first one silently dropped most of the data.
 function extractInsertBlock(sql: string, table: string): string[] {
   const marker = `INSERT INTO \`${table}\``;
-  const idx = sql.indexOf(marker);
-  if (idx === -1) return [];
-  const endIdx = sql.indexOf(";\n", idx);
-  const block = sql.slice(idx, endIdx);
-  const rowsPart = block.slice(block.indexOf("VALUES") + 6);
-  return rowsPart
-    .split(/\),\s*\n?\(/)
-    .map((r) => r.trim().replace(/^\(/, "").replace(/\)$/, ""));
+  const rows: string[] = [];
+  let idx = sql.indexOf(marker);
+  while (idx !== -1) {
+    const endIdx = sql.indexOf(";\n", idx);
+    const block = sql.slice(idx, endIdx);
+    const rowsPart = block.slice(block.indexOf("VALUES") + 6);
+    rows.push(
+      ...rowsPart.split(/\),\s*\n?\(/).map((r) => r.trim().replace(/^\(/, "").replace(/\)$/, "")),
+    );
+    idx = sql.indexOf(marker, endIdx);
+  }
+  return rows;
 }
 
 function splitRow(row: string): string[] {
@@ -171,31 +182,60 @@ function splitRow(row: string): string[] {
 interface Stats {
   users: number;
   categories: number;
+  categoryCopiesForOwner: number;
   transactions: number;
   transactionsFallbackCategory: number;
+  transactionsCategoryTypeMismatch: number;
   transactionsSkippedNoUser: number;
+  linkedTransactionStatusAligned: number;
   goals: number;
   goalsSkippedNoUser: number;
+  debts: number;
+  debtsSkippedNoUser: number;
+  debtsCategoryDropped: number;
+  debtTotalsRecomputed: number;
+  installments: number;
+  installmentsLinked: number;
+  installmentLinksDropped: number;
   fallbackCategoriesCreated: number;
+}
+
+interface LegacyCategory {
+  userLegacyId: string;
+  name: string;
+  type: "INCOME" | "EXPENSE";
+  color: string;
+  icon: string;
 }
 
 async function main() {
   const sql = readFileSync(DUMP_PATH, "utf8");
   console.log(`Mode: ${DRY_RUN ? "DRY RUN (no writes)" : "COMMIT (writing to the database)"}`);
+  const today = new Date().toISOString().slice(0, 10);
 
   const stats: Stats = {
     users: 0,
     categories: 0,
+    categoryCopiesForOwner: 0,
     transactions: 0,
     transactionsFallbackCategory: 0,
+    transactionsCategoryTypeMismatch: 0,
     transactionsSkippedNoUser: 0,
+    linkedTransactionStatusAligned: 0,
     goals: 0,
     goalsSkippedNoUser: 0,
+    debts: 0,
+    debtsSkippedNoUser: 0,
+    debtsCategoryDropped: 0,
+    debtTotalsRecomputed: 0,
+    installments: 0,
+    installmentsLinked: 0,
+    installmentLinksDropped: 0,
     fallbackCategoriesCreated: 0,
   };
 
   const userIdMap = new Map<string, string>(); // legacy int id (string) -> new UUID
-  const categoryIdMap = new Map<string, string>(); // legacy int id (string) -> new UUID
+  const transactionIdMap = new Map<string, string>(); // legacy transacoes.id -> new UUID
   // (userId, type) -> fallback "Importado" category UUID, created lazily
   // for transactions whose legacy categoria_id doesn't resolve.
   const fallbackCategoryCache = new Map<string, string>();
@@ -215,25 +255,25 @@ async function main() {
       dataCadastro,
       ultimoAcesso,
     ] = r;
-
     if (!email || !nome) {
       console.warn(`Skipping user id=${legacyId}: missing name or email.`);
       continue;
     }
-
     const data = {
       name: nome!.slice(0, 100),
       email: email!.slice(0, 100),
       phone: normalizePhone(nullIfEmpty(telefone!)),
       phone2: normalizePhone(nullIfEmpty(telefone2!)),
+      // PHP password_hash() bcrypt ("$2y$…") — bcryptjs verifies it as is,
+      // so everyone keeps their password.
       passwordHash: senha!,
       role: (perfil === "admin" ? "ADMIN" : "USER") as "ADMIN" | "USER",
       status: (status === "inativo" ? "INACTIVE" : "ACTIVE") as "ACTIVE" | "INACTIVE",
       activeWorkspace: "PERSONAL" as const,
       createdAt: parseLegacyDateTime(dataCadastro!),
-      lastAccessAt: ultimoAcesso && ultimoAcesso !== "NULL" ? parseLegacyDateTime(ultimoAcesso) : null,
+      lastAccessAt:
+        ultimoAcesso && ultimoAcesso !== "NULL" ? parseLegacyDateTime(ultimoAcesso) : null,
     };
-
     if (DRY_RUN) {
       userIdMap.set(legacyId!, `dry-run-user-${legacyId}`);
     } else {
@@ -244,30 +284,66 @@ async function main() {
   }
 
   // ---- categories ----
+  // Legacy never checked that a record's category belonged to the same
+  // user: some transactions and debts point at another account's category
+  // (a shared default set). Each category is imported for its owner, and
+  // a record referencing someone else's category gets its OWN copy of it
+  // (same name, type, color, icon) — never a link across accounts.
+  const legacyCategories = new Map<string, LegacyCategory>();
+  // `${ownerLegacyUserId}:${legacyCategoryId}` -> new UUID
+  const categoryIdMap = new Map<string, string>();
+
   const catRows = extractInsertBlock(sql, "categorias").map(splitRow);
   for (const r of catRows) {
     const [legacyId, usuarioId, nome, tipo, cor, icone] = r;
-    const newUserId = userIdMap.get(usuarioId!);
-    if (!newUserId) {
-      console.warn(`Skipping category id=${legacyId}: owning user ${usuarioId} not imported.`);
-      continue;
-    }
-
-    const data = {
-      userId: newUserId,
+    const category: LegacyCategory = {
+      userLegacyId: usuarioId!,
       name: (nome || "Sem nome").slice(0, 50),
       type: mapCategoryType(tipo!),
       color: /^#[0-9A-Fa-f]{6}$/.test(cor!) ? cor! : "#000000",
       icon: mapIcon(icone!),
     };
-
-    if (DRY_RUN) {
-      categoryIdMap.set(legacyId!, `dry-run-category-${legacyId}`);
-    } else {
-      const created = await prisma.category.create({ data });
-      categoryIdMap.set(legacyId!, created.id);
+    legacyCategories.set(legacyId!, category);
+    const newUserId = userIdMap.get(usuarioId!);
+    if (!newUserId) {
+      console.warn(`Skipping category id=${legacyId}: owning user ${usuarioId} not imported.`);
+      continue;
     }
+    categoryIdMap.set(`${usuarioId}:${legacyId}`, await createCategory(newUserId, category));
     stats.categories++;
+  }
+
+  async function createCategory(newUserId: string, category: LegacyCategory): Promise<string> {
+    if (DRY_RUN) return `dry-run-category-${categoryIdMap.size}`;
+    const created = await prisma.category.create({
+      data: {
+        userId: newUserId,
+        name: category.name,
+        type: category.type,
+        color: category.color,
+        icon: category.icon,
+      },
+    });
+    return created.id;
+  }
+
+  // The owner's category for a legacy category id — their own, or a copy
+  // of someone else's. undefined when the legacy id doesn't exist.
+  async function ownerCategory(
+    ownerLegacyId: string,
+    newUserId: string,
+    legacyCategoryId: string,
+  ): Promise<{ id: string; type: "INCOME" | "EXPENSE" } | undefined> {
+    const category = legacyCategories.get(legacyCategoryId);
+    if (!category) return undefined;
+    const key = `${ownerLegacyId}:${legacyCategoryId}`;
+    let id = categoryIdMap.get(key);
+    if (!id) {
+      id = await createCategory(newUserId, category);
+      categoryIdMap.set(key, id);
+      stats.categoryCopiesForOwner++;
+    }
+    return { id, type: category.type };
   }
 
   async function getOrCreateFallbackCategory(
@@ -277,14 +353,12 @@ async function main() {
     const cacheKey = `${newUserId}:${type}`;
     const cached = fallbackCategoryCache.get(cacheKey);
     if (cached) return cached;
-
     if (DRY_RUN) {
       const id = `dry-run-fallback-${cacheKey}`;
       fallbackCategoryCache.set(cacheKey, id);
       stats.fallbackCategoriesCreated++;
       return id;
     }
-
     const created = await prisma.category.create({
       data: {
         userId: newUserId,
@@ -299,11 +373,24 @@ async function main() {
     return created.id;
   }
 
+  // ---- installment ↔ transaction links (read before transactions) ----
+  // In the app a linked transaction is PAID exactly when its installment
+  // is (debt-sync). The installment is the debt's source of truth, so a
+  // linked transaction takes its installment's status.
+  const installmentRows = extractInsertBlock(sql, "dividas_parcelas").map(splitRow);
+  const linkedStatusByLegacyTx = new Map<string, "PAID" | "PENDING">();
+  for (const r of installmentRows) {
+    const [, , , , , , transacaoId, status] = r;
+    if (transacaoId && transacaoId !== "NULL" && !linkedStatusByLegacyTx.has(transacaoId)) {
+      linkedStatusByLegacyTx.set(transacaoId, status === "pago" ? "PAID" : "PENDING");
+    }
+  }
+
   // ---- transactions ----
   const txRows = extractInsertBlock(sql, "transacoes").map(splitRow);
   for (const r of txRows) {
     const [
-      _legacyId,
+      legacyId,
       usuarioId,
       categoriaId,
       descricao,
@@ -315,35 +402,46 @@ async function main() {
       status,
       perfil,
     ] = r;
-
     const newUserId = userIdMap.get(usuarioId!);
     if (!newUserId) {
       stats.transactionsSkippedNoUser++;
       continue;
     }
-
     const type = mapTransactionType(tipo!);
-    let newCategoryId = categoryIdMap.get(categoriaId!);
-    if (!newCategoryId) {
+    const category = await ownerCategory(usuarioId!, newUserId, categoriaId!);
+    let newCategoryId: string;
+    if (!category) {
       newCategoryId = await getOrCreateFallbackCategory(newUserId, type);
       stats.transactionsFallbackCategory++;
+    } else {
+      // Kept as legacy had it; the app only enforces the match when the
+      // category is changed.
+      if (category.type !== type) stats.transactionsCategoryTypeMismatch++;
+      newCategoryId = category.id;
     }
-
+    let txStatus = type === "INCOME" ? ("PAID" as const) : mapStatus(status!);
+    const linkedStatus = linkedStatusByLegacyTx.get(legacyId!);
+    if (linkedStatus && linkedStatus !== txStatus) {
+      txStatus = linkedStatus;
+      stats.linkedTransactionStatusAligned++;
+    }
     const data = {
       userId: newUserId,
       categoryId: newCategoryId,
       workspace: mapWorkspace(perfil!),
       type,
-      status: type === "INCOME" ? ("PAID" as const) : mapStatus(status!),
+      status: txStatus,
       description: (descricao || "Sem descrição").slice(0, 255),
       amount: new Prisma.Decimal(valor!),
       date: parseLegacyDate(dataTransacao!),
       recurring: recorrente === "1",
       createdAt: parseLegacyDateTime(dataCadastro!),
     };
-
-    if (!DRY_RUN) {
-      await prisma.transaction.create({ data });
+    if (DRY_RUN) {
+      transactionIdMap.set(legacyId!, `dry-run-tx-${legacyId}`);
+    } else {
+      const created = await prisma.transaction.create({ data });
+      transactionIdMap.set(legacyId!, created.id);
     }
     stats.transactions++;
   }
@@ -365,19 +463,17 @@ async function main() {
       _dataCadastro,
       perfil,
     ] = r;
-
     const newUserId = userIdMap.get(usuarioId!);
     if (!newUserId) {
       stats.goalsSkippedNoUser++;
       continue;
     }
-
-    const newCategoryId = categoriaId !== "NULL" ? categoryIdMap.get(categoriaId!) : undefined;
-
+    const category =
+      categoriaId !== "NULL" ? await ownerCategory(usuarioId!, newUserId, categoriaId!) : undefined;
     const data = {
       userId: newUserId,
       workspace: mapWorkspace(perfil!),
-      categoryId: newCategoryId ?? null,
+      categoryId: category?.id ?? null,
       title: (titulo || "Meta importada").slice(0, 100),
       description: nullIfEmpty(descricao!)?.slice(0, 500) ?? null,
       targetAmount: new Prisma.Decimal(valorAlvo!),
@@ -390,11 +486,128 @@ async function main() {
       // run date.
       createdAt: parseLegacyDate(dataInicio!),
     };
-
     if (!DRY_RUN) {
       await prisma.goal.create({ data });
     }
     stats.goals++;
+  }
+
+  // ---- debts + installments ----
+  // dividas_parcelas grouped by debt; each debt and its installments are
+  // written in one transaction. paidAmount / paidInstallments / status are
+  // recomputed from the installments with the app's own rule
+  // (computeDebtTotals), so imported debts behave exactly like new ones.
+  const installmentsByDebt = new Map<string, string[][]>();
+  for (const r of installmentRows) {
+    const list = installmentsByDebt.get(r[1]!) ?? [];
+    list.push(r);
+    installmentsByDebt.set(r[1]!, list);
+  }
+  const usedTransactionIds = new Set<string>();
+
+  const debtRows = extractInsertBlock(sql, "dividas").map(splitRow);
+  for (const r of debtRows) {
+    const [
+      legacyId,
+      usuarioId,
+      nome,
+      valorTotal,
+      valorPago,
+      dataInicio,
+      dataFinal,
+      taxaJuros,
+      totalParcelas,
+      parcelasPagas,
+      categoriaId,
+      observacoes,
+      status,
+      dataCriacao,
+      ,
+      perfil,
+    ] = r;
+    const newUserId = userIdMap.get(usuarioId!);
+    if (!newUserId) {
+      stats.debtsSkippedNoUser++;
+      continue;
+    }
+    let categoryId: string | null = null;
+    if (categoriaId && categoriaId !== "NULL") {
+      const category = await ownerCategory(usuarioId!, newUserId, categoriaId);
+      // Debts only take expense categories in the app.
+      if (category?.type === "EXPENSE") categoryId = category.id;
+      else stats.debtsCategoryDropped++;
+    }
+
+    const installments = (installmentsByDebt.get(legacyId!) ?? [])
+      .map((i) => {
+        const [, , numeroParcela, valor, dataVencimento, dataPagamento, transacaoId, iStatus] = i;
+        let transactionId: string | null = null;
+        if (transacaoId && transacaoId !== "NULL") {
+          const mapped = transactionIdMap.get(transacaoId);
+          // One installment per transaction (unique in the schema).
+          if (mapped && !usedTransactionIds.has(mapped)) {
+            transactionId = mapped;
+            usedTransactionIds.add(mapped);
+            stats.installmentsLinked++;
+          } else {
+            stats.installmentLinksDropped++;
+          }
+        }
+        return {
+          installmentNo: Number(numeroParcela),
+          amount: new Prisma.Decimal(valor!),
+          dueDate: parseLegacyDate(dataVencimento!),
+          // "atrasado" isn't stored: overdue is derived from the due date.
+          status: (iStatus === "pago" ? "PAID" : "PENDING") as "PAID" | "PENDING",
+          paymentDate:
+            dataPagamento && dataPagamento !== "NULL" ? parseLegacyDate(dataPagamento) : null,
+          transactionId,
+        };
+      })
+      .sort((a, b) => a.installmentNo - b.installmentNo);
+
+    const totals = computeDebtTotals(installments, today);
+    const legacyStatus =
+      status === "quitada" ? "PAID_OFF" : status === "atrasada" ? "OVERDUE" : "ACTIVE";
+    if (
+      !totals.paidAmount.equals(new Prisma.Decimal(valorPago === "NULL" ? 0 : valorPago!)) ||
+      totals.paidInstallments !== Number(parcelasPagas) ||
+      totals.status !== legacyStatus
+    ) {
+      stats.debtTotalsRecomputed++;
+    }
+
+    const interest = taxaJuros && taxaJuros !== "NULL" ? new Prisma.Decimal(taxaJuros) : null;
+    const data = {
+      userId: newUserId,
+      workspace: mapWorkspace(perfil!),
+      categoryId,
+      name: (nome || "Dívida importada").slice(0, 100),
+      totalAmount: new Prisma.Decimal(valorTotal!),
+      paidAmount: totals.paidAmount,
+      startDate: parseLegacyDate(dataInicio!),
+      endDate: dataFinal && dataFinal !== "NULL" ? parseLegacyDate(dataFinal) : null,
+      // Legacy's default 0.00 means "not informed".
+      interestRate: interest && !interest.isZero() ? interest : null,
+      totalInstallments:
+        totalParcelas && totalParcelas !== "NULL" ? Number(totalParcelas) : installments.length,
+      paidInstallments: totals.paidInstallments,
+      notes: nullIfEmpty(observacoes!)?.slice(0, 500) ?? null,
+      status: totals.status,
+      createdAt: parseLegacyDateTime(dataCriacao!),
+    };
+    if (!DRY_RUN) {
+      await prisma.$transaction(async (tx) => {
+        const debt = await tx.debt.create({ data });
+        if (installments.length > 0) {
+          await tx.debtInstallment.createMany({
+            data: installments.map((installment) => ({ ...installment, debtId: debt.id })),
+          });
+        }
+      });
+    }
+    stats.debts++;
+    stats.installments += installments.length;
   }
 
   console.log("\n--- Import summary ---");

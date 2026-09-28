@@ -173,9 +173,28 @@ under "Deliberate deviations from legacy" below.
   `interestRate` is informational only).
 - Debt-due-soon alerts on the dashboard (see `product.md` — not surfaced
   there, matches legacy).
-- Porting legacy `dividas`/`dividas_parcelas` rows in
-  `apps/api/scripts/import-legacy.ts` — follow-up, tracked separately.
+
 
 ## Open questions
 
 - None blocking.
+
+## Legacy data import (2026-09-28)
+
+`apps/api/scripts/import-legacy.ts` ports `dividas` → `Debt` and
+`dividas_parcelas` → `DebtInstallment` (488 debts, 2,508 installments in
+the dump, 416 of them linked to a transaction):
+
+- `paidAmount`, `paidInstallments` and `status` are recomputed from the
+  installments with the app's own rule (`computeDebtTotals`), not copied:
+  legacy's stored totals had drifted from its own installments — 416 debts
+  were "ativa" with an overdue installment, and 24 had a `valor_pago` that
+  didn't match the sum of their paid installments (R$ 52,868.70 in
+  total). The installments are the source of truth, as in the app.
+- A linked transaction takes its installment's status (the app keeps
+  them in sync; 17 legacy pairs disagreed).
+- `taxa_juros = 0.00` (legacy default) is imported as "not informed"
+  (null). A debt whose category is an income category loses it (29
+  debts): debts only take expense categories.
+- Legacy didn't check category ownership: records pointing at another
+  account's category get a copy of it in their owner's account.
