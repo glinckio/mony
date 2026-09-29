@@ -57,7 +57,7 @@ Android applies the inner line height to the whole line and clips it.
 | `SelectChip`                                                                         | selectable pill chip (`dashed` for "none/automatic")                                                                                                                                                                                        |
 | `Checkbox`                                                                           | row checkbox (`accessibilityState.checked/selected`)                                                                                                                                                                                        |
 | `Card` · `IconBadge` · `ProgressBar` · `Gradient` · `ScreenBackground` · `withAlpha` | surfaces: white card with soft shadow, pastel circle with a colored glyph, gradient bar, gradient fill, the lavender page                                                                                                                   |
-| `ScrollScreen`                                                                       | standard scrolling screen: lavender page, floating `TopBar` (centered title, soft circle buttons, white backdrop on scroll), tab-bar clearance; optional `largeTitle`, full-bleed `hero` (+`heroOverlap`), `keyboardAware`, pull-to-refresh |
+| `ScrollScreen`                                                                       | standard scrolling screen: lavender page, floating `TopBar` (centered title, soft circle buttons, white backdrop on scroll), tab-bar clearance; optional `largeTitle`, full-bleed `hero` (+`heroOverlap`), `keyboardAware`, pull-to-refresh, `footer` (main action fixed on an `ActionBar`) |
 | `TopBar`, `useScrollHeader`, `useScreenInsets`, `useBottomClearance`                 | building blocks for list screens (`SectionList`/`FlatList`) that can't use `ScrollScreen`                                                                                                                                                   |
 | `FormScreen`                                                                         | modal forms: `SheetHeader` (close `header-close`), keyboard-aware scroll, CTA footer glued above the keyboard                                                                                                                               |
 | `AuthLayout`                                                                         | entry screens: gradient hero with the Mony mark, form card over its edge                                                                                                                                                                    |
@@ -78,7 +78,10 @@ small "R$"/cents, counts to new values), `GoalProgress`, `YearChart`,
 `DebtCard`, `PantryItem`, `VehiclePhoto`, `VehicleHero`, `MercosulPlate`,
 `Odometer`, `MaintenanceAlertRow` (a maintenance type's status on a
 vehicle: pill, bar in the status tone, km/days left), `NotebookSwitch`
-(workspace), `Initials`.
+(workspace), `Initials`, `SubscriptionHero` (Assinatura's gradient hero:
+glass status chip, plan/price or the trial offer, trial bar), `PlanCard`
+(a plan as a radio card), `TrialTimeline` (today · cancel by · first
+charge), `HeroDecoration` (the gradient heroes' glass light and rings).
 
 ## Rules of thumb
 

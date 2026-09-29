@@ -33,8 +33,9 @@ the legacy names only exist for cross-referencing during migration.
 
 ## Sensitive data (LGPD scope)
 
-`User` (name, email, phone) and `Subscription` (last 4 card digits, card
-brand) hold personal data under Brazil's LGPD. Financial records
+`User` (name, email, phone, `stripeCustomerId`) and `Subscription` (plan,
+status, billing dates, Stripe subscription id — no card data) hold
+personal data under Brazil's LGPD. Financial records
 (`Transaction`, `Debt`, `Goal`) are also personal data once linked to a
 `User`, and so are a `Vehicle`'s license plate and photo (the photo can
 show the plate, people, or places; stored in private object storage, see
@@ -46,8 +47,20 @@ goes through Stripe (tokenizing gateway, confirmed — see `tech.md`).
 
 ### Data sharing with third parties
 
-- **Stripe** — receives payment/card details for `Subscription` checkout;
-  tokenizes, never touches our DB (see above).
+- **Stripe** (Stripe, Inc., US — an international transfer, LGPD art. 33)
+  — for subscriptions (legal basis: contract, art. 7, V):
+  - we send the user's **email** (Stripe's receipts) and our internal
+    **user id** (customer and subscription metadata, to attribute
+    webhooks and to find every customer of a user on account deletion).
+    Not the name: Checkout collects the card holder's name itself.
+  - Stripe collects the card (and the name on it) directly on its hosted
+    Checkout/Portal pages; none of it reaches our API or DB. Payment
+    methods are pinned to card, so no CPF/address is collected.
+  - Stripe is an independent controller for its own fraud/regulatory
+    processing and for Link.
+  - Retention: until the account is deleted (then the Stripe customer is
+    deleted — see `roadmap.md` → Release hardening); Stripe keeps invoices
+    for its own legal obligations.
 - **Brevo** — receives the user's email address (plus name, once used in
   templates) to deliver transactional email: currently the
   `auth-password-reset` 6-digit code. See `tech.md` and `roadmap.md` for

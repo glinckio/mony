@@ -21,7 +21,7 @@ building the whole API first and the whole app after.
 | 10 | `grocery` | ✅ Done | Household grocery list + informational budget | 2 |
 | 11 | `vehicles` | ✅ Done | Vehicle registry, mileage tracking | 2 |
 | 12 | `vehicle-maintenance` | ✅ Done | Maintenance types, history, km/date-based alerts | 11 |
-| 13 | `subscriptions` | ⬜ Not started | Plan display + Stripe checkout, status sync | 4 |
+| 13 | `subscriptions` | ✅ Done | Plan display + Stripe checkout, status sync | 4 |
 | 14 | `reports` | ⬜ Not started | Charts/aggregations over a date range | 6 |
 | 15 | `changelog` | ⬜ Not started | In-app changelog banner + admin CRUD + read tracking | 4 |
 
@@ -45,6 +45,31 @@ below.
   include vehicles, maintenance types (with descriptions), maintenance
   records (date, mileage, cost, place, notes, type) and the stored files
   (photos and receipts: JPEG as stored, PDF as uploaded).
+- Account deletion, Stripe side (subscriptions): before the DB delete,
+  `customers.del(stripeCustomerId)` (cancels live subscriptions at once and
+  removes saved payment methods), plus any orphan customer found with
+  `customers.search({ query: "metadata['userId']:'<id>'" })`. If Stripe
+  fails, block the deletion or retry through an outbox — never drop it, or
+  the user keeps being billed. Decide the refund/proration policy for the
+  unused period. Late webhooks after deletion must stay "unknown customer,
+  ignored". The export includes the subscription (plan, status, period
+  and trial dates, cancel flag); invoices and the card on file are in the
+  Customer Portal.
+- Profile → Stripe sync: an email change must reach the Stripe customer
+  (`customers.update`, best-effort or via an outbox — LGPD art. 18 §6);
+  configure which Customer Portal fields users can edit so the two sides
+  don't diverge.
+- Production Stripe config: restricted live key (`rk_live_`: Customers,
+  Checkout Sessions, Subscriptions, Billing Portal write; Prices read);
+  webhook endpoint on API version `2026-08-26.dahlia` registered for the 6
+  handled events only (`checkout.session.completed`,
+  `customer.subscription.created|updated|deleted`, `invoice.paid`,
+  `invoice.payment_failed`); documented webhook-secret rotation; Checkout
+  setting "limit customers to one subscription" on (two Checkout pages
+  opened at the very same time can otherwise both be paid).
+- Crash/analytics tooling (if added): scrub `req.rawBody` (kept on every
+  request since `rawBody: true` — including `/auth/login` passwords),
+  request bodies, Stripe payloads and Checkout/Portal URLs.
 - Object storage hardening (receipts may carry CPF, address, plate):
   encryption at rest on MinIO (SSE via KES/KMS, or disk encryption);
   bucket versioning off, or a noncurrent-version expiry so deletes really
@@ -53,7 +78,13 @@ below.
   directory (picker/manipulator copies) and the image disk cache.
 - Privacy policy: cover maintenance receipts (may contain CPF, address,
   plate and third parties' data), their purpose, retention (until the
-  record, vehicle or account is deleted) and camera use.
+  record, vehicle or account is deleted) and camera use. Stripe section:
+  what we send (email, internal id) and what Stripe collects directly
+  (card, holder name), purpose and legal basis (art. 7, V), the transfer
+  to the US (art. 33 — check Stripe's DPA against the ANPD standard
+  clauses), Stripe as independent controller (and Link), retention; decide
+  whether Mony keeps its own billing records for tax purposes (art. 16,
+  I). Then link the policy from the subscription screen's notice.
 - Full LGPD review pass (`lgpd-security-reviewer`) across the whole app.
 - Full Maestro E2E suite run together (not just per-feature flows).
 - Performance audit pass (`performance-auditor`) end to end.
