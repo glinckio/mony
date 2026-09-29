@@ -43,6 +43,7 @@ import { GoalsScreen } from "../screens/goals/GoalsScreen";
 import { GroceryItemFormScreen } from "../screens/grocery/GroceryItemFormScreen";
 import { GroceryScreen } from "../screens/grocery/GroceryScreen";
 import { MoreScreen } from "../screens/more/MoreScreen";
+import { SubscriptionScreen } from "../screens/more/SubscriptionScreen";
 import { ChangePasswordScreen } from "../screens/profile/ChangePasswordScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { TransactionFormScreen } from "../screens/transactions/TransactionFormScreen";
@@ -87,6 +88,7 @@ export type AppStackParamList = {
   MaintenanceRecordForm: { vehicleId: string; maintenanceTypeId?: string };
   MaintenanceTypes: undefined;
   MaintenanceTypeForm: undefined;
+  Subscription: undefined;
   CategoryForm: { category?: Category; type?: CategoryType } | undefined;
   TransactionForm: { transaction?: Transaction } | undefined;
   GoalForm: { goal?: Goal } | undefined;
@@ -233,6 +235,7 @@ export function RootNavigator() {
           <AppStack.Screen name="VehicleDetail" component={VehicleDetailScreen} />
           <AppStack.Screen name="Maintenance" component={MaintenanceScreen} />
           <AppStack.Screen name="MaintenanceTypes" component={MaintenanceTypesScreen} />
+          <AppStack.Screen name="Subscription" component={SubscriptionScreen} />
           <AppStack.Screen name="ChangePassword" component={ChangePasswordScreen} options={MODAL} />
           <AppStack.Screen name="CategoryForm" component={CategoryFormScreen} options={MODAL} />
           <AppStack.Screen

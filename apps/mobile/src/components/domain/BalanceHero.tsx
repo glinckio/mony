@@ -1,9 +1,8 @@
 import type { DashboardData } from "@mony/shared-types";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Circle, Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 
 import { spokenMoney, toCents } from "../../lib/money-display";
 import { layout, radius, space, useTheme } from "../../theme";
@@ -11,6 +10,7 @@ import { Button } from "../ui/Button";
 import { Icon } from "../ui/Icon";
 import { Text } from "../ui/Text";
 
+import { HeroDecoration } from "./HeroDecoration";
 import { MoneyHero } from "./MoneyHero";
 
 export type BalanceHeroState =
@@ -65,7 +65,7 @@ export function BalanceHero({
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
-      <Decoration />
+      <HeroDecoration />
 
       <View style={styles.inner}>
         <View style={styles.greeting}>
@@ -187,59 +187,6 @@ function GlassChip({
       <Text variant="caption" color={colors.onGlass}>
         {children}
       </Text>
-    </View>
-  );
-}
-
-// A soft light in the top-left and two thin rings off the right edge.
-function Decoration() {
-  const { colors } = useTheme();
-  const [size, setSize] = useState({ width: 0, height: 0 });
-  const { width, height } = size;
-  return (
-    <View
-      pointerEvents="none"
-      style={StyleSheet.absoluteFill}
-      onLayout={(event) => setSize(event.nativeEvent.layout)}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-    >
-      {width > 0 ? (
-        <Svg width={width} height={height}>
-          <Defs>
-            <RadialGradient id="hero-light" cx="12%" cy="0%" rx="70%" ry="80%">
-              <Stop offset="0" stopColor={colors.onGlass} stopOpacity={0.26} />
-              <Stop offset="1" stopColor={colors.onGlass} stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-          <Rect width={width} height={height} fill="url(#hero-light)" />
-          <Circle
-            cx={width + 24}
-            cy={height * 0.3}
-            r={150}
-            stroke={colors.onGlass}
-            strokeOpacity={0.12}
-            strokeWidth={1.5}
-            fill="none"
-          />
-          <Circle
-            cx={width + 24}
-            cy={height * 0.3}
-            r={96}
-            stroke={colors.onGlass}
-            strokeOpacity={0.14}
-            strokeWidth={1.5}
-            fill="none"
-          />
-          <Circle
-            cx={width * 0.18}
-            cy={height + 30}
-            r={110}
-            fill={colors.onGlass}
-            fillOpacity={0.05}
-          />
-        </Svg>
-      ) : null}
     </View>
   );
 }

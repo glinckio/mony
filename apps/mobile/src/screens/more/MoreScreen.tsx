@@ -86,7 +86,15 @@ export function MoreScreen() {
 
       <Group title="Conta">
         <MenuRow
+          testID="more-subscription"
+          icon="sparkles-outline"
+          label="Assinatura"
+          description="Seu plano e pagamento"
+          onPress={() => navigation.navigate("Subscription")}
+        />
+        <MenuRow
           testID="more-change-password"
+          divider
           icon="lock-closed-outline"
           label="Alterar senha"
           onPress={() => navigation.navigate("ChangePassword")}

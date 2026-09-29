@@ -68,6 +68,7 @@ Sem uso aparente: nada. (`Manutenções: Em breve` era um espaço reservado para
 | 25  | Registrar manutenção (form)       | nova       | Casa    | P2         | Em revisão |
 | 26  | Tipos de manutenção               | nova       | Casa    | P3         | Em revisão |
 | 27  | Tipo de manutenção (form)         | nova       | Casa    | P3         | Em revisão |
+| 28  | Assinatura                        | nova       | Conta   | P3         | Pronta     |
 
 Status: Pendente → Em progresso → Em revisão → Pronta (só depois de ≥ 2 rodadas de revisão visual)
 
@@ -597,3 +598,11 @@ Caminho secundário: **Lançamentos** → **[toque]** no carimbo A PAGAR → bat
 
 - **Rota:** `MaintenanceTypeForm` (modal) · **Origem:** `vehicles/MaintenanceTypeFormScreen.tsx` · P3
 - **Composição:** nome → "A cada (km)" e "Ou a cada (meses)" lado a lado + nota "vale o que vencer primeiro" → sistema (13 chips, toque de novo desmarca) → descrição → CTA grudado. Ao criar, o tipo passa a ser acompanhado em todos os veículos.
+
+## 28 — Assinatura
+
+- **Rota:** `Subscription` (Mais → Conta → "Assinatura") · **Origem:** `more/SubscriptionScreen.tsx` (nova, feature 13) · P3
+- **Composição (refino 2026-09-29):** herói em gradiente com vidro no topo (`SubscriptionHero` — chip de vidro com o status, título, preço e data). Sem assinatura viva, o herói é a oferta: chip "7 dias grátis", "Experimente o Mony", "Nada é cobrado até dd/mm." e o que o plano inclui (tabela de comparação do legado, condensada em 3 itens). Abaixo, "Escolha o plano" com dois `PlanCard` (rádio; anual primeiro e pré-selecionado, pílula "Economize 45%", preço com "R$" e centavos menores, "Equivale a R$ 5,45/mês" / "Cobrado todo mês"), "Como funciona o teste" (`TrialTimeline`: Hoje · Até dd/mm cancele sem pagar · dd/mm cobrança do plano escolhido) só para quem nunca assinou, e a nota "O pagamento é feito no Stripe, que recebe seu e-mail." (LGPD art. 9). O CTA "Começar 7 dias grátis" (ou "Assinar") fica fixo no rodapé (`ScrollScreen footer`). Com assinatura viva: no herói, a barra do teste ("Dia 2 de 7 · faltam 6 dias") quando em teste; abaixo, um cartão com "Gerenciar pagamento" (portal do Stripe) e "Cancelar assinatura" (`ConfirmSheet`, com a data até quando continua). Pagamento pendente vira chip branco de alerta e o botão principal "Atualizar forma de pagamento"; cancelamento agendado mostra "Reativar assinatura" (secundário se houver pagamento pendente: um só botão principal).
+- **Pagamento:** página do Stripe no navegador do app; ao voltar, "Confirmando seu pagamento…" enquanto o webhook não chega (até 20 s).
+- **Mensagens:** 409 → "Você já tem uma assinatura."; 503 → "Pagamentos indisponíveis no momento. Tente mais tarde."; outro → genérica.
+- **Estados:** carregando (skeleton) · erro (tentar de novo) · planos indisponíveis (aviso).

@@ -1,0 +1,73 @@
+appId: com.mony.app
+---
+# Registers a fresh account and opens Mais → Assinatura: no subscription
+# yet (the hero offers "Experimente o Mony", 7 days free), both plans with
+# the annual one first and preselected ("Economize 45%"), how the trial
+# plays out, the note that Stripe receives the e-mail and the fixed trial
+# CTA "Começar 7 dias grátis" — exercises the subscription screen against
+# the real API.
+# Needs Stripe test keys in apps/api/.env (STRIPE_SECRET_KEY,
+# STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_MONTHLY, STRIPE_PRICE_ANNUAL): without
+# them /subscriptions/plans answers 503 and the screen shows "Não foi
+# possível carregar os planos." instead of the plans.
+# The CTA isn't tapped: it opens Stripe's hosted Checkout in the in-app
+# browser, which isn't scriptable reliably.
+- launchApp
+- evalScript: ${output.testEmail = 'maestro-subscription-' + Date.now() + '@example.com'}
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Subscription Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Maestro Subscription Tester"
+
+- tapOn:
+    id: "tab-more"
+- scrollUntilVisible:
+    element:
+      id: "more-subscription"
+- tapOn:
+    id: "more-subscription"
+- assertVisible: "Assinatura"
+
+# A new account has never subscribed.
+- assertVisible:
+    id: "subscription-status"
+- assertVisible: "7 dias grátis"
+- assertVisible: "Experimente o Mony"
+- assertVisible: "Escolha o plano"
+
+# Both plans, the annual one preselected. "Melhor valor" is part of the
+# annual card's accessible label, so it's matched as a regex.
+# (With other prices the "Economize N%" pill changes; it isn't asserted.)
+- assertVisible:
+    id: "plan-MONTHLY"
+- assertVisible:
+    id: "plan-ANNUAL"
+    selected: true
+- assertVisible: ".*Melhor valor.*"
+
+# First subscription: the trial timeline, the Stripe note and the CTA,
+# fixed at the bottom, offering the 7-day trial.
+- scrollUntilVisible:
+    element:
+      id: "trial-timeline"
+- assertVisible: "Hoje"
+- scrollUntilVisible:
+    element:
+      text: "O pagamento é feito no Stripe.*"
+- assertVisible:
+    id: "start-checkout"
+- assertVisible: "Começar 7 dias grátis"

@@ -49,6 +49,9 @@ interface ScrollScreenProps {
   // Form-like content inside (period dates): keyboard-aware scrolling.
   // Fixed per screen — switching it swaps the scroll view (remount).
   keyboardAware?: boolean;
+  // The screen's main action, fixed at the bottom on a white bar
+  // (`ActionBar`); the content scrolls clear of it.
+  footer?: ReactNode;
   children: ReactNode;
   contentStyle?: StyleProp<ViewStyle>;
   testID?: string;
@@ -68,6 +71,7 @@ export function ScrollScreen({
   refreshing,
   onRefresh,
   keyboardAware = false,
+  footer,
   children,
   contentStyle,
   testID,
@@ -80,6 +84,8 @@ export function ScrollScreen({
   const [heroHeight, setHeroHeight] = useState(0);
   const heroEnd = Math.max(8, heroHeight - insets.paddingTop + space.sm);
   const [overHero, setOverHero] = useState(true);
+  const [footerHeight, setFooterHeight] = useState(0);
+  const paddingBottom = footer ? footerHeight + space["2xl"] : bottom;
 
   // Worklets only capture plain values: a React element (like `hero`)
   // carries React's internal FiberNode and can't be copied to the UI thread.
@@ -114,8 +120,8 @@ export function ScrollScreen({
     padded
   );
   const containerStyle = hero
-    ? [{ paddingBottom: bottom }, contentStyle]
-    : [insets, { paddingBottom: bottom }, styles.content, contentStyle];
+    ? [{ paddingBottom }, contentStyle]
+    : [insets, { paddingBottom }, styles.content, contentStyle];
   const refreshControl = onRefresh ? (
     <RefreshControl
       refreshing={!!refreshing}
@@ -164,6 +170,13 @@ export function ScrollScreen({
         leading={leading}
         actions={actions}
       />
+      {footer ? (
+        <View style={styles.footer}>
+          <ActionBar onLayout={(event) => setFooterHeight(event.nativeEvent.layout.height)}>
+            {footer}
+          </ActionBar>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -265,6 +278,12 @@ export function ActionBar({
 }
 
 const styles = StyleSheet.create({
+  footer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   flex: {
     flex: 1,
   },

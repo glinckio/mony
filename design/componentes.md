@@ -314,6 +314,13 @@ Código: domínio em `apps/mobile/src/components/domain/`, chrome e primitivas e
 
 ---
 
+### `SubscriptionHero` + `PlanCard` + `TrialTimeline` — Assinatura (refino 2026-09-29)
+
+- **Conceito:** a tela onde o Mony se apresenta usa o elemento assinatura (gradiente com vidro, `HeroDecoration` compartilhada com o saldo do Início). Descartados: cartão branco com pílula de status (parecia gerado, abria com uma negativa) e seletor Mensal/Anual dentro do herói (esconde a comparação).
+- **`SubscriptionHero`:** chip de vidro com o status (pagamento pendente vira chip branco com ícone âmbar), título (plano ou "Experimente o Mony"), preço, barra de vidro do teste ("Dia 2 de 7 · faltam 6 dias") e a frase com a data; na oferta, o que o plano inclui (tabela do legado condensada). Lido como um resumo só (`accessibilityRole="summary"`).
+- **`PlanCard`:** rádio com o ponto no gradiente da marca (entra com mola; parado em "reduzir movimento"), nome, pílula "Economize 45%", preço com "R$" e centavos menores e o intervalo; selecionado ganha borda índigo 2 e sombra maior. Lido como "Plano Anual, 65 reais e 34 centavos por ano. Melhor valor…".
+- **`TrialTimeline`:** trilho de pontos (hoje preenchido no gradiente, futuro em anel) — Hoje · Até dd/mm cancele e não paga nada · dd/mm cobrança do plano escolhido (muda ao trocar de plano). Texto do FAQ do legado.
+
 ## Chrome
 
 | Superfície                               | Decisão                                                                                                                                                                                                                                                                                                                                                                                                                                            | Por quê                                                                                                      |

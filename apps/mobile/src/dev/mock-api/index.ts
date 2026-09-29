@@ -10,7 +10,9 @@ import type {
   MaintenanceRecord,
   MaintenanceStatus,
   MaintenanceType,
+  Plan,
   Profile,
+  Subscription,
   Transaction,
   Vehicle,
   WorkspaceType,
@@ -57,6 +59,7 @@ const db = {
   maintenanceRecords: clone(seedMaintenanceRecords),
   // vehicleId -> typeId -> mileage the next service is due at.
   maintenanceAlerts: {} as Record<string, Record<string, number>>,
+  subscription: null as Subscription | null,
   nextId: 1000,
 };
 
@@ -1022,6 +1025,64 @@ routes.push(
     pattern: /^\/vehicles\/([^/]+)\/maintenance-records\/([^/]+)\/receipt$/,
     // The mock can't store the upload; keeps the record as it is.
     handler: ({ params, path }) => clone(vehicleRecord(params[0], params[1], path)),
+  },
+);
+
+// Subscriptions: no real Stripe in the mock. Checkout starts the 7-day
+// trial right away and returns a page the in-app browser can open and
+// close; the screen then refetches /me.
+const MOCK_PLANS: Plan[] = [
+  { plan: "MONTHLY", amount: "9.90", currency: "BRL", interval: "month", trialDays: 7 },
+  { plan: "ANNUAL", amount: "65.34", currency: "BRL", interval: "year", trialDays: 7 },
+];
+
+function mockSubscriptionChange(changes: Partial<Subscription>, path: string): Subscription {
+  if (!db.subscription) fail(404, "No active subscription.", path);
+  db.subscription = { ...db.subscription, ...changes, updatedAt: now() };
+  return clone(db.subscription);
+}
+
+routes.push(
+  { method: "GET", pattern: /^\/subscriptions\/plans$/, handler: () => clone(MOCK_PLANS) },
+  {
+    method: "GET",
+    pattern: /^\/subscriptions\/me$/,
+    handler: () => ({ subscription: clone(db.subscription) }),
+    empty: () => ({ subscription: null }),
+  },
+  {
+    method: "POST",
+    pattern: /^\/subscriptions\/checkout$/,
+    handler: ({ body, path }) => {
+      if (db.subscription && db.subscription.status !== "CANCELED") {
+        fail(409, "You already have a subscription.", path);
+      }
+      const inAWeek = new Date(Date.now() + 7 * 86_400_000).toISOString();
+      db.subscription = {
+        plan: body.plan === "MONTHLY" ? "MONTHLY" : "ANNUAL",
+        status: db.subscription ? "ACTIVE" : "TRIALING",
+        currentPeriodEnd: inAWeek,
+        trialEndsAt: db.subscription ? null : inAWeek,
+        cancelScheduled: false,
+        updatedAt: now(),
+      };
+      return { url: "https://example.com/?mony-mock-checkout" };
+    },
+  },
+  {
+    method: "POST",
+    pattern: /^\/subscriptions\/cancel$/,
+    handler: ({ path }) => mockSubscriptionChange({ cancelScheduled: true }, path),
+  },
+  {
+    method: "POST",
+    pattern: /^\/subscriptions\/reactivate$/,
+    handler: ({ path }) => mockSubscriptionChange({ cancelScheduled: false }, path),
+  },
+  {
+    method: "POST",
+    pattern: /^\/subscriptions\/portal$/,
+    handler: () => ({ url: "https://example.com/?mony-mock-portal" }),
   },
 );
 

@@ -85,3 +85,18 @@ O usuário revisou no aparelho as 18 telas restantes e aprovou todas ("do jeito 
 ## Passe de acabamento
 
 Feito pelo usuário no aparelho, percorrendo o app inteiro (Rodadas 2 a 4). Consistência aplicada por construção: todas as telas usam as mesmas peças de chrome (`TopBar` com título centralizado e botões circulares, `ScrollScreen`/`FormScreen`/`AuthLayout`, `AppTabBar`, `ConfirmSheet`, `AppToast`), o mesmo início de conteúdo (`useScreenInsets`) e a mesma folga inferior (`useBottomClearance`).
+
+---
+
+## Tela 28 — Assinatura (refino, 2026-09-29)
+
+Prints no emulador Android (Expo Go, dados Mock ligados só no emulador), em `design/revisao/assinatura-*`.
+
+| Rodada    | Problemas (severidade)                                                                                                                                                                                                                                                                                                             | Correção                                                                                                                          |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 0 (antes) | cartão "Sem assinatura" com ✨ abre a tela com uma negativa, sem herói (alta, crítica do usuário); cartões de plano sem rádio, "R$"/"/mês" do tamanho do valor, argumento (R$ 5,45/mês, −45%) em cinza (média); mensal primeiro com o anual pré-selecionado (média); o teste não diz quando cobra (média); meia tela vazia (média) | herói em gradiente (`SubscriptionHero`), `PlanCard` com rádio, anual primeiro, `TrialTimeline`                                    |
+| 1         | título do herói com "dias" sozinho na última linha (média); "Cancele quando quiser" repetido 3× (média); pílula "Economize" grande, disputa com o nome (média); "ano." sozinho no fim da linha do tempo (baixa); CTA abaixo da dobra (média)                                                                                       | título "Experimente o Mony", frase só com a data, pílula `caption`, texto da cobrança encurtado, CTA fixo (`ScrollScreen footer`) |
+| 2         | barra do teste vazia no 1º dia e texto redundante (média); com pagamento pendente + cancelamento agendado, dois botões principais e o chip escondendo o problema (média); nota do Stripe com "cobrança." sozinho (baixa)                                                                                                           | "Dia 1 de 7 · faltam 7 dias" com a barra a partir de 1/7; pendente tem prioridade no herói, "Reativar" secundário; nota encurtada |
+| 3         | nenhum alto ou médio                                                                                                                                                                                                                                                                                                               | —                                                                                                                                 |
+
+Situação: **Pronta**. Carregando/erro mantêm o último dado em cache por decisão (uma falha de polling não derruba a tela); o skeleton e o `ErrorState` são os componentes padrão.

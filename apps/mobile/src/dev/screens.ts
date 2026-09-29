@@ -134,6 +134,13 @@ export const SCREENS: CatalogEntry[] = [
   { id: "more", name: "Mais", flow: "Conta", route: "MainTabs", tab: "More", status: "Pronta" },
   { id: "profile", name: "Perfil", flow: "Conta", route: "Profile", status: "Pronta" },
   {
+    id: "subscription",
+    name: "Assinatura",
+    flow: "Conta",
+    route: "Subscription",
+    status: "Pronta",
+  },
+  {
     id: "change-password",
     name: "Alterar senha",
     flow: "Conta",
