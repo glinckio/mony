@@ -9,6 +9,7 @@ export * from "./goal";
 export * from "./grocery";
 export * from "./money";
 export * from "./transaction";
+export * from "./subscription";
 export * from "./user";
 export * from "./vehicle";
 export * from "./vehicle-maintenance";
