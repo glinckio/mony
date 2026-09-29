@@ -96,6 +96,9 @@ model User {
   groceryBudgets     GroceryBudget[]
   vehicles           Vehicle[]
   maintenanceTypes   MaintenanceType[]
+  // Stripe customer, created on the first checkout and reused after.
+  stripeCustomerId   String?             @unique @db.VarChar(255)
+  subscription       Subscription?
 }
 
 model PasswordResetCode {
@@ -348,4 +351,36 @@ model VehicleMaintenance {
   @@index([vehicleId, maintenanceTypeId, mileage])
   // Type delete checks for history: WHERE maintenanceTypeId.
   @@index([maintenanceTypeId])
+}
+
+enum PlanType {
+  MONTHLY
+  ANNUAL
+}
+
+// Mirrored from Stripe (docs/specs/subscriptions/design.md → status mapping).
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+// One row per user: their latest Stripe subscription. No card data, ever
+// — only Stripe's ids (the Customer Portal shows the card to the user).
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                 PlanType
+  status               SubscriptionStatus
+  stripeSubscriptionId String             @unique @db.VarChar(255)
+  // Stripe's own `created`: a late event for an older, replaced
+  // subscription never overwrites a newer one.
+  stripeCreatedAt      DateTime
+  currentPeriodEnd     DateTime?
+  trialEndsAt          DateTime?
+  cancelScheduled      Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 }

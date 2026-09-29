@@ -3814,6 +3814,809 @@
       ]
     },
     {
+      "name": "Subscriptions",
+      "item": [
+        {
+          "name": "List Plans",
+          "request": {
+            "method": "GET",
+            "description": "Public. The two plans with their price as configured in Stripe (amount is a decimal string in BRL) and the free-trial length, granted on the user's first subscription only. Cached for 1 h; while Stripe is down the last good list is served.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "plans"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — prices read from Stripe",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/plans",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "plans"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"plan\": \"MONTHLY\",\n    \"amount\": \"9.90\",\n    \"currency\": \"BRL\",\n    \"interval\": \"month\",\n    \"trialDays\": 7\n  },\n  {\n    \"plan\": \"ANNUAL\",\n    \"amount\": \"65.34\",\n    \"currency\": \"BRL\",\n    \"interval\": \"year\",\n    \"trialDays\": 7\n  }\n]"
+            },
+            {
+              "name": "503 Service Unavailable — payments aren't configured (development without Stripe keys)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/plans",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "plans"
+                  ]
+                }
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "body": "{\n  \"statusCode\": 503,\n  \"error\": \"SERVICE_UNAVAILABLE\",\n  \"message\": [\n    \"Payments aren't configured.\"\n  ],\n  \"path\": \"/subscriptions/plans\",\n  \"timestamp\": \"2026-09-29T15:18:58.145Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get My Subscription",
+          "request": {
+            "method": "GET",
+            "description": "The user's subscription, mirrored from Stripe by the webhook (never Stripe ids). Wrapped in { subscription } so \"none\" is { subscription: null }, not an empty body.",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — in the 7-day trial",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"subscription\": {\n    \"plan\": \"ANNUAL\",\n    \"status\": \"TRIALING\",\n    \"currentPeriodEnd\": \"2026-10-06T15:18:58.000Z\",\n    \"trialEndsAt\": \"2026-10-06T15:18:58.000Z\",\n    \"cancelScheduled\": false,\n    \"updatedAt\": \"2026-09-29T15:18:58.347Z\"\n  }\n}"
+            },
+            {
+              "name": "200 OK — never subscribed",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"subscription\": null\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "me"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\n    \"Unauthorized\"\n  ],\n  \"path\": \"/subscriptions/me\",\n  \"timestamp\": \"2026-09-29T15:18:58.197Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Start Checkout",
+          "request": {
+            "method": "POST",
+            "description": "Returns a Stripe-hosted Checkout page for the plan, to open in the app's in-app browser (card only; the app never shows a card form). 7-day free trial only if the user never had a subscription, locally or on Stripe. The subscription appears in /subscriptions/me once Stripe's webhook arrives.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"ANNUAL\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "checkout"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — open url in the in-app browser",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan\": \"ANNUAL\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/checkout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "checkout"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"url\": \"https://checkout.stripe.com/c/pay/cs_test_a1mxQEyadh2ZwDqBiUNyuH3zgWov2emSEUhOTkRFyAwnCQZJq7zjK6E0U9\"\n}"
+            },
+            {
+              "name": "400 Bad Request — validation failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan\": \"YEARLY\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/checkout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "checkout"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"plan must be one of the following values: MONTHLY, ANNUAL\"\n  ],\n  \"path\": \"/subscriptions/checkout\",\n  \"timestamp\": \"2026-09-29T15:18:58.266Z\"\n}"
+            },
+            {
+              "name": "409 Conflict — already subscribed (also checked on Stripe, so a checkout whose webhook hasn't arrived yet counts; it's synced first)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan\": \"MONTHLY\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/checkout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "checkout"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"statusCode\": 409,\n  \"error\": \"CONFLICT\",\n  \"message\": [\n    \"You already have a subscription.\"\n  ],\n  \"path\": \"/subscriptions/checkout\",\n  \"timestamp\": \"2026-09-29T15:18:58.388Z\"\n}"
+            },
+            {
+              "name": "502 Bad Gateway — Stripe failed (details only in the server log)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan\": \"ANNUAL\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/checkout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "checkout"
+                  ]
+                }
+              },
+              "status": "Bad Gateway",
+              "code": 502,
+              "body": "{\n  \"statusCode\": 502,\n  \"error\": \"BAD_GATEWAY\",\n  \"message\": [\n    \"Payment provider error.\"\n  ],\n  \"path\": \"/subscriptions/checkout\",\n  \"timestamp\": \"2026-09-29T15:18:58.323Z\"\n}"
+            },
+            {
+              "name": "503 Service Unavailable — payments aren't configured (development)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan\": \"ANNUAL\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/checkout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "checkout"
+                  ]
+                }
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "body": "{\n  \"statusCode\": 503,\n  \"error\": \"SERVICE_UNAVAILABLE\",\n  \"message\": [\n    \"Payments aren't configured.\"\n  ],\n  \"path\": \"/subscriptions/checkout\",\n  \"timestamp\": \"2026-09-29T15:18:58.291Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "POST",
+            "description": "Schedules the cancellation for the end of the current period (never immediately); the user keeps the subscription until then and can reactivate it.",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "cancel"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — scheduled for the period end",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "cancel"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"plan\": \"ANNUAL\",\n  \"status\": \"TRIALING\",\n  \"currentPeriodEnd\": \"2026-10-06T15:18:58.000Z\",\n  \"trialEndsAt\": \"2026-10-06T15:18:58.000Z\",\n  \"cancelScheduled\": true,\n  \"updatedAt\": \"2026-09-29T15:18:58.417Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — no trialing, active or pending subscription",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "cancel"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"No active subscription.\"\n  ],\n  \"path\": \"/subscriptions/cancel\",\n  \"timestamp\": \"2026-09-29T15:18:58.249Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reactivate Subscription",
+          "request": {
+            "method": "POST",
+            "description": "Undoes a scheduled cancellation, whether it was set for the period end or for a date (Dashboard / Customer Portal).",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/reactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "reactivate"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — cancellation undone",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/reactivate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "reactivate"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"plan\": \"ANNUAL\",\n  \"status\": \"TRIALING\",\n  \"currentPeriodEnd\": \"2026-10-06T15:18:58.000Z\",\n  \"trialEndsAt\": \"2026-10-06T15:18:58.000Z\",\n  \"cancelScheduled\": false,\n  \"updatedAt\": \"2026-09-29T15:18:58.429Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — nothing scheduled to cancel",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/reactivate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "reactivate"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"No subscription scheduled to cancel.\"\n  ],\n  \"path\": \"/subscriptions/reactivate\",\n  \"timestamp\": \"2026-09-29T15:18:58.396Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Open Billing Portal",
+          "request": {
+            "method": "POST",
+            "description": "Returns a Stripe Customer Portal page (update the card, see invoices) to open in the in-app browser — the way out of PAST_DUE.",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/portal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "portal"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — open url in the in-app browser",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/portal",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "portal"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"url\": \"https://billing.stripe.com/p/session/test_6Jrwg5fDpOVWAI4lP18uHRezrOFll55210U2gmVAIk1DdhWFYtL0QOFJZd3rWYiQ\"\n}"
+            },
+            {
+              "name": "404 Not Found — no Stripe customer yet (never started a checkout)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/portal",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "portal"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"No billing account yet.\"\n  ],\n  \"path\": \"/subscriptions/portal\",\n  \"timestamp\": \"2026-09-29T15:18:58.236Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Stripe Return Redirect",
+          "request": {
+            "method": "GET",
+            "description": "Not called by the app directly: Stripe's success/cancel/portal return URLs point here (Stripe only redirects to http(s) URLs), and this answers 302 to the app's deep link, which closes the in-app browser. result is allowlisted; anything else becomes canceled. Carries no data.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/return?result=success",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "return"
+              ],
+              "query": [
+                {
+                  "key": "result",
+                  "value": "success"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "302 Found — back into the app",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/return?result=success",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "return"
+                  ],
+                  "query": [
+                    {
+                      "key": "result",
+                      "value": "success"
+                    }
+                  ]
+                }
+              },
+              "status": "Found",
+              "code": 302,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "mony://subscription?result=success"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain; charset=utf-8"
+                }
+              ],
+              "body": "Found. Redirecting to mony://subscription?result=success"
+            },
+            {
+              "name": "302 Found — missing or unknown result becomes canceled",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/subscriptions/return",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "subscriptions",
+                    "return"
+                  ]
+                }
+              },
+              "status": "Found",
+              "code": 302,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "mony://subscription?result=canceled"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain; charset=utf-8"
+                }
+              ],
+              "body": "Found. Redirecting to mony://subscription?result=canceled"
+            }
+          ]
+        },
+        {
+          "name": "Stripe Webhook",
+          "request": {
+            "method": "POST",
+            "description": "Called by Stripe, not by clients (hidden from Swagger). Reference example only: Stripe-Signature is an HMAC of the raw body with the endpoint's signing secret and a timestamp (5-minute tolerance), so this saved request can't be replayed as-is — it was signed with the test suite's fake secret. To exercise it locally: `stripe listen --forward-to {{baseUrl}}/webhooks/stripe` and `stripe trigger checkout.session.completed`. Handled: checkout.session.completed, customer.subscription.created/updated/deleted, invoice.paid, invoice.payment_failed — each re-reads the subscription from Stripe; others are acknowledged and ignored.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Stripe-Signature",
+                "value": "t=1790695138,v1=2981b606c000bf6cd0b436d152aaecb63a2b9409440411c465b0f321e74d18da"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"evt_1SM6RREon1gzjbBvcG6p7At2\",\n  \"object\": \"event\",\n  \"api_version\": \"2026-08-26.dahlia\",\n  \"created\": 1790695138,\n  \"livemode\": false,\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"cs_test_a1mxQEyadh2ZwDqBiUNyuH3zgWov2emSEUhOTkRFyAwnCQZJq7zjK6E0U9\",\n      \"object\": \"checkout.session\",\n      \"mode\": \"subscription\",\n      \"status\": \"complete\",\n      \"payment_status\": \"no_payment_required\",\n      \"customer\": \"cus_TcpDrpzd8DNk0d\",\n      \"subscription\": \"sub_1SdpAjHmxEcsbClv5SIMnNL5\",\n      \"client_reference_id\": \"22943343-698b-484f-8a4f-8284ee7f5e64\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/stripe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                "stripe"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — verified and synced",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Stripe-Signature",
+                    "value": "t=1790695138,v1=2981b606c000bf6cd0b436d152aaecb63a2b9409440411c465b0f321e74d18da"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": \"evt_1SM6RREon1gzjbBvcG6p7At2\",\n  \"object\": \"event\",\n  \"api_version\": \"2026-08-26.dahlia\",\n  \"created\": 1790695138,\n  \"livemode\": false,\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"cs_test_a1mxQEyadh2ZwDqBiUNyuH3zgWov2emSEUhOTkRFyAwnCQZJq7zjK6E0U9\",\n      \"object\": \"checkout.session\",\n      \"mode\": \"subscription\",\n      \"status\": \"complete\",\n      \"payment_status\": \"no_payment_required\",\n      \"customer\": \"cus_TcpDrpzd8DNk0d\",\n      \"subscription\": \"sub_1SdpAjHmxEcsbClv5SIMnNL5\",\n      \"client_reference_id\": \"22943343-698b-484f-8a4f-8284ee7f5e64\"\n    }\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/webhooks/stripe",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "webhooks",
+                    "stripe"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"received\": true\n}"
+            },
+            {
+              "name": "400 Bad Request — missing Stripe-Signature",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": \"evt_1SM6RREon1gzjbBvcG6p7At2\",\n  \"object\": \"event\",\n  \"api_version\": \"2026-08-26.dahlia\",\n  \"created\": 1790695138,\n  \"livemode\": false,\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"cs_test_a1mxQEyadh2ZwDqBiUNyuH3zgWov2emSEUhOTkRFyAwnCQZJq7zjK6E0U9\",\n      \"object\": \"checkout.session\",\n      \"mode\": \"subscription\",\n      \"status\": \"complete\",\n      \"payment_status\": \"no_payment_required\",\n      \"customer\": \"cus_TcpDrpzd8DNk0d\",\n      \"subscription\": \"sub_1SdpAjHmxEcsbClv5SIMnNL5\",\n      \"client_reference_id\": \"22943343-698b-484f-8a4f-8284ee7f5e64\"\n    }\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/webhooks/stripe",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "webhooks",
+                    "stripe"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"Missing Stripe signature or body.\"\n  ],\n  \"path\": \"/webhooks/stripe\",\n  \"timestamp\": \"2026-09-29T15:18:58.357Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — signature doesn't match the endpoint secret",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Stripe-Signature",
+                    "value": "t=1790695138,v1=f57b842d16e73d2219966efcddfecf9b60c5b7140f9c25c8b89e78b2ecdff9fe"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": \"evt_1SM6RREon1gzjbBvcG6p7At2\",\n  \"object\": \"event\",\n  \"api_version\": \"2026-08-26.dahlia\",\n  \"created\": 1790695138,\n  \"livemode\": false,\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"cs_test_a1mxQEyadh2ZwDqBiUNyuH3zgWov2emSEUhOTkRFyAwnCQZJq7zjK6E0U9\",\n      \"object\": \"checkout.session\",\n      \"mode\": \"subscription\",\n      \"status\": \"complete\",\n      \"payment_status\": \"no_payment_required\",\n      \"customer\": \"cus_TcpDrpzd8DNk0d\",\n      \"subscription\": \"sub_1SdpAjHmxEcsbClv5SIMnNL5\",\n      \"client_reference_id\": \"22943343-698b-484f-8a4f-8284ee7f5e64\"\n    }\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/webhooks/stripe",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "webhooks",
+                    "stripe"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"Invalid Stripe signature.\"\n  ],\n  \"path\": \"/webhooks/stripe\",\n  \"timestamp\": \"2026-09-29T15:18:58.365Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Dashboard",
       "item": [
         {

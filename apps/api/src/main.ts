@@ -8,7 +8,9 @@ import { requestLogger } from "./common/middleware/request-logger.middleware";
 import { PrismaService } from "./prisma/prisma.service";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // rawBody: the Stripe webhook verifies its signature over the exact bytes
+  // received (req.rawBody); every other route keeps the parsed JSON body.
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   app.use(requestLogger);
 

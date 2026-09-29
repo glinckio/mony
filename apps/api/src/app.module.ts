@@ -10,6 +10,7 @@ import { GoalsModule } from "./goals/goals.module";
 import { GroceryModule } from "./grocery/grocery.module";
 import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./prisma/prisma.module";
+import { SubscriptionsModule } from "./subscriptions/subscriptions.module";
 import { TransactionsModule } from "./transactions/transactions.module";
 import { UsersModule } from "./users/users.module";
 import { VehicleMaintenanceModule } from "./vehicle-maintenance/vehicle-maintenance.module";
@@ -35,6 +36,7 @@ import { VehiclesModule } from "./vehicles/vehicles.module";
     GroceryModule,
     VehiclesModule,
     VehicleMaintenanceModule,
+    SubscriptionsModule,
     DashboardModule,
   ],
   controllers: [HealthController],
