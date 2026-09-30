@@ -8,6 +8,7 @@ export * from "./debt";
 export * from "./goal";
 export * from "./grocery";
 export * from "./money";
+export * from "./report";
 export * from "./transaction";
 export * from "./subscription";
 export * from "./user";
