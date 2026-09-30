@@ -81,7 +81,11 @@ vehicle: pill, bar in the status tone, km/days left), `NotebookSwitch`
 (workspace), `Initials`, `SubscriptionHero` (Assinatura's gradient hero:
 glass status chip, plan/price or the trial offer, trial bar), `PlanCard`
 (a plan as a radio card), `TrialTimeline` (today · cancel by · first
-charge), `HeroDecoration` (the gradient heroes' glass light and rings).
+charge), `HeroDecoration` (the gradient heroes' glass light and rings),
+`ChartBar` (the rounded gradient bar every column chart grows),
+`ColumnChart` (selectable columns, one or two series), `TrendChart`
+(lines over months), `CategoryDonut` (categories as a donut + legend),
+`ReportHero` and `ReportMonthRow` (Relatórios).
 
 ## Rules of thumb
 

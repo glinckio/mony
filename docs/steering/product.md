@@ -39,7 +39,11 @@ personal data under Brazil's LGPD. Financial records
 (`Transaction`, `Debt`, `Goal`) are also personal data once linked to a
 `User`, and so are a `Vehicle`'s license plate and photo (the photo can
 show the plate, people, or places; stored in private object storage, see
-`docs/specs/vehicles/design.md`). See [`lgpd-security-reviewer`](../../.claude/agents/lgpd-security-reviewer.md)
+`docs/specs/vehicles/design.md`). `Category` names are personal data too:
+free text the user writes, which can reveal Art. 11 sensitive data (health
+— "Terapia", "Remédios" —, religion — "Dízimo" —, union membership).
+Reports are computed per request and never stored: no retention of their
+own beyond the underlying `Transaction`/`Category` rows. See [`lgpd-security-reviewer`](../../.claude/agents/lgpd-security-reviewer.md)
 — it must review any phase that touches these entities.
 
 Hard rule: never store raw card numbers. `Subscription` payment handling

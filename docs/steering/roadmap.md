@@ -22,7 +22,7 @@ building the whole API first and the whole app after.
 | 11 | `vehicles` | ✅ Done | Vehicle registry, mileage tracking | 2 |
 | 12 | `vehicle-maintenance` | ✅ Done | Maintenance types, history, km/date-based alerts | 11 |
 | 13 | `subscriptions` | ✅ Done | Plan display + Stripe checkout, status sync | 4 |
-| 14 | `reports` | ⬜ Not started | Charts/aggregations over a date range | 6 |
+| 14 | `reports` | ✅ Done | Charts/aggregations over a date range | 6 |
 | 15 | `changelog` | ⬜ Not started | In-app changelog banner + admin CRUD + read tracking | 4 |
 
 Phase 0 (monorepo scaffold) is done. Status detail per feature lives in
@@ -59,6 +59,12 @@ below.
   (`customers.update`, best-effort or via an outbox — LGPD art. 18 §6);
   configure which Customer Portal fields users can edit so the two sides
   don't diverge.
+- Production database: set the app role's `plan_cache_mode` to
+  `force_custom_plan` (`ALTER ROLE <app_role> SET …`). Prisma reuses
+  prepared statements, and after a few
+  current-month requests Postgres switches the reports' range queries to
+  a generic plan that measured ~6.6× slower on a heavy user's multi-year
+  range (performance audit of #14, 2026-09-30).
 - Production Stripe config: restricted live key (`rk_live_`: Customers,
   Checkout Sessions, Subscriptions, Billing Portal write; Prices read);
   webhook endpoint on API version `2026-08-26.dahlia` registered for the 6
@@ -74,6 +80,8 @@ below.
   encryption at rest on MinIO (SSE via KES/KMS, or disk encryption);
   bucket versioning off, or a noncurrent-version expiry so deletes really
   erase; documented backup retention for deleted objects.
+- Screen capture: consider `FLAG_SECURE` / `expo-screen-capture` so the
+  OS app-switcher snapshot doesn't show balances and reports.
 - On-device data: on logout and account deletion, clear the app's cache
   directory (picker/manipulator copies) and the image disk cache.
 - Privacy policy: cover maintenance receipts (may contain CPF, address,
