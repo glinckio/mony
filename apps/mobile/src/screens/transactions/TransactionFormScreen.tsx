@@ -103,6 +103,7 @@ export function TransactionFormScreen() {
         await apiFetch("/transactions", { method: "POST", body: JSON.stringify(data) });
       }
       await queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      void queryClient.invalidateQueries({ queryKey: ["reports"] });
       const category = categories?.find((item) => item.id === data.categoryId);
       haptic.success();
       useToastStore.getState().show(editing ? "Alterações salvas." : "Lançamento registrado.", {

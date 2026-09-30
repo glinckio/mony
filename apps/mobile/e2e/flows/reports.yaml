@@ -1,0 +1,139 @@
+appId: com.mony.app
+---
+# Registers a fresh account, creates an income and an expense (paid) for
+# today, then opens Mais → Relatórios against the real API: the current
+# month's summary hero, the sections legacy had (income × expenses per
+# month, the 12-month evolution, categories, weekday, monthly table) and,
+# after typing a range with nothing in it, the single empty state.
+- launchApp
+- evalScript: ${output.testEmail = 'maestro-reports-' + Date.now() + '@example.com'}
+- evalScript: ${output.today = (function (d) { return String(d.getDate()).padStart(2, '0') + String(d.getMonth() + 1).padStart(2, '0') + d.getFullYear(); })(new Date())}
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro Reports Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Maestro Reports Tester"
+
+# One expense and one income category.
+- tapOn:
+    id: "tab-more"
+- tapOn:
+    id: "more-categories"
+- tapOn:
+    id: "add-category-button"
+- tapOn:
+    id: "name-input"
+- inputText: "Contas"
+- tapOn:
+    id: "icon-picker-receipt-outline"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Contas"
+- tapOn:
+    id: "add-category-button"
+- tapOn:
+    id: "name-input"
+- inputText: "Salário"
+- tapOn:
+    id: "type-option-INCOME"
+- tapOn:
+    id: "icon-picker-cash-outline"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Salário"
+- tapOn:
+    id: "header-back"
+
+# Today: R$ 150,00 paid out, R$ 1.000,00 in.
+- tapOn:
+    id: "tab-transactions"
+- tapOn:
+    id: "add-transaction-button"
+- tapOn: "Contas"
+- tapOn:
+    id: "description-input"
+- inputText: "Conta de luz"
+- tapOn:
+    id: "amount-input"
+- inputText: "15000"
+- tapOn:
+    id: "date-input"
+- inputText: "${output.today}"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Conta de luz"
+- tapOn: "A pagar"
+- assertVisible: "Pago"
+- tapOn:
+    id: "add-transaction-button"
+- tapOn:
+    id: "type-option-INCOME"
+- tapOn: "Salário"
+- tapOn:
+    id: "description-input"
+- inputText: "Salário do mês"
+- tapOn:
+    id: "amount-input"
+- inputText: "100000"
+- tapOn:
+    id: "date-input"
+- inputText: "${output.today}"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Salário do mês"
+
+# Relatórios, the current month by default.
+- tapOn:
+    id: "tab-more"
+- tapOn:
+    id: "more-reports"
+- assertVisible: "Relatórios"
+# The hero is a single accessible element (iOS reads its texts as one
+# label), so it's asserted by id; its figures are covered by unit tests.
+- assertVisible:
+    id: "reports-summary"
+- assertVisible: "Receitas × despesas por mês"
+- scrollUntilVisible:
+    element:
+      text: "Despesas por categoria"
+# The donut's legend row is one accessible element ("Contas: 150 reais,
+# 100,0%" on iOS), so the category is matched as a regex, scrolled to.
+- scrollUntilVisible:
+    element:
+      text: "Contas.*"
+- scrollUntilVisible:
+    element:
+      text: "Despesas por dia da semana"
+- scrollUntilVisible:
+    element:
+      id: "reports-monthly"
+
+# A range with nothing in it: one empty state instead of the sections.
+- scrollUntilVisible:
+    element:
+      id: "reports-date-from"
+    direction: UP
+- tapOn:
+    id: "reports-date-from"
+- eraseText: 10
+- inputText: "01012020"
+- tapOn:
+    id: "reports-date-to"
+- eraseText: 10
+- inputText: "31012020"
+- assertVisible:
+    id: "reports-empty"
+- assertVisible: "Nada lançado nesse período"

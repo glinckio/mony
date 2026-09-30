@@ -100,3 +100,18 @@ Prints no emulador Android (Expo Go, dados Mock ligados só no emulador), em `de
 | 3         | nenhum alto ou médio                                                                                                                                                                                                                                                                                                               | —                                                                                                                                 |
 
 Situação: **Pronta**. Carregando/erro mantêm o último dado em cache por decisão (uma falha de polling não derruba a tela); o skeleton e o `ErrorState` são os componentes padrão.
+
+---
+
+## Tela 29 — Relatórios (nova, 2026-09-29)
+
+Prints no emulador Android (Expo Go, dados Mock ligados só no emulador), em `design/revisao/relatorios-*`.
+
+| Rodada | Problemas (severidade)                                                                                                                                                                                                                                                   | Correção                                                                                                                                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | com um mês só, a faixa de seleção do gráfico mensal cobria o cartão inteiro (média); "Caderno Pessoal" sob as datas repetia o chip do herói (média); tabela mensal com respiro dobrado no topo e no fim (baixa); valores pequenos viravam ora traço, ora bolinha (baixa) | colunas com largura máxima e centradas; legenda do caderno removida (fica no chip); linhas da tabela sem o padding das pontas; valor pequeno sempre como ponto |
+| 2      | nenhum alto ou médio (3 meses, dia da semana, tabela e estado vazio conferidos)                                                                                                                                                                                          | —                                                                                                                                                              |
+
+Situação: **Pronta**.
+
+Depois das revisões de código e desempenho (2026-09-30): o relatório fica na tela, esmaecido, enquanto uma data está incompleta ou o novo período carrega (antes sumia e remontava a cada tecla); o chip do herói usa as datas do relatório (com os dois anos quando diferem); o dia de maior gasto é reselecionado a cada período; o centro da rosca diz "Total" com menos de 5 categorias; os rótulos dos gráficos de colunas crescem com a fonte do sistema. Efeito no Início: a `ChartBar` compartilhada mostra valor pequeno como ponto (7 px, antes 4 px) — mudança deliberada da rodada 1.

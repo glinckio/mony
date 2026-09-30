@@ -69,6 +69,7 @@ Sem uso aparente: nada. (`Manutenções: Em breve` era um espaço reservado para
 | 26  | Tipos de manutenção               | nova       | Casa    | P3         | Em revisão |
 | 27  | Tipo de manutenção (form)         | nova       | Casa    | P3         | Em revisão |
 | 28  | Assinatura                        | nova       | Conta   | P3         | Pronta     |
+| 29  | Relatórios                        | nova       | Núcleo  | P2         | Pronta     |
 
 Status: Pendente → Em progresso → Em revisão → Pronta (só depois de ≥ 2 rodadas de revisão visual)
 
@@ -606,3 +607,13 @@ Caminho secundário: **Lançamentos** → **[toque]** no carimbo A PAGAR → bat
 - **Pagamento:** página do Stripe no navegador do app; ao voltar, "Confirmando seu pagamento…" enquanto o webhook não chega (até 20 s).
 - **Mensagens:** 409 → "Você já tem uma assinatura."; 503 → "Pagamentos indisponíveis no momento. Tente mais tarde."; outro → genérica.
 - **Estados:** carregando (skeleton) · erro (tentar de novo) · planos indisponíveis (aviso).
+
+## 29 — Relatórios
+
+- **Rota:** `Reports` (Mais → O dinheiro → "Relatórios") · **Origem:** `more/ReportsScreen.tsx` (nova, feature 14; legado `relatorios.php`) · P2
+- **Funcionalidades (legado, decisão 2026-09-29):** as 6 seções do legado para um período (padrão: o mês atual) do caderno ativo; despesas só as pagas (`product.md`); só as 5 maiores categorias; sem o saldo acumulado (código morto no legado).
+- **Composição:** cartão do período ("De" / "Até", DD/MM/AAAA, pré-preenchidos com o mês; recarrega sozinho quando as duas datas são válidas; data inválida ou invertida → erro no campo, sem consultar). Herói em gradiente (`ReportHero`): chip de vidro "01/07 – 30/09/2026 · Pessoal", "Saldo do período" em `display`, receitas e despesas pagas em ladrilhos de vidro e a barra "Despesas em relação às receitas" com as cores e frases do legado (70% / 90%). Depois, cada seção com título `title3` e um cartão: "Receitas × despesas por mês" (`ColumnChart`, os 3 últimos meses do período, barras pareadas como no Início, saldo sob cada mês, colunas centradas quando há poucas), "Evolução anual" (`TrendChart`, 12 meses até o atual, duas linhas e preenchimento suave sob as receitas), "Despesas por categoria" e "Receitas por categoria" (`CategoryDonut`: rosca nas cores das categorias, total das 5 no centro, legenda com valor e fatia), "Despesas por dia da semana" (`ColumnChart` de uma série, Dom … Sáb, o dia de maior gasto selecionado) e "Resumo mensal" (`ReportMonthRow`: mês, saldo, receitas e despesas, barra com as cores do legado 80% / 100%).
+- **Interação:** tocar numa coluna ou num mês da evolução seleciona e mostra os valores acima do gráfico (háptico de seleção); puxar para atualizar.
+- **Vida:** barras crescem da base (escalonadas; paradas em "reduzir movimento"), linhas da evolução entram com fade.
+- **Estados:** carregando (skeleton do herói e de um cartão) · erro (`ErrorState`) · período sem nada (um `EmptyState` só, "Nada lançado nesse período", mantendo a evolução anual se ela tiver dados) · seção vazia (frase no cartão).
+- **Acessibilidade:** cada coluna/mês é um botão com os valores falados (`spokenMoney`); a rosca fala o total; linhas da legenda e da tabela são lidas inteiras.

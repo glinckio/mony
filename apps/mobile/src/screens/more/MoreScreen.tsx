@@ -15,7 +15,7 @@ const [BLUE, , GREEN, , VIOLET, , , ORANGE] = CATEGORY_COLORS;
 
 // Mais (design/telas.md §8): the account card on top, then the app's other
 // sections grouped in white cards — the house, the money, the account.
-// Later features (Relatórios, Assinatura…) append a row here.
+// Each feature reached from Mais has its row in one of the groups below.
 export function MoreScreen() {
   const navigation = useNavigation<MainTabNavigation>();
   const { colors, elevation } = useTheme();
@@ -66,12 +66,21 @@ export function MoreScreen() {
 
       <Group title="O dinheiro">
         <MenuRow
+          testID="more-reports"
+          icon="stats-chart-outline"
+          color={BLUE}
+          label="Relatórios"
+          description="Resumo do período, categorias e evolução"
+          onPress={() => navigation.navigate("Reports")}
+        />
+        <MenuRow
           testID="more-debts"
           icon="card-outline"
           color={VIOLET}
           label="Dívidas"
           description="Parcelas, pagamentos e saldo devedor"
           onPress={() => navigation.navigate("Debts")}
+          divider
         />
         <MenuRow
           testID="more-categories"

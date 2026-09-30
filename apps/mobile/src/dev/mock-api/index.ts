@@ -2,6 +2,7 @@ import type {
   AuthTokens,
   Category,
   DashboardData,
+  Report,
   DebtInstallment,
   DebtWithInstallments,
   Goal,
@@ -17,6 +18,7 @@ import type {
   Vehicle,
   WorkspaceType,
 } from "@mony/shared-types";
+import { REPORT_TOP_CATEGORIES } from "@mony/shared-types";
 
 import { ApiError } from "../../lib/api-client";
 import { useDesignLab } from "../design-lab";
@@ -211,6 +213,114 @@ function emptyDashboard(): DashboardData {
   };
 }
 
+// ---------------------------------------------------------------- reports
+
+// Mirrors ReportsService (docs/specs/reports): the range's months, the top
+// 5 categories, the weekdays (paid expenses only) and the last 12 months.
+function report(query: URLSearchParams): Report {
+  const [defaultFrom, defaultTo] = periodRange("month", query);
+  const from = query.get("dateFrom") ?? defaultFrom;
+  const to = query.get("dateTo") ?? defaultTo;
+  const list = db.transactions.filter((tx) => tx.workspace === workspace());
+  const inRange = list.filter((tx) => tx.date >= from && tx.date <= to);
+  const counts = (tx: Transaction) => tx.type === "INCOME" || tx.status === "PAID";
+
+  const byMonth = new Map<string, { income: number; paid: number }>();
+  for (const tx of inRange.filter(counts)) {
+    const entry = byMonth.get(tx.date.slice(0, 7)) ?? { income: 0, paid: 0 };
+    if (tx.type === "INCOME") entry.income += toCents(tx.amount);
+    else if (tx.status === "PAID") entry.paid += toCents(tx.amount);
+    byMonth.set(tx.date.slice(0, 7), entry);
+  }
+  const monthly = [...byMonth.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, sums]) => ({
+      month,
+      income: fromCents(sums.income),
+      expensesPaid: fromCents(sums.paid),
+      balance: fromCents(sums.income - sums.paid),
+    }));
+  const income = [...byMonth.values()].reduce((sum, entry) => sum + entry.income, 0);
+  const paid = [...byMonth.values()].reduce((sum, entry) => sum + entry.paid, 0);
+
+  const top = (type: "INCOME" | "EXPENSE") => {
+    const totals = new Map<string, number>();
+    for (const tx of inRange) {
+      if (tx.type !== type || !counts(tx)) continue;
+      totals.set(tx.categoryId, (totals.get(tx.categoryId) ?? 0) + toCents(tx.amount));
+    }
+    return [...totals.entries()]
+      .sort(([idA, a], [idB, b]) => b - a || idA.localeCompare(idB))
+      .slice(0, REPORT_TOP_CATEGORIES)
+      .flatMap(([categoryId, cents]) => {
+        const category = db.categories.find((entry) => entry.id === categoryId);
+        return category
+          ? [
+              {
+                categoryId,
+                name: category.name,
+                color: category.color,
+                icon: category.icon,
+                total: fromCents(cents),
+              },
+            ]
+          : [];
+      });
+  };
+
+  const weekdays = Array.from({ length: 7 }, () => 0);
+  for (const tx of inRange) {
+    if (tx.type === "EXPENSE" && tx.status === "PAID") {
+      weekdays[new Date(`${tx.date}T00:00:00Z`).getUTCDay()]! += toCents(tx.amount);
+    }
+  }
+
+  const now = new Date();
+  const last12Months = Array.from({ length: 12 }, (_, index) => {
+    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11 + index, 1));
+    const month = isoDate(date).slice(0, 7);
+    const sums = sumIn(list, `${month}-01`, `${month}-31`);
+    return { month, income: fromCents(sums.income), expensesPaid: fromCents(sums.paid) };
+  });
+
+  return {
+    dateFrom: from,
+    dateTo: to,
+    summary: {
+      totalIncome: fromCents(income),
+      totalExpensesPaid: fromCents(paid),
+      balance: fromCents(income - paid),
+      expenseRatio: income > 0 ? paid / income : 0,
+    },
+    monthly,
+    topExpenseCategories: top("EXPENSE"),
+    topIncomeCategories: top("INCOME"),
+    expensesByWeekday: weekdays.map((cents, weekday) => ({ weekday, total: fromCents(cents) })),
+    last12Months,
+  };
+}
+
+function emptyReport(): Report {
+  const [from, to] = periodRange("month", new URLSearchParams());
+  const now = new Date();
+  return {
+    dateFrom: from,
+    dateTo: to,
+    summary: { totalIncome: "0.00", totalExpensesPaid: "0.00", balance: "0.00", expenseRatio: 0 },
+    monthly: [],
+    topExpenseCategories: [],
+    topIncomeCategories: [],
+    expensesByWeekday: Array.from({ length: 7 }, (_, weekday) => ({ weekday, total: "0.00" })),
+    last12Months: Array.from({ length: 12 }, (_, index) => ({
+      month: isoDate(
+        new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11 + index, 1)),
+      ).slice(0, 7),
+      income: "0.00",
+      expensesPaid: "0.00",
+    })),
+  };
+}
+
 // ---------------------------------------------------------------- helpers
 
 function findOr404<T extends { id: string }>(list: T[], id: string | undefined, path: string): T {
@@ -386,6 +496,12 @@ const routes: Route[] = [
     pattern: /^\/dashboard$/,
     handler: ({ query }) => dashboard(query),
     empty: emptyDashboard,
+  },
+  {
+    method: "GET",
+    pattern: /^\/reports$/,
+    handler: ({ query }) => report(query),
+    empty: emptyReport,
   },
 
   // Categories

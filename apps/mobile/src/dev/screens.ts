@@ -59,6 +59,7 @@ export const SCREENS: CatalogEntry[] = [
     params: { email: "marina.costa@example.com" },
     status: "Pronta",
   },
+  { id: "reports", name: "Relatórios", flow: "Núcleo", route: "Reports", status: "Pronta" },
   { id: "debts", name: "Dívidas", flow: "Casa", route: "Debts", status: "Pronta" },
   {
     id: "debt",

@@ -321,6 +321,15 @@ Código: domínio em `apps/mobile/src/components/domain/`, chrome e primitivas e
 - **`PlanCard`:** rádio com o ponto no gradiente da marca (entra com mola; parado em "reduzir movimento"), nome, pílula "Economize 45%", preço com "R$" e centavos menores e o intervalo; selecionado ganha borda índigo 2 e sombra maior. Lido como "Plano Anual, 65 reais e 34 centavos por ano. Melhor valor…".
 - **`TrialTimeline`:** trilho de pontos (hoje preenchido no gradiente, futuro em anel) — Hoje · Até dd/mm cancele e não paga nada · dd/mm cobrança do plano escolhido (muda ao trocar de plano). Texto do FAQ do legado.
 
+### Relatórios — `ReportHero`, `ColumnChart` + `ChartBar`, `TrendChart`, `CategoryDonut`, `ReportMonthRow` (2026-09-29)
+
+- **Conceito:** o relatório conversa com o Início: o resumo é o herói em gradiente (a mesma `HeroDecoration`) e os gráficos usam a mesma barra arredondada em gradiente, agora `ChartBar` (extraída do `YearChart`, que passa a usá-la). Descartados: gráficos de pizza/linha de biblioteca (não seguem o design; `tech.md`) e uma tabela no lugar do resumo (sem ponto focal).
+- **`ColumnChart`:** colunas selecionáveis com faixa lavanda, uma ou duas séries, legenda, legenda sob o rótulo (o saldo do mês) e a linha de valores acima; colunas com largura máxima, centradas quando são poucas.
+- **`TrendChart`:** SVG com uma linha por série, preenchimento suave sob a primeira, faixa-guia e pontos no mês tocado; rótulos de mês abaixo.
+- **`CategoryDonut`:** rosca SVG com as cores das categorias (espaço entre fatias), total no centro, legenda com valor e percentual da fatia (sobre as 5, como a pizza do legado).
+- **`ReportHero`:** chip de período, saldo em `display`, ladrilhos de vidro de receitas/despesas, barra da razão com as cores e mensagens do legado.
+- **`ReportMonthRow`:** linha da tabela mensal com a barra da razão (80% / 100%).
+
 ## Chrome
 
 | Superfície                               | Decisão                                                                                                                                                                                                                                                                                                                                                                                                                                            | Por quê                                                                                                      |

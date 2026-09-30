@@ -12,4 +12,10 @@ export function installmentProgressPercent(paid: number, total: number): number 
 
 // Every debt mutation can move totals elsewhere in the app (linked
 // transactions, dashboard sums) — one list so no screen forgets one.
-export const DEBT_RELATED_QUERY_KEYS = [["debts"], ["debt"], ["transactions"], ["dashboard"]];
+export const DEBT_RELATED_QUERY_KEYS = [
+  ["debts"],
+  ["debt"],
+  ["transactions"],
+  ["dashboard"],
+  ["reports"],
+];
