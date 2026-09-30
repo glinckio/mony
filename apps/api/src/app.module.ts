@@ -10,6 +10,7 @@ import { GoalsModule } from "./goals/goals.module";
 import { GroceryModule } from "./grocery/grocery.module";
 import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./prisma/prisma.module";
+import { ReportsModule } from "./reports/reports.module";
 import { SubscriptionsModule } from "./subscriptions/subscriptions.module";
 import { TransactionsModule } from "./transactions/transactions.module";
 import { UsersModule } from "./users/users.module";
@@ -38,6 +39,7 @@ import { VehiclesModule } from "./vehicles/vehicles.module";
     VehicleMaintenanceModule,
     SubscriptionsModule,
     DashboardModule,
+    ReportsModule,
   ],
   controllers: [HealthController],
 })

@@ -4682,6 +4682,186 @@
       ]
     },
     {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Get Report",
+          "request": {
+            "method": "GET",
+            "description": "Legacy's financial reports for the active workspace: the period summary, income and paid expenses per month, the top 5 expense and income categories and paid expenses by weekday (Sunday = 0) for the range, plus the last 12 months ending with the current one (independent of the range). Expenses count only when paid (a pending one is in this example's data and counts nowhere). Give both dates or neither (the current month).",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reports?dateFrom=2026-07-01&dateTo=2026-09-30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reports"
+              ],
+              "query": [
+                {
+                  "key": "dateFrom",
+                  "value": "2026-07-01"
+                },
+                {
+                  "key": "dateTo",
+                  "value": "2026-09-30"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — a quarter (July–September)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/reports?dateFrom=2026-07-01&dateTo=2026-09-30",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reports"
+                  ],
+                  "query": [
+                    {
+                      "key": "dateFrom",
+                      "value": "2026-07-01"
+                    },
+                    {
+                      "key": "dateTo",
+                      "value": "2026-09-30"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"dateFrom\": \"2026-07-01\",\n  \"dateTo\": \"2026-09-30\",\n  \"summary\": {\n    \"totalIncome\": \"17550.00\",\n    \"totalExpensesPaid\": \"9025.75\",\n    \"balance\": \"8524.25\",\n    \"expenseRatio\": 0.5142877492877493\n  },\n  \"monthly\": [\n    {\n      \"month\": \"2026-07\",\n      \"income\": \"5200.00\",\n      \"expensesPaid\": \"2977.80\",\n      \"balance\": \"2222.20\"\n    },\n    {\n      \"month\": \"2026-08\",\n      \"income\": \"5800.00\",\n      \"expensesPaid\": \"3070.15\",\n      \"balance\": \"2729.85\"\n    },\n    {\n      \"month\": \"2026-09\",\n      \"income\": \"6550.00\",\n      \"expensesPaid\": \"2977.80\",\n      \"balance\": \"3572.20\"\n    }\n  ],\n  \"topExpenseCategories\": [\n    {\n      \"categoryId\": \"f46bd376-8cdd-45c7-ae43-d69efcc7195a\",\n      \"name\": \"Moradia\",\n      \"color\": \"#5550F0\",\n      \"icon\": \"home-outline\",\n      \"total\": \"5400.00\"\n    },\n    {\n      \"categoryId\": \"635d2ab1-d737-4e33-9887-64f372cede74\",\n      \"name\": \"Mercado\",\n      \"color\": \"#F59E0B\",\n      \"icon\": \"storefront-outline\",\n      \"total\": \"2137.20\"\n    },\n    {\n      \"categoryId\": \"a5735e48-d9bc-4741-be2e-bb184a953967\",\n      \"name\": \"Transporte\",\n      \"color\": \"#22B8C4\",\n      \"icon\": \"bus-outline\",\n      \"total\": \"840.00\"\n    },\n    {\n      \"categoryId\": \"267d5e30-058d-4c5f-953e-ce80ae1e0bd3\",\n      \"name\": \"Lazer\",\n      \"color\": \"#8B5CF6\",\n      \"icon\": \"game-controller-outline\",\n      \"total\": \"440.70\"\n    },\n    {\n      \"categoryId\": \"e03a251c-8565-4ef7-8411-e099b4e159d6\",\n      \"name\": \"Café\",\n      \"color\": \"#B45309\",\n      \"icon\": \"cafe-outline\",\n      \"total\": \"115.50\"\n    }\n  ],\n  \"topIncomeCategories\": [\n    {\n      \"categoryId\": \"0cf997c9-bbe3-4a31-8e57-9d666b9f2595\",\n      \"name\": \"Salário\",\n      \"color\": \"#0C7F3F\",\n      \"icon\": \"cash-outline\",\n      \"total\": \"15600.00\"\n    },\n    {\n      \"categoryId\": \"b8dc1b01-2630-4505-9d35-8343a3404428\",\n      \"name\": \"Freelas\",\n      \"color\": \"#3B82F6\",\n      \"icon\": \"laptop-outline\",\n      \"total\": \"1950.00\"\n    }\n  ],\n  \"expensesByWeekday\": [\n    {\n      \"weekday\": 0,\n      \"total\": \"1139.30\"\n    },\n    {\n      \"weekday\": 1,\n      \"total\": \"1838.50\"\n    },\n    {\n      \"weekday\": 2,\n      \"total\": \"0.00\"\n    },\n    {\n      \"weekday\": 3,\n      \"total\": \"1139.30\"\n    },\n    {\n      \"weekday\": 4,\n      \"total\": \"1838.50\"\n    },\n    {\n      \"weekday\": 5,\n      \"total\": \"1838.50\"\n    },\n    {\n      \"weekday\": 6,\n      \"total\": \"1231.65\"\n    }\n  ],\n  \"last12Months\": [\n    {\n      \"month\": \"2025-10\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2025-11\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2025-12\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-01\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-02\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-03\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-04\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-05\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-06\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-07\",\n      \"income\": \"5200.00\",\n      \"expensesPaid\": \"2977.80\"\n    },\n    {\n      \"month\": \"2026-08\",\n      \"income\": \"5800.00\",\n      \"expensesPaid\": \"3070.15\"\n    },\n    {\n      \"month\": \"2026-09\",\n      \"income\": \"6550.00\",\n      \"expensesPaid\": \"2977.80\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "200 OK — no dates: the current month",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/reports",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reports"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"dateFrom\": \"2026-09-01\",\n  \"dateTo\": \"2026-09-30\",\n  \"summary\": {\n    \"totalIncome\": \"6550.00\",\n    \"totalExpensesPaid\": \"2977.80\",\n    \"balance\": \"3572.20\",\n    \"expenseRatio\": 0.4546259541984733\n  },\n  \"monthly\": [\n    {\n      \"month\": \"2026-09\",\n      \"income\": \"6550.00\",\n      \"expensesPaid\": \"2977.80\",\n      \"balance\": \"3572.20\"\n    }\n  ],\n  \"topExpenseCategories\": [\n    {\n      \"categoryId\": \"f46bd376-8cdd-45c7-ae43-d69efcc7195a\",\n      \"name\": \"Moradia\",\n      \"color\": \"#5550F0\",\n      \"icon\": \"home-outline\",\n      \"total\": \"1800.00\"\n    },\n    {\n      \"categoryId\": \"635d2ab1-d737-4e33-9887-64f372cede74\",\n      \"name\": \"Mercado\",\n      \"color\": \"#F59E0B\",\n      \"icon\": \"storefront-outline\",\n      \"total\": \"712.40\"\n    },\n    {\n      \"categoryId\": \"a5735e48-d9bc-4741-be2e-bb184a953967\",\n      \"name\": \"Transporte\",\n      \"color\": \"#22B8C4\",\n      \"icon\": \"bus-outline\",\n      \"total\": \"280.00\"\n    },\n    {\n      \"categoryId\": \"267d5e30-058d-4c5f-953e-ce80ae1e0bd3\",\n      \"name\": \"Lazer\",\n      \"color\": \"#8B5CF6\",\n      \"icon\": \"game-controller-outline\",\n      \"total\": \"146.90\"\n    },\n    {\n      \"categoryId\": \"e03a251c-8565-4ef7-8411-e099b4e159d6\",\n      \"name\": \"Café\",\n      \"color\": \"#B45309\",\n      \"icon\": \"cafe-outline\",\n      \"total\": \"38.50\"\n    }\n  ],\n  \"topIncomeCategories\": [\n    {\n      \"categoryId\": \"0cf997c9-bbe3-4a31-8e57-9d666b9f2595\",\n      \"name\": \"Salário\",\n      \"color\": \"#0C7F3F\",\n      \"icon\": \"cash-outline\",\n      \"total\": \"5200.00\"\n    },\n    {\n      \"categoryId\": \"b8dc1b01-2630-4505-9d35-8343a3404428\",\n      \"name\": \"Freelas\",\n      \"color\": \"#3B82F6\",\n      \"icon\": \"laptop-outline\",\n      \"total\": \"1350.00\"\n    }\n  ],\n  \"expensesByWeekday\": [\n    {\n      \"weekday\": 0,\n      \"total\": \"0.00\"\n    },\n    {\n      \"weekday\": 1,\n      \"total\": \"0.00\"\n    },\n    {\n      \"weekday\": 2,\n      \"total\": \"0.00\"\n    },\n    {\n      \"weekday\": 3,\n      \"total\": \"0.00\"\n    },\n    {\n      \"weekday\": 4,\n      \"total\": \"1838.50\"\n    },\n    {\n      \"weekday\": 5,\n      \"total\": \"0.00\"\n    },\n    {\n      \"weekday\": 6,\n      \"total\": \"1139.30\"\n    }\n  ],\n  \"last12Months\": [\n    {\n      \"month\": \"2025-10\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2025-11\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2025-12\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-01\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-02\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-03\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-04\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-05\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-06\",\n      \"income\": \"0.00\",\n      \"expensesPaid\": \"0.00\"\n    },\n    {\n      \"month\": \"2026-07\",\n      \"income\": \"5200.00\",\n      \"expensesPaid\": \"2977.80\"\n    },\n    {\n      \"month\": \"2026-08\",\n      \"income\": \"5800.00\",\n      \"expensesPaid\": \"3070.15\"\n    },\n    {\n      \"month\": \"2026-09\",\n      \"income\": \"6550.00\",\n      \"expensesPaid\": \"2977.80\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — only one of the dates",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/reports?dateFrom=2026-07-01",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reports"
+                  ],
+                  "query": [
+                    {
+                      "key": "dateFrom",
+                      "value": "2026-07-01"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"dateFrom and dateTo must be given together.\"\n  ],\n  \"path\": \"/reports?dateFrom=2026-07-01\",\n  \"timestamp\": \"2026-09-29T22:20:20.120Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request — dateFrom after dateTo",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/reports?dateFrom=2026-09-30&dateTo=2026-07-01",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reports"
+                  ],
+                  "query": [
+                    {
+                      "key": "dateFrom",
+                      "value": "2026-09-30"
+                    },
+                    {
+                      "key": "dateTo",
+                      "value": "2026-07-01"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"dateFrom must not be after dateTo.\"\n  ],\n  \"path\": \"/reports?dateFrom=2026-09-30&dateTo=2026-07-01\",\n  \"timestamp\": \"2026-09-29T22:20:20.123Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/reports",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reports"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\n    \"Unauthorized\"\n  ],\n  \"path\": \"/reports\",\n  \"timestamp\": \"2026-09-29T22:20:20.125Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Health",
       "item": [
         {
