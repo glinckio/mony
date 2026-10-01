@@ -1,45 +1,61 @@
-# Tasks — Changelog
-
-## API
-
-- [ ] Install `@nestjs/schedule`
-- [ ] Prisma: `ChangelogEntry`, `ChangelogRead` models, `ChangelogStatus` enum, migration
-- [ ] `RolesGuard` (new, reusable for future admin endpoints)
-- [ ] `ChangelogModule`, `ChangelogController`, `ChangelogService`
-- [ ] `normalizeYoutubeUrl()` pure function
-- [ ] Unread query: `publishedAt > user.createdAt AND status=ACTIVE AND
-      expiresAt IS NULL OR expiresAt > now() AND NOT EXISTS(ChangelogRead)`
-- [ ] Mark-read: idempotent insert
-- [ ] `@Cron` job for daily expiry sweep
-- [ ] DTOs with validation + `@ApiProperty` examples (description
-      sanitized/escaped on render, not trusted as raw HTML — deviation
-      from legacy noted in requirements.md)
-- [ ] Swagger decorators on all six endpoints
-- [ ] Update `docs/postman/collection.json` with examples
-- [ ] Unit tests: unread-query correctness (signup-date filter,
-      already-read exclusion), idempotent mark-read, YouTube URL
-      normalization (both link forms), non-admin 403, cron job flips
-      expired entries
-- [ ] E2E test: admin creates an entry → new user sees it unread → marks
-      read → no longer appears
+# Tasks — Changelog ("Novidades")
 
 ## Shared types
 
-- [ ] `packages/shared-types/src/changelog.ts`
+- [x] `packages/shared-types/src/changelog.ts` (+ tests: YouTube id
+      extraction, form rules)
+- [x] `AuthTokens.user.role`
+
+## API
+
+- [x] `@nestjs/schedule` (^6, Nest 10)
+- [x] Prisma: `ChangelogEntry`, `ChangelogRead`, `ChangelogStatus`;
+      migration
+- [x] `AuthTokensDto.user.role` (+ issueTokens)
+- [x] `AdminGuard` (role read from the DB)
+- [x] `ChangelogModule`: user controller (unread, history, mark-read),
+      admin controller (list, create, update, delete), service
+- [x] Visibility builder (active, not expired, published ≥ signup)
+- [x] Daily expiry job (`@Cron`, off in tests)
+- [x] Swagger on every endpoint; Postman "Changelog" folder with real
+      examples
+- [x] Unit tests: `youtubeVideoId`, visibility, expiry job, AdminGuard
+- [x] E2E: admin publishes → a new user sees it unread → marks read
+      (twice) → gone from unread, "Lida" in history; published before
+      signup / expired / inactive hidden; non-admin 403 (also with a
+      stale ADMIN token after demotion); update/delete; 400s
 
 ## Mobile
 
-- [ ] Changelog banner/modal on `DashboardScreen`
-- [ ] `AdminChangelogScreen` (role-gated)
-- [ ] Unit tests: banner shows only when unread entries exist, admin
-      screen hidden for non-admins
-- [ ] Maestro flow: `e2e/flows/changelog.yaml` — as admin, publish an
-      entry; as a regular user, see and dismiss the banner
+- [x] Design pass (app-design): `NewsSheet`, cards, admin rows, form;
+      `design/telas.md` §30–32, `design/componentes.md`
+- [x] `NewsSheet` on Início (session-only "Fechar")
+- [x] `NewsScreen` (Mais → "Novidades")
+- [x] `AdminNewsScreen` + `NewsFormScreen` (Mais → "Gerenciar
+      novidades", admins only)
+- [x] Mock API routes + catalog entries
+- [x] Unit tests: sheet shows only with unread, "Fechar" vs "Marcar como
+      lida", history badges, admin row hidden for users, form validation
+- [x] Maestro flow `e2e/flows/changelog.yaml` (the publish → read loop
+      needs `MAESTRO_ADMIN_EMAIL`/`MAESTRO_ADMIN_PASSWORD`; not run yet:
+      no Maestro CLI on this machine)
+- [x] Visual review (≥ 2 rounds)
 
 ## Review gates
 
-- [ ] `lgpd-security-reviewer` — sanitization of admin-authored content rendered to other users
-- [ ] `code-reviewer`
-- [ ] `api-contract-guardian`
-- [ ] Lint + typecheck clean, all tests green
-- [ ] `workflow-guardian` — commit message(s) drafted
+- [x] `code-reviewer` (startup sheet only on Início and checked once per
+      session; mark-read failures shown inside the sheet; `null` on
+      required PATCH fields → 400; cron pinned to UTC with its own handler;
+      admin "Vencida" on the UTC date)
+- [x] `api-contract-guardian` (401 examples, `readCount` as integer)
+- [x] `lgpd-security-reviewer` (author name; read tracking) — AdminGuard
+      also requires an ACTIVE account; YouTube wording and read retention
+      in `product.md`; reads in the export list (`roadmap.md`); the app
+      only builds a YouTube link from a valid id
+- [x] `performance-auditor` — unread is `{ entry, total }` (not the whole
+      list) on every app open; mark-read is optimistic in Novidades and a
+      single `INSERT … ON CONFLICT DO NOTHING`
+- [x] `qa-engineer` — service spec, guard, 21 e2e cases, admin screen and
+      form error tests; Maestro env vars guarded
+- [x] Lint + typecheck clean, all tests green
+- [x] `workflow-guardian` — commit message(s) drafted

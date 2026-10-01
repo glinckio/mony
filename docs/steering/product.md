@@ -43,7 +43,12 @@ show the plate, people, or places; stored in private object storage, see
 free text the user writes, which can reveal Art. 11 sensitive data (health
 — "Terapia", "Remédios" —, religion — "Dízimo" —, union membership).
 Reports are computed per request and never stored: no retention of their
-own beyond the underlying `Transaction`/`Category` rows. See [`lgpd-security-reviewer`](../../.claude/agents/lgpd-security-reviewer.md)
+own beyond the underlying `Transaction`/`Category` rows. A `ChangelogRead`
+(which "Novidades" a user read, and when) is personal data too; it is
+deleted with the user or the entry (cascade), and kept only while the
+entry exists: it feeds the user's "Lida em" and the entry's read count
+(admins see the count, never who read it). An entry's author name is
+shown to admins only. See [`lgpd-security-reviewer`](../../.claude/agents/lgpd-security-reviewer.md)
 — it must review any phase that touches these entities.
 
 Hard rule: never store raw card numbers. `Subscription` payment handling
@@ -65,6 +70,13 @@ goes through Stripe (tokenizing gateway, confirmed — see `tech.md`).
   - Retention: until the account is deleted (then the Stripe customer is
     deleted — see `roadmap.md` → Release hardening); Stripe keeps invoices
     for its own legal obligations.
+- **YouTube** — Mony sends nothing. A "Novidade" stores only the video
+  id; the app opens `youtube.com/watch?v=<id>` in the in-app browser only
+  when the user taps "Assistir" (no embedded player, so YouTube loads
+  nothing before that). From then on it's the user's own browser talking
+  to YouTube (IP, device; on Android, Chrome Custom Tabs share Chrome's
+  Google sign-in), with no Mony identifier in the URL — to be covered in
+  the privacy policy.
 - **Brevo** — receives the user's email address (plus name, once used in
   templates) to deliver transactional email: currently the
   `auth-password-reset` 6-digit code. See `tech.md` and `roadmap.md` for

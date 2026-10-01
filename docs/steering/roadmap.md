@@ -23,7 +23,7 @@ building the whole API first and the whole app after.
 | 12 | `vehicle-maintenance` | ✅ Done | Maintenance types, history, km/date-based alerts | 11 |
 | 13 | `subscriptions` | ✅ Done | Plan display + Stripe checkout, status sync | 4 |
 | 14 | `reports` | ✅ Done | Charts/aggregations over a date range | 6 |
-| 15 | `changelog` | ⬜ Not started | In-app changelog banner + admin CRUD + read tracking | 4 |
+| 15 | `changelog` | ✅ Done | In-app changelog banner + admin CRUD + read tracking | 4 |
 
 Phase 0 (monorepo scaffold) is done. Status detail per feature lives in
 that feature's `docs/specs/<feature>/tasks.md` (checkboxes) — this table
@@ -43,8 +43,9 @@ below.
   (`…/{vehicleId}/maintenance/{recordId}/`) — plus a scheduled orphan
   reconciliation, since sweep failures are only logged. The export must
   include vehicles, maintenance types (with descriptions), maintenance
-  records (date, mileage, cost, place, notes, type) and the stored files
-  (photos and receipts: JPEG as stored, PDF as uploaded).
+  records (date, mileage, cost, place, notes, type), the stored files
+  (photos and receipts: JPEG as stored, PDF as uploaded) and the
+  "Novidades" read (title + readAt).
 - Account deletion, Stripe side (subscriptions): before the DB delete,
   `customers.del(stripeCustomerId)` (cancels live subscriptions at once and
   removes saved payment methods), plus any orphan customer found with
