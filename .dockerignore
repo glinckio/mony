@@ -1,0 +1,28 @@
+# Build context for apps/api/Dockerfile (built from the repo root).
+
+# Installed and built inside the image.
+**/node_modules
+**/dist
+**/.turbo
+**/*.tsbuildinfo
+
+# Secrets never go into the image; production values come from the host.
+**/.env
+**/.env.*
+!**/.env.example
+
+.git
+.github
+.husky
+.vscode
+.claude
+legacy_php_reference
+design
+docs
+
+# The mobile app and its tokens aren't built here, but pnpm still reads
+# every workspace manifest against the lockfile.
+apps/mobile/*
+!apps/mobile/package.json
+packages/ui-tokens/*
+!packages/ui-tokens/package.json
