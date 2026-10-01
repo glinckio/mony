@@ -57,7 +57,7 @@
               },
               "status": "Created",
               "code": 201,
-              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4YjcwNjNmMi01YzFjLTQ3MDktYWY3Ni05NWNmMGE4OTk3ZWYiLCJpYXQiOjE3ODk5NDE1MzYsImV4cCI6MTc4OTk0MjQzNn0.uZcwpmTSemVnB0PZZAHEuQhkoNa6FNe73gGNlCb-n2A\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4YjcwNjNmMi01YzFjLTQ3MDktYWY3Ni05NWNmMGE4OTk3ZWYiLCJpYXQiOjE3ODk5NDE1MzYsImV4cCI6MTc5MjUzMzUzNn0.F1q2D7uz-8siXkhUcMvmCJTTrM1QAtQymkCVGFlSoL0\",\n  \"user\": {\n    \"id\": \"8b7063f2-5c1c-4709-af76-95cf0a8997ef\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"activeWorkspace\": \"PERSONAL\"\n  }\n}"
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4YjcwNjNmMi01YzFjLTQ3MDktYWY3Ni05NWNmMGE4OTk3ZWYiLCJpYXQiOjE3ODk5NDE1MzYsImV4cCI6MTc4OTk0MjQzNn0.uZcwpmTSemVnB0PZZAHEuQhkoNa6FNe73gGNlCb-n2A\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4YjcwNjNmMi01YzFjLTQ3MDktYWY3Ni05NWNmMGE4OTk3ZWYiLCJpYXQiOjE3ODk5NDE1MzYsImV4cCI6MTc5MjUzMzUzNn0.F1q2D7uz-8siXkhUcMvmCJTTrM1QAtQymkCVGFlSoL0\",\n  \"user\": {\n    \"id\": \"8b7063f2-5c1c-4709-af76-95cf0a8997ef\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"role\": \"USER\",\n    \"activeWorkspace\": \"PERSONAL\"\n  }\n}"
             },
             {
               "name": "409 Conflict — email already registered",
@@ -132,7 +132,7 @@
               },
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiIxMDdkZmMyNy0wZDFjLTQ2NmQtYWZmNy03MmY2OTgyZTgwZjAiLCJpYXQiOjE3ODk5NTI0OTMsImV4cCI6MTc4OTk1MzM5M30.Qs3r-4JI77U_kV8YA9x7rdBw94Oq8BpydBECC_QkY7Q\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJhMTgyNmM3Ni04YmJlLTRkYmUtYTE3ZC1kNDU4ZGYzNWMzMjMiLCJpYXQiOjE3ODk5NTI0OTMsImV4cCI6MTc5MjU0NDQ5M30.K6SimvIOtdQJcBK6Y8uUayhJOdAX1udRnx2Tk_KnnYE\",\n  \"user\": {\n    \"id\": \"f64e385f-3094-4f9d-a67c-e84e5512b8a1\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"activeWorkspace\": \"PERSONAL\"\n  }\n}"
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiIxMDdkZmMyNy0wZDFjLTQ2NmQtYWZmNy03MmY2OTgyZTgwZjAiLCJpYXQiOjE3ODk5NTI0OTMsImV4cCI6MTc4OTk1MzM5M30.Qs3r-4JI77U_kV8YA9x7rdBw94Oq8BpydBECC_QkY7Q\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJhMTgyNmM3Ni04YmJlLTRkYmUtYTE3ZC1kNDU4ZGYzNWMzMjMiLCJpYXQiOjE3ODk5NTI0OTMsImV4cCI6MTc5MjU0NDQ5M30.K6SimvIOtdQJcBK6Y8uUayhJOdAX1udRnx2Tk_KnnYE\",\n  \"user\": {\n    \"id\": \"f64e385f-3094-4f9d-a67c-e84e5512b8a1\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"role\": \"USER\",\n    \"activeWorkspace\": \"PERSONAL\"\n  }\n}"
             },
             {
               "name": "401 Unauthorized — incorrect email or password",
@@ -226,7 +226,7 @@
               },
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJuZXctYWNjZXNzLWp0aSIsImlhdCI6MTc4OTk1MjU5MywiZXhwIjoxNzg5OTUzNDkzfQ.newAccessTokenSignature\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJuZXctcmVmcmVzaC1qdGkiLCJpYXQiOjE3ODk5NTI1OTMsImV4cCI6MTc5MjU0NDU5M30.newRefreshTokenSignature\",\n  \"user\": {\n    \"id\": \"f64e385f-3094-4f9d-a67c-e84e5512b8a1\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"activeWorkspace\": \"PERSONAL\"\n  }\n}"
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJuZXctYWNjZXNzLWp0aSIsImlhdCI6MTc4OTk1MjU5MywiZXhwIjoxNzg5OTUzNDkzfQ.newAccessTokenSignature\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjRlMzg1Zi0zMDk0LTRmOWQtYTY3Yy1lODRlNTUxMmI4YTEiLCJlbWFpbCI6ImFkYUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiYWN0aXZlV29ya3NwYWNlIjoiUEVSU09OQUwiLCJqdGkiOiJuZXctcmVmcmVzaC1qdGkiLCJpYXQiOjE3ODk5NTI1OTMsImV4cCI6MTc5MjU0NDU5M30.newRefreshTokenSignature\",\n  \"user\": {\n    \"id\": \"f64e385f-3094-4f9d-a67c-e84e5512b8a1\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"role\": \"USER\",\n    \"activeWorkspace\": \"PERSONAL\"\n  }\n}"
             },
             {
               "name": "401 Unauthorized — invalid or expired refresh token",
@@ -4856,6 +4856,637 @@
               "status": "Unauthorized",
               "code": 401,
               "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\n    \"Unauthorized\"\n  ],\n  \"path\": \"/reports\",\n  \"timestamp\": \"2026-09-29T22:20:20.125Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Changelog",
+      "item": [
+        {
+          "name": "Get Unread News",
+          "request": {
+            "method": "GET",
+            "description": "The newest \"Novidade\" the user hasn't read yet and how many are waiting (total includes it). The app opens it on Início by itself once per session (legacy's dashboard popup) and says how many more are waiting; the others come one at a time on later visits. Visible to a user: ACTIVE, not past its last day (expiresAt, inclusive, a date in the server's day) and published after the user signed up — legacy's rule. videoId is a YouTube video id: the app opens https://www.youtube.com/watch?v=<id> only when the user taps it.",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/changelog/unread",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "changelog",
+                "unread"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — two waiting, the newest has a video",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/changelog/unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "changelog",
+                    "unread"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"entry\": {\n    \"id\": \"44d0aa4c-4509-4b48-9db9-88c1b4fa7cc2\",\n    \"title\": \"Relatórios chegaram\",\n    \"description\": \"Veja receitas, despesas pagas e o saldo de qualquer período em Mais → Relatórios.\\n\\nTem também as 5 categorias em que você mais gasta e o dia da semana em que o dinheiro mais sai.\",\n    \"videoId\": \"dQw4w9WgXcQ\",\n    \"publishedAt\": \"2026-10-01T12:44:12.215Z\",\n    \"expiresAt\": \"2026-10-31\",\n    \"readAt\": null\n  },\n  \"total\": 2\n}"
+            },
+            {
+              "name": "200 OK — nothing waiting",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/changelog/unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "changelog",
+                    "unread"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"entry\": null,\n  \"total\": 0\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/changelog/unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "changelog",
+                    "unread"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\n    \"Unauthorized\"\n  ],\n  \"path\": \"/changelog/unread\",\n  \"timestamp\": \"2026-10-01T12:34:49.134Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List News",
+          "request": {
+            "method": "GET",
+            "description": "Every entry visible to the user, newest first, with readAt (null while unread) — legacy's history page. Visible to a user: ACTIVE, not past its last day (expiresAt, inclusive, a date in the server's day) and published after the user signed up — legacy's rule.",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/changelog",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "changelog"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — one read, one not",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/changelog",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "changelog"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"entries\": [\n    {\n      \"id\": \"b94724fb-a707-40f5-8817-4934e168bb85\",\n      \"title\": \"Relatórios chegaram\",\n      \"description\": \"Veja receitas, despesas pagas e o saldo de qualquer período em Mais → Relatórios.\\n\\nTem também as 5 categorias em que você mais gasta e o dia da semana em que o dinheiro mais sai.\",\n      \"videoId\": \"dQw4w9WgXcQ\",\n      \"publishedAt\": \"2026-10-01T12:21:03.842Z\",\n      \"expiresAt\": \"2026-10-31\",\n      \"readAt\": null\n    },\n    {\n      \"id\": \"0a44fc21-6c5c-4c2a-99a5-febb9ee0277f\",\n      \"title\": \"Metas com prazo\",\n      \"description\": \"Agora cada meta pode ter uma data limite.\\nO Mony mostra quanto falta guardar por mês para chegar lá.\",\n      \"videoId\": null,\n      \"publishedAt\": \"2026-10-01T12:21:03.811Z\",\n      \"expiresAt\": null,\n      \"readAt\": \"2026-10-01T12:21:03.872Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark News Read",
+          "request": {
+            "method": "POST",
+            "description": "Records that the user read the entry. Idempotent: reading it again keeps the first readAt and still returns 204. 404 when the entry doesn't exist or isn't visible to this user.",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/changelog/0a44fc21-6c5c-4c2a-99a5-febb9ee0277f/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "changelog",
+                "0a44fc21-6c5c-4c2a-99a5-febb9ee0277f",
+                "read"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content — marked (or already was)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/changelog/0a44fc21-6c5c-4c2a-99a5-febb9ee0277f/read",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "changelog",
+                    "0a44fc21-6c5c-4c2a-99a5-febb9ee0277f",
+                    "read"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "400 Bad Request — not a UUID",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/changelog/not-a-uuid/read",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "changelog",
+                    "not-a-uuid",
+                    "read"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"Validation failed (uuid is expected)\"\n  ],\n  \"path\": \"/changelog/not-a-uuid/read\",\n  \"timestamp\": \"2026-10-01T12:21:03.882Z\"\n}"
+            },
+            {
+              "name": "404 Not Found — no such entry visible to this user",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/changelog/00000000-0000-4000-8000-000000000000/read",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "changelog",
+                    "00000000-0000-4000-8000-000000000000",
+                    "read"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Changelog entry not found.\"\n  ],\n  \"path\": \"/changelog/00000000-0000-4000-8000-000000000000/read\",\n  \"timestamp\": \"2026-10-01T12:21:03.879Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Changelog",
+      "item": [
+        {
+          "name": "List News Entries",
+          "request": {
+            "method": "GET",
+            "description": "Every entry, newest first, in any status, with how many users read it and the author's name (null once the author's account is deleted). Admins only (the role is read from the database on every call, so a demoted admin is refused at once).",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/changelog",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "changelog"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — all entries",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/changelog",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "changelog"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "[\n  {\n    \"id\": \"b94724fb-a707-40f5-8817-4934e168bb85\",\n    \"title\": \"Relatórios chegaram\",\n    \"description\": \"Veja receitas, despesas pagas e o saldo de qualquer período em Mais → Relatórios.\\n\\nTem também as 5 categorias em que você mais gasta e o dia da semana em que o dinheiro mais sai.\",\n    \"videoId\": \"dQw4w9WgXcQ\",\n    \"publishedAt\": \"2026-10-01T12:21:03.842Z\",\n    \"expiresAt\": \"2026-10-31\",\n    \"status\": \"ACTIVE\",\n    \"readCount\": 0,\n    \"authorName\": \"Revisão Design\"\n  },\n  {\n    \"id\": \"0a44fc21-6c5c-4c2a-99a5-febb9ee0277f\",\n    \"title\": \"Metas com prazo\",\n    \"description\": \"Agora cada meta pode ter uma data limite.\\nO Mony mostra quanto falta guardar por mês para chegar lá.\",\n    \"videoId\": null,\n    \"publishedAt\": \"2026-10-01T12:21:03.811Z\",\n    \"expiresAt\": null,\n    \"status\": \"ACTIVE\",\n    \"readCount\": 1,\n    \"authorName\": \"Revisão Design\"\n  }\n]"
+            },
+            {
+              "name": "403 Forbidden — the caller isn't an admin",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/changelog",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "changelog"
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"statusCode\": 403,\n  \"error\": \"FORBIDDEN\",\n  \"message\": [\n    \"Admins only.\"\n  ],\n  \"path\": \"/admin/changelog\",\n  \"timestamp\": \"2026-10-01T12:21:03.070Z\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — missing or invalid access token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/changelog",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "changelog"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"statusCode\": 401,\n  \"error\": \"UNAUTHORIZED\",\n  \"message\": [\n    \"Unauthorized\"\n  ],\n  \"path\": \"/admin/changelog\",\n  \"timestamp\": \"2026-10-01T12:34:49.191Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Publish News Entry",
+          "request": {
+            "method": "POST",
+            "description": "Publishes at once (legacy: no drafts). description is plain text; line breaks are kept. videoUrl is optional and must be a YouTube video link (watch?v=, youtu.be/, shorts/ or embed/) — only the video id is stored. expiresAt is optional: the last day it's shown (inclusive); a daily job at 00:05 turns entries past it INACTIVE. Admins only (the role is read from the database on every call, so a demoted admin is refused at once).",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Relatórios chegaram\",\n  \"description\": \"Veja receitas, despesas pagas e o saldo de qualquer período em Mais → Relatórios.\\n\\nTem também as 5 categorias em que você mais gasta e o dia da semana em que o dinheiro mais sai.\",\n  \"videoUrl\": \"https://youtu.be/dQw4w9WgXcQ\",\n  \"expiresAt\": \"2026-10-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/changelog",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "changelog"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created — with a video and a last day",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Relatórios chegaram\",\n  \"description\": \"Veja receitas, despesas pagas e o saldo de qualquer período em Mais → Relatórios.\\n\\nTem também as 5 categorias em que você mais gasta e o dia da semana em que o dinheiro mais sai.\",\n  \"videoUrl\": \"https://youtu.be/dQw4w9WgXcQ\",\n  \"expiresAt\": \"2026-10-31\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/changelog",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "changelog"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": \"b94724fb-a707-40f5-8817-4934e168bb85\",\n  \"title\": \"Relatórios chegaram\",\n  \"description\": \"Veja receitas, despesas pagas e o saldo de qualquer período em Mais → Relatórios.\\n\\nTem também as 5 categorias em que você mais gasta e o dia da semana em que o dinheiro mais sai.\",\n  \"videoId\": \"dQw4w9WgXcQ\",\n  \"publishedAt\": \"2026-10-01T12:21:03.842Z\",\n  \"expiresAt\": \"2026-10-31\",\n  \"status\": \"ACTIVE\",\n  \"readCount\": 0,\n  \"authorName\": \"Revisão Design\"\n}"
+            },
+            {
+              "name": "400 Bad Request — validation failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"\",\n  \"description\": \"Texto\",\n  \"videoUrl\": \"https://vimeo.com/123\",\n  \"expiresAt\": \"2026-02-30\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/changelog",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "changelog"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"statusCode\": 400,\n  \"error\": \"BAD_REQUEST\",\n  \"message\": [\n    \"title must be longer than or equal to 1 characters\",\n    \"videoUrl must be a YouTube video link.\",\n    \"expiresAt must be a valid ISO 8601 date string\"\n  ],\n  \"path\": \"/admin/changelog\",\n  \"timestamp\": \"2026-10-01T12:21:03.849Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update News Entry",
+          "request": {
+            "method": "PATCH",
+            "description": "Partial update: send only what changes. null clears videoUrl or expiresAt; status turns it on or off for users (the read records stay). Admins only (the role is read from the database on every call, so a demoted admin is refused at once).",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"videoUrl\": null,\n  \"expiresAt\": null,\n  \"status\": \"INACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/changelog/b94724fb-a707-40f5-8817-4934e168bb85",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "changelog",
+                "b94724fb-a707-40f5-8817-4934e168bb85"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — video and last day cleared, turned off",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"videoUrl\": null,\n  \"expiresAt\": null,\n  \"status\": \"INACTIVE\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/changelog/b94724fb-a707-40f5-8817-4934e168bb85",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "changelog",
+                    "b94724fb-a707-40f5-8817-4934e168bb85"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": \"b94724fb-a707-40f5-8817-4934e168bb85\",\n  \"title\": \"Relatórios chegaram\",\n  \"description\": \"Veja receitas, despesas pagas e o saldo de qualquer período em Mais → Relatórios.\\n\\nTem também as 5 categorias em que você mais gasta e o dia da semana em que o dinheiro mais sai.\",\n  \"videoId\": null,\n  \"publishedAt\": \"2026-10-01T12:21:03.842Z\",\n  \"expiresAt\": null,\n  \"status\": \"INACTIVE\",\n  \"readCount\": 0,\n  \"authorName\": \"Revisão Design\"\n}"
+            },
+            {
+              "name": "404 Not Found — no such entry",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACTIVE\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/admin/changelog/00000000-0000-4000-8000-000000000000",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "changelog",
+                    "00000000-0000-4000-8000-000000000000"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Changelog entry not found.\"\n  ],\n  \"path\": \"/admin/changelog/00000000-0000-4000-8000-000000000000\",\n  \"timestamp\": \"2026-10-01T12:21:03.921Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete News Entry",
+          "request": {
+            "method": "DELETE",
+            "description": "Deletes the entry for everyone; its read records go with it. Admins only (the role is read from the database on every call, so a demoted admin is refused at once).",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/changelog/b94724fb-a707-40f5-8817-4934e168bb85",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "changelog",
+                "b94724fb-a707-40f5-8817-4934e168bb85"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "204 No Content — deleted",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/changelog/b94724fb-a707-40f5-8817-4934e168bb85",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "changelog",
+                    "b94724fb-a707-40f5-8817-4934e168bb85"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "404 Not Found — no such entry",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/changelog/b94724fb-a707-40f5-8817-4934e168bb85",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "changelog",
+                    "b94724fb-a707-40f5-8817-4934e168bb85"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"statusCode\": 404,\n  \"error\": \"NOT_FOUND\",\n  \"message\": [\n    \"Changelog entry not found.\"\n  ],\n  \"path\": \"/admin/changelog/b94724fb-a707-40f5-8817-4934e168bb85\",\n  \"timestamp\": \"2026-10-01T12:21:03.933Z\"\n}"
             }
           ]
         }

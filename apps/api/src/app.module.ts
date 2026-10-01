@@ -1,9 +1,11 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { ScheduleModule } from "@nestjs/schedule";
 import { ThrottlerModule } from "@nestjs/throttler";
 
 import { AuthModule } from "./auth/auth.module";
 import { CategoriesModule } from "./categories/categories.module";
+import { ChangelogModule } from "./changelog/changelog.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { DebtsModule } from "./debts/debts.module";
 import { GoalsModule } from "./goals/goals.module";
@@ -40,6 +42,10 @@ import { VehiclesModule } from "./vehicles/vehicles.module";
     SubscriptionsModule,
     DashboardModule,
     ReportsModule,
+    ChangelogModule,
+    // Cron jobs (the changelog expiry sweep); off in tests, which call the
+    // jobs directly instead of leaving timers running.
+    ...(process.env.NODE_ENV === "test" ? [] : [ScheduleModule.forRoot()]),
   ],
   controllers: [HealthController],
 })

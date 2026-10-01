@@ -121,6 +121,7 @@ describe("AuthService", () => {
           id: "user-1",
           name: registerDto.name,
           email: registerDto.email,
+          role: "USER",
           activeWorkspace: "PERSONAL",
         },
       });

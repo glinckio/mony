@@ -99,6 +99,8 @@ model User {
   // Stripe customer, created on the first checkout and reused after.
   stripeCustomerId   String?             @unique @db.VarChar(255)
   subscription       Subscription?
+  changelogEntries   ChangelogEntry[]    @relation("ChangelogAuthor")
+  changelogReads     ChangelogRead[]
 }
 
 model PasswordResetCode {
@@ -383,4 +385,44 @@ model Subscription {
   cancelScheduled      Boolean            @default(false)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
+}
+
+enum ChangelogStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// "Novidades" (docs/specs/changelog): admin-authored news shown to users.
+model ChangelogEntry {
+  id          String          @id @default(uuid())
+  title       String          @db.VarChar(150)
+  // Plain text (paragraphs / line breaks); never rendered as HTML.
+  description String          @db.Text
+  // YouTube video id only (validated on save); the app builds the link.
+  videoId     String?         @db.VarChar(32)
+  publishedAt DateTime        @default(now())
+  // Legacy's data_validade: shown while today <= expiresAt.
+  expiresAt   DateTime?       @db.Date
+  status      ChangelogStatus @default(ACTIVE)
+  // Kept when the author's account goes away.
+  createdById String?
+  createdBy   User?           @relation("ChangelogAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  reads ChangelogRead[]
+
+  @@index([status, publishedAt])
+}
+
+model ChangelogRead {
+  id      String         @id @default(uuid())
+  entryId String
+  entry   ChangelogEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt  DateTime       @default(now())
+
+  @@unique([entryId, userId])
+  @@index([userId])
 }

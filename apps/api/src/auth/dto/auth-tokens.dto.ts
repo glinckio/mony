@@ -10,6 +10,9 @@ class AuthUserDto {
   @ApiProperty({ example: "ada@example.com" })
   email!: string;
 
+  @ApiProperty({ example: "USER", enum: ["USER", "ADMIN"] })
+  role!: "USER" | "ADMIN";
+
   @ApiProperty({ example: "PERSONAL", enum: ["PERSONAL", "BUSINESS"] })
   activeWorkspace!: "PERSONAL" | "BUSINESS";
 }
