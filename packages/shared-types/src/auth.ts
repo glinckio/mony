@@ -69,6 +69,8 @@ export interface AuthTokens {
     id: string;
     name: string;
     email: string;
+    // Missing in sessions saved before it was added: treat as "USER".
+    role?: "USER" | "ADMIN";
     activeWorkspace: WorkspaceType;
   };
 }
