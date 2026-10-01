@@ -2,6 +2,8 @@ import type {
   AuthTokens,
   Category,
   DashboardData,
+  AdminChangelogEntry,
+  ChangelogEntry,
   Report,
   DebtInstallment,
   DebtWithInstallments,
@@ -18,7 +20,7 @@ import type {
   Vehicle,
   WorkspaceType,
 } from "@mony/shared-types";
-import { REPORT_TOP_CATEGORIES } from "@mony/shared-types";
+import { REPORT_TOP_CATEGORIES, youtubeVideoId } from "@mony/shared-types";
 
 import { ApiError } from "../../lib/api-client";
 import { useDesignLab } from "../design-lab";
@@ -62,6 +64,9 @@ const db = {
   // vehicleId -> typeId -> mileage the next service is due at.
   maintenanceAlerts: {} as Record<string, Record<string, number>>,
   subscription: null as Subscription | null,
+  news: seedNews(),
+  // entryId -> when the mock user read it
+  newsReads: {} as Record<string, string>,
   nextId: 1000,
 };
 
@@ -79,6 +84,7 @@ export const MOCK_TOKENS: AuthTokens = {
     id: seedProfile.id,
     name: seedProfile.name,
     email: seedProfile.email,
+    role: "ADMIN",
     activeWorkspace: seedProfile.activeWorkspace,
   },
 };
@@ -321,6 +327,86 @@ function emptyReport(): Report {
   };
 }
 
+// ---------------------------------------------------------------- news
+
+type MockNews = Omit<AdminChangelogEntry, "readCount">;
+
+function seedNews(): MockNews[] {
+  const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
+  return [
+    {
+      id: "news-3",
+      title: "Relatórios chegaram",
+      description:
+        "Agora dá para ver o resumo do período, as categorias que mais pesaram e a evolução dos últimos 12 meses.\n\nEm Mais → Relatórios.",
+      videoId: "dQw4w9WgXcQ",
+      publishedAt: daysAgo(1),
+      expiresAt: null,
+      status: "ACTIVE",
+      authorName: "Equipe Mony",
+    },
+    {
+      id: "news-2",
+      title: "Manutenção do carro com lembretes",
+      description:
+        "Cadastre os tipos de manutenção e o Mony avisa quando estiver chegando a hora, pela quilometragem ou pela data.",
+      videoId: null,
+      publishedAt: daysAgo(12),
+      expiresAt: null,
+      status: "ACTIVE",
+      authorName: "Equipe Mony",
+    },
+    {
+      id: "news-1",
+      title: "Cadernos Pessoal e Empresa",
+      description: "Separe os gastos da casa e os do seu negócio, cada um no seu caderno.",
+      videoId: null,
+      publishedAt: daysAgo(40),
+      expiresAt: null,
+      status: "INACTIVE",
+      authorName: null,
+    },
+  ];
+}
+
+const today = () => isoDate(new Date());
+const visibleNews = () =>
+  db.news.filter(
+    (entry) => entry.status === "ACTIVE" && (!entry.expiresAt || entry.expiresAt >= today()),
+  );
+const toNewsEntry = (entry: MockNews): ChangelogEntry => ({
+  id: entry.id,
+  title: entry.title,
+  description: entry.description,
+  videoId: entry.videoId,
+  publishedAt: entry.publishedAt,
+  expiresAt: entry.expiresAt,
+  readAt: db.newsReads[entry.id] ?? null,
+});
+const toAdminNews = (entry: MockNews): AdminChangelogEntry => ({
+  ...entry,
+  readCount: db.newsReads[entry.id] ? 1 : 0,
+});
+const byNewest = (a: MockNews, b: MockNews) => b.publishedAt.localeCompare(a.publishedAt);
+
+function newsFrom(body: Json, base?: MockNews): MockNews {
+  const text = (key: string) =>
+    typeof body[key] === "string" ? String(body[key]).trim() : undefined;
+  const videoUrl = body.videoUrl === null ? null : text("videoUrl");
+  const video =
+    videoUrl === undefined ? (base?.videoId ?? null) : videoUrl ? youtubeVideoId(videoUrl) : null;
+  return {
+    id: base?.id ?? newId("news"),
+    title: text("title") ?? base?.title ?? "",
+    description: text("description") ?? base?.description ?? "",
+    videoId: video,
+    publishedAt: base?.publishedAt ?? now(),
+    expiresAt: body.expiresAt === null ? null : (text("expiresAt") ?? base?.expiresAt ?? null),
+    status: (text("status") as MockNews["status"] | undefined) ?? base?.status ?? "ACTIVE",
+    authorName: base ? base.authorName : seedProfile.name,
+  };
+}
+
 // ---------------------------------------------------------------- helpers
 
 function findOr404<T extends { id: string }>(list: T[], id: string | undefined, path: string): T {
@@ -496,6 +582,69 @@ const routes: Route[] = [
     pattern: /^\/dashboard$/,
     handler: ({ query }) => dashboard(query),
     empty: emptyDashboard,
+  },
+  {
+    method: "GET",
+    pattern: /^\/changelog\/unread$/,
+    handler: () => {
+      const unread = visibleNews()
+        .filter((entry) => !db.newsReads[entry.id])
+        .sort(byNewest);
+      return { entry: unread[0] ? toNewsEntry(unread[0]) : null, total: unread.length };
+    },
+    empty: () => ({ entry: null, total: 0 }),
+  },
+  {
+    method: "GET",
+    pattern: /^\/changelog$/,
+    handler: () => ({ entries: visibleNews().sort(byNewest).map(toNewsEntry) }),
+    empty: () => ({ entries: [] }),
+  },
+  {
+    method: "POST",
+    pattern: /^\/changelog\/([^/]+)\/read$/,
+    handler: ({ params, path }) => {
+      const entry = visibleNews().find((item) => item.id === params[0]);
+      if (!entry) fail(404, "Changelog entry not found.", path);
+      db.newsReads[entry.id] ??= now();
+      return undefined;
+    },
+  },
+  {
+    method: "GET",
+    pattern: /^\/admin\/changelog$/,
+    handler: () => [...db.news].sort(byNewest).map(toAdminNews),
+    empty: () => [],
+  },
+  {
+    method: "POST",
+    pattern: /^\/admin\/changelog$/,
+    handler: ({ body }) => {
+      const entry = newsFrom(body);
+      db.news.push(entry);
+      return toAdminNews(entry);
+    },
+  },
+  {
+    method: "PATCH",
+    pattern: /^\/admin\/changelog\/([^/]+)$/,
+    handler: ({ params, body, path }) => {
+      const index = db.news.findIndex((item) => item.id === params[0]);
+      if (index < 0) fail(404, "Changelog entry not found.", path);
+      db.news[index] = newsFrom(body, db.news[index]);
+      return toAdminNews(db.news[index]!);
+    },
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/admin\/changelog\/([^/]+)$/,
+    handler: ({ params, path }) => {
+      const index = db.news.findIndex((item) => item.id === params[0]);
+      if (index < 0) fail(404, "Changelog entry not found.", path);
+      delete db.newsReads[db.news[index]!.id];
+      db.news.splice(index, 1);
+      return undefined;
+    },
   },
   {
     method: "GET",

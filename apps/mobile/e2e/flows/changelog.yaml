@@ -1,0 +1,191 @@
+appId: com.mony.app
+---
+# Registers a fresh account and opens Mais → Novidades against the real
+# API: nothing yet (only entries published after signup are shown), and no
+# "Gerenciar novidades" for a regular user.
+# With an admin account (promote one in the database: role = 'ADMIN'),
+# also the whole loop — the admin publishes, the new user gets it on Início
+# by itself, marks it read, sees "Lida em …" in Novidades, and the admin
+# deletes it:
+#   maestro test -e MAESTRO_ADMIN_EMAIL=… -e MAESTRO_ADMIN_PASSWORD=… e2e/flows/changelog.yaml
+# Without those, that part is skipped.
+- launchApp
+- evalScript: ${output.testEmail = 'maestro-news-' + Date.now() + '@example.com'}
+- evalScript: ${output.newsTitle = 'Novidade Maestro ' + Date.now()}
+# `typeof`: reading an env var that wasn't passed must not throw.
+- evalScript: "${output.adminEmail = typeof MAESTRO_ADMIN_EMAIL === 'undefined' ? '' : MAESTRO_ADMIN_EMAIL}"
+- evalScript: "${output.adminPassword = typeof MAESTRO_ADMIN_PASSWORD === 'undefined' ? '' : MAESTRO_ADMIN_PASSWORD}"
+- assertVisible: "Entrar"
+- tapOn: "Não tem uma conta? Criar conta"
+- assertVisible: "Criar sua conta"
+- tapOn:
+    id: "name-input"
+- inputText: "Maestro News Tester"
+- tapOn:
+    id: "email-input"
+- inputText: "${output.testEmail}"
+- tapOn:
+    id: "password-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "password-confirmation-input"
+- inputText: "correcthorsebattery"
+- tapOn:
+    id: "submit-button"
+- assertVisible: "Maestro News Tester"
+
+# A regular user: Novidades, empty; no admin row.
+- tapOn:
+    id: "tab-more"
+- scrollUntilVisible:
+    element:
+      id: "more-news"
+- assertNotVisible:
+    id: "more-admin-news"
+- tapOn:
+    id: "more-news"
+# By id: "Novidades" is also the label of the row on Mais.
+- assertVisible:
+    id: "news-screen"
+- assertVisible:
+    id: "news-empty"
+- tapOn:
+    id: "header-back"
+
+- runFlow:
+    when:
+      true: ${output.adminEmail != ''}
+    commands:
+      # The admin publishes one, with a video.
+      - scrollUntilVisible:
+          element:
+            id: "logout-button"
+      - tapOn:
+          id: "logout-button"
+      - assertVisible: "Entrar"
+      - tapOn:
+          id: "email-input"
+      - inputText: "${output.adminEmail}"
+      - tapOn:
+          id: "password-input"
+      - inputText: "${output.adminPassword}"
+      - tapOn:
+          id: "submit-button"
+      # An admin may have unread news of their own: close it.
+      - runFlow:
+          when:
+            visible:
+              id: "startup-news"
+          commands:
+            - tapOn:
+                id: "startup-news-close"
+      - tapOn:
+          id: "tab-more"
+      - scrollUntilVisible:
+          element:
+            id: "more-admin-news"
+      - tapOn:
+          id: "more-admin-news"
+      # By id: the row on Mais and the "+" button carry these same words.
+      - assertVisible:
+          id: "admin-news-screen"
+      - tapOn:
+          id: "add-news-button"
+      - assertVisible:
+          id: "title-input"
+      - tapOn:
+          id: "title-input"
+      - inputText: "${output.newsTitle}"
+      - tapOn:
+          id: "description-input"
+      - inputText: "Texto de teste do Maestro."
+      - tapOn:
+          id: "video-input"
+      - inputText: "https://youtu.be/dQw4w9WgXcQ"
+      - tapOn:
+          id: "submit-button"
+      # Rows and cards are one accessible element each (title, state,
+      # dates), so they're matched as a regex.
+      - assertVisible: "${output.newsTitle}.*"
+      - tapOn:
+          id: "header-back"
+
+      # The new user gets it on Início by itself and marks it read.
+      - scrollUntilVisible:
+          element:
+            id: "logout-button"
+      - tapOn:
+          id: "logout-button"
+      - assertVisible: "Entrar"
+      - tapOn:
+          id: "email-input"
+      - inputText: "${output.testEmail}"
+      - tapOn:
+          id: "password-input"
+      - inputText: "correcthorsebattery"
+      - tapOn:
+          id: "submit-button"
+      - assertVisible:
+          id: "startup-news"
+      - assertVisible: "${output.newsTitle}"
+      - assertVisible:
+          id: "news-video"
+      - tapOn:
+          id: "startup-news-mark-read"
+      - assertNotVisible:
+          id: "startup-news"
+      - tapOn:
+          id: "tab-more"
+      - scrollUntilVisible:
+          element:
+            id: "more-news"
+      - tapOn:
+          id: "more-news"
+      - assertVisible: "${output.newsTitle}.*"
+      - assertVisible: ".*Lida em.*"
+      - tapOn:
+          id: "header-back"
+
+      # The admin deletes it.
+      - scrollUntilVisible:
+          element:
+            id: "logout-button"
+      - tapOn:
+          id: "logout-button"
+      - assertVisible: "Entrar"
+      - tapOn:
+          id: "email-input"
+      - inputText: "${output.adminEmail}"
+      - tapOn:
+          id: "password-input"
+      - inputText: "${output.adminPassword}"
+      - tapOn:
+          id: "submit-button"
+      # The admin hasn't read their own entry either: it opens for them too.
+      # "Fechar" leaves it unread (it's deleted next anyway).
+      - assertVisible:
+          id: "startup-news"
+      - assertVisible: "${output.newsTitle}"
+      - tapOn:
+          id: "startup-news-close"
+      - assertNotVisible:
+          id: "startup-news"
+      - tapOn:
+          id: "tab-more"
+      - scrollUntilVisible:
+          element:
+            id: "more-admin-news"
+      - tapOn:
+          id: "more-admin-news"
+      - tapOn: "${output.newsTitle}.*"
+      - assertVisible: "Editar novidade"
+      - scrollUntilVisible:
+          element:
+            id: "delete-news-button"
+      - tapOn:
+          id: "delete-news-button"
+      - tapOn:
+          id: "delete-news-sheet-confirm"
+      - assertVisible:
+          id: "admin-news-screen"
+      - assertNotVisible: "${output.newsTitle}.*"

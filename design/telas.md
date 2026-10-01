@@ -70,6 +70,9 @@ Sem uso aparente: nada. (`Manutenções: Em breve` era um espaço reservado para
 | 27  | Tipo de manutenção (form)         | nova       | Casa    | P3         | Em revisão |
 | 28  | Assinatura                        | nova       | Conta   | P3         | Pronta     |
 | 29  | Relatórios                        | nova       | Núcleo  | P2         | Pronta     |
+| 30  | Novidades (+ aviso ao abrir)      | nova       | Conta   | P3         | Pronta     |
+| 31  | Gerenciar novidades (admin)       | nova       | Conta   | P3         | Pronta     |
+| 32  | Novidade (form, admin)            | nova       | Conta   | P3         | Pronta     |
 
 Status: Pendente → Em progresso → Em revisão → Pronta (só depois de ≥ 2 rodadas de revisão visual)
 
@@ -617,3 +620,24 @@ Caminho secundário: **Lançamentos** → **[toque]** no carimbo A PAGAR → bat
 - **Vida:** barras crescem da base (escalonadas; paradas em "reduzir movimento"), linhas da evolução entram com fade.
 - **Estados:** carregando (skeleton do herói e de um cartão) · erro (`ErrorState`) · período sem nada (um `EmptyState` só, "Nada lançado nesse período", mantendo a evolução anual se ela tiver dados) · seção vazia (frase no cartão).
 - **Acessibilidade:** cada coluna/mês é um botão com os valores falados (`spokenMoney`); a rosca fala o total; linhas da legenda e da tabela são lidas inteiras.
+
+## 30 — Novidades (+ aviso ao abrir)
+
+- **Rota:** `News` (Mais → Conta → "Novidades") e o aviso `StartupNews` no Início · **Origem:** `more/NewsScreen.tsx`, `dashboard/StartupNews.tsx` (novas, feature 15; legado `historico_atualizacoes.php` e o popup do `dashboard.php`) · P3
+- **Funcionalidades (legado, decisão 2026-09-30):** a pessoa vê as novidades ativas, dentro da validade e publicadas depois que a conta dela foi criada. Ao abrir o app, a mais nova não lida sobe sozinha, uma vez por sessão; "Fechar" não registra nada (volta na próxima vez), "Marcar como lida" registra. Vídeo do YouTube só abre no toque ("Assistir", navegador do app): nada do YouTube carrega antes disso. Texto simples, com as quebras de linha do admin.
+- **Composição:** o aviso é um `NewsSheet` (folha de papel): selo com megafone, "Novidade", pílula "N novas" quando há mais de uma, título, data (ou "Lida em dd/mm/aaaa"), cartão do vídeo em gradiente com "Assistir", o texto e, com mais não lidas, a nota "Há mais N novidades não lidas. Elas aparecem na próxima vez."; botões "Marcar como lida" (principal, só se não lida) e "Fechar". A lista é de `NewsCard`: título, pílula "Nova" (borda índigo) ou "Lida em …", data, prévia em até 2 linhas cortada na palavra e "Tem vídeo"; tocar abre o mesmo `NewsSheet`.
+- **Mensagens:** falha ao marcar → aviso dentro da folha "Não deu para marcar como lida. Tente de novo." (um toast ficaria atrás dela); falha ao abrir o vídeo → "Não deu para abrir o vídeo. Tente de novo."; o aviso de abertura não aparece se a consulta falhar.
+- **Uma vez por sessão:** o Início consulta as não lidas uma vez ao abrir o app (achando ou não) e só abre a folha com o Início na tela; publicar ou ler outra novidade no meio da sessão não faz a folha surgir sobre outra tela.
+- **Estados:** carregando (2 skeletons) · erro (`ErrorState`) · vazio ("Nenhuma novidade por aqui") · puxar para atualizar.
+
+## 31 — Gerenciar novidades (admin)
+
+- **Rota:** `AdminNews` (Mais → Conta → "Gerenciar novidades", só para `role` ADMIN) · **Origem:** `more/AdminNewsScreen.tsx` (nova, feature 15; legado `gerenciar_atualizacoes.php`) · P3
+- **Composição:** "+" no cabeçalho (`add-news-button`) abre o formulário. Cada `AdminNewsRow`: título, pílula do que o usuário vê agora (Ativa · Vencida · Inativa), período ("Desde dd/mm/aaaa" ou "dd/mm/aaaa até dd/mm/aaaa"), leituras ("Ninguém leu ainda" / "N leituras") · autor e o ícone de vídeo. Tocar edita.
+- **Estados:** carregando · erro · vazio ("Nenhuma novidade publicada", com o botão "Nova novidade") · puxar para atualizar. A API também barra quem não é admin (403), mesmo que a linha em Mais apareça por um papel antigo salvo na sessão.
+
+## 32 — Novidade (form, admin)
+
+- **Rota:** `NewsForm` (modal; `{ entry }` para editar) · **Origem:** `more/NewsFormScreen.tsx` (nova, feature 15; modais do legado) · P3
+- **Composição:** título (até 150) → texto (multilinha, até 5.000; dica "as quebras de linha aparecem para os usuários") → "Vídeo do YouTube (opcional)" (aceita watch, youtu.be, shorts e embed; na edição aparece a forma curta `youtu.be/…`) → "Mostrar até (opcional)" (DD/MM/AAAA, último dia visível) → na edição, "Situação" Ativa/Inativa e "Excluir novidade" (`ConfirmSheet`: "Ela some para todos os usuários, e o registro de quem leu vai junto."). CTA fixo "Publicar" / "Salvar alterações". Publicar já publica (legado). Na edição, apagar o link ou a data limpa o campo na API.
+- **Mensagens:** erros de campo do schema compartilhado ("Informe o título.", "Use um link do YouTube.", "Data inválida."…); 403 → "Só administradores podem mexer nas novidades."; 404 → "Essa novidade não existe mais."; outro → genérica. Sucesso → toast e volta.

@@ -30,6 +30,8 @@ import { useRefetchOnFocus } from "../../lib/use-refetch-on-focus";
 import type { MainTabNavigation } from "../../navigation/RootNavigator";
 import { space, useTheme } from "../../theme";
 
+import { StartupNews } from "./StartupNews";
+
 const PERIOD_OPTIONS: Array<{ value: DashboardPeriod; label: string }> = [
   { value: "day", label: "Dia" },
   { value: "week", label: "Semana" },
@@ -257,6 +259,7 @@ export function DashboardScreen() {
           </Section>
         </>
       ) : null}
+      <StartupNews />
     </ScrollScreen>
   );
 }

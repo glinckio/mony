@@ -330,6 +330,13 @@ Código: domínio em `apps/mobile/src/components/domain/`, chrome e primitivas e
 - **`ReportHero`:** chip de período, saldo em `display`, ladrilhos de vidro de receitas/despesas, barra da razão com as cores e mensagens do legado.
 - **`ReportMonthRow`:** linha da tabela mensal com a barra da razão (80% / 100%).
 
+### Novidades — `NewsSheet`, `NewsCard`, `AdminNewsRow` (2026-09-30)
+
+- **Conceito:** a novidade é um recado do Mony, não um alerta: folha de papel com um selo de megafone, sem vermelho nem modal de sistema. O vídeo é um cartão em gradiente da marca com "Assistir" (abre o YouTube só no toque, nada de player embutido: privacidade e peso). Descartados: player do YouTube na folha (carrega o YouTube antes de a pessoa querer) e um carrossel com todas as não lidas (o legado mostra uma por vez e avisa quantas faltam).
+- **`NewsSheet`:** `PaperSheet` com rolagem (até 55% da tela): selo, "Novidade" e a pílula "N novas", título `title2`, data ou "Lida em", cartão do vídeo, texto simples e a nota das que faltam; botões "Marcar como lida" (só se não lida) e "Fechar". Usada pelo aviso do Início e pela lista.
+- **`NewsCard`:** cartão tocável da lista: título, pílula "Nova" com borda índigo (ou "Lida em …" em cinza), data, prévia em até 2 linhas (`excerpt`, texto corrido cortado na palavra) e "Tem vídeo". Lido como um botão com título, estado e data.
+- **`AdminNewsRow`:** linha do admin: título, pílula de estado (Ativa em verde, Vencida em âmbar, Inativa em cinza), período ("Desde dd/mm/aaaa" ou "dd/mm/aaaa até dd/mm/aaaa"), leituras · autor e ícone de vídeo.
+
 ## Chrome
 
 | Superfície                               | Decisão                                                                                                                                                                                                                                                                                                                                                                                                                                            | Por quê                                                                                                      |

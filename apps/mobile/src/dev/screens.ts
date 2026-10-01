@@ -60,6 +60,21 @@ export const SCREENS: CatalogEntry[] = [
     status: "Pronta",
   },
   { id: "reports", name: "Relatórios", flow: "Núcleo", route: "Reports", status: "Pronta" },
+  { id: "news", name: "Novidades", flow: "Conta", route: "News", status: "Pronta" },
+  {
+    id: "admin-news",
+    name: "Gerenciar novidades",
+    flow: "Conta",
+    route: "AdminNews",
+    status: "Pronta",
+  },
+  {
+    id: "news-form",
+    name: "Novidade (form)",
+    flow: "Conta",
+    route: "NewsForm",
+    status: "Pronta",
+  },
   { id: "debts", name: "Dívidas", flow: "Casa", route: "Debts", status: "Pronta" },
   {
     id: "debt",

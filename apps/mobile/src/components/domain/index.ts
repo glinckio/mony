@@ -1,3 +1,4 @@
+export { AdminNewsRow } from "./AdminNewsRow";
 export { AmountField } from "./AmountField";
 export { BalanceHero, type BalanceHeroState } from "./BalanceHero";
 export { CategoryDonut } from "./CategoryDonut";
@@ -9,6 +10,8 @@ export { Initials, initialsOf } from "./Initials";
 export { MaintenanceAlertRow } from "./MaintenanceAlertRow";
 export { MercosulPlate, Odometer, VehicleHero, VehiclePhoto } from "./VehicleParts";
 export { MoneyHero } from "./MoneyHero";
+export { NewsCard } from "./NewsCard";
+export { NewsSheet } from "./NewsSheet";
 export { NotebookSwitch } from "./NotebookSwitch";
 export { PantryItem } from "./PantryItem";
 export { PeriodSummary } from "./PeriodSummary";

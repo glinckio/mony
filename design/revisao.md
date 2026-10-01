@@ -115,3 +115,16 @@ Prints no emulador Android (Expo Go, dados Mock ligados só no emulador), em `de
 Situação: **Pronta**.
 
 Depois das revisões de código e desempenho (2026-09-30): o relatório fica na tela, esmaecido, enquanto uma data está incompleta ou o novo período carrega (antes sumia e remontava a cada tecla); o chip do herói usa as datas do relatório (com os dois anos quando diferem); o dia de maior gasto é reselecionado a cada período; o centro da rosca diz "Total" com menos de 5 categorias; os rótulos dos gráficos de colunas crescem com a fonte do sistema. Efeito no Início: a `ChartBar` compartilhada mostra valor pequeno como ponto (7 px, antes 4 px) — mudança deliberada da rodada 1.
+
+---
+
+## Telas 30–32 — Novidades (novas, 2026-09-30)
+
+Prints no emulador Android (Expo Go, dados Mock ligados só no emulador), em `design/revisao/news-*`.
+
+| Rodada | Problemas (severidade)                                                                                                                                                   | Correção                                              |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| 1      | nota das não lidas com "app." sozinho na última linha (baixa); aviso, lista, folha aberta, estado "Lida em", lista do admin e formulário novo sem problema alto ou médio | nota encurtada ("Elas aparecem na próxima vez.")      |
+| 2      | nenhum alto ou médio (edição com situação, confirmação de exclusão); link do vídeo cortado no começo do campo (baixa)                                                    | na edição, o link aparece na forma curta `youtu.be/…` |
+
+Situação: **Pronta**.

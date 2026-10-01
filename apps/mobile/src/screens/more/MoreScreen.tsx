@@ -20,6 +20,8 @@ export function MoreScreen() {
   const navigation = useNavigation<MainTabNavigation>();
   const { colors, elevation } = useTheme();
   const user = useAuthStore((state) => state.user);
+  // Sessions saved before the role was sent have none: a regular user.
+  const isAdmin = user?.role === "ADMIN";
   const [leaving, setLeaving] = useState(false);
 
   return (
@@ -95,7 +97,25 @@ export function MoreScreen() {
 
       <Group title="Conta">
         <MenuRow
+          testID="more-news"
+          icon="megaphone-outline"
+          label="Novidades"
+          description="O que mudou no Mony"
+          onPress={() => navigation.navigate("News")}
+        />
+        {isAdmin ? (
+          <MenuRow
+            testID="more-admin-news"
+            icon="create-outline"
+            label="Gerenciar novidades"
+            description="Publicar e editar (administradores)"
+            divider
+            onPress={() => navigation.navigate("AdminNews")}
+          />
+        ) : null}
+        <MenuRow
           testID="more-subscription"
+          divider
           icon="sparkles-outline"
           label="Assinatura"
           description="Seu plano e pagamento"
