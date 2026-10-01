@@ -218,7 +218,16 @@ export function RootNavigator() {
   );
 
   return (
-    <NavigationContainer ref={navigationRef} theme={navigationTheme}>
+    // Keyed on signed in / out: the navigation state lives in the container,
+    // and React Navigation carries routes over to a new navigator when their
+    // names exist there too. In dev the signed-in stack also has "Login"
+    // (catalog previews), so a successful login stayed on "Entrar". A fresh
+    // container per session also leaves no route from the last one behind.
+    <NavigationContainer
+      key={accessToken ? "signed-in" : "signed-out"}
+      ref={navigationRef}
+      theme={navigationTheme}
+    >
       {accessToken ? (
         <AppStack.Navigator
           initialRouteName={devtools && CATALOG_ON_START ? "Catalog" : "MainTabs"}
