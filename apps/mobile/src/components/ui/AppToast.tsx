@@ -7,11 +7,12 @@ import Animated, {
   Easing,
   FadeOutDown,
   runOnJS,
-  SlideInDown,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
+  type EntryAnimationsValues,
+  type LayoutAnimation,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,6 +24,9 @@ import { Text } from "./Text";
 
 const DURATION_MS = 4000;
 const DURATION_WITH_ACTION_MS = 6000;
+
+const [x1, y1, x2, y2] = motionTokens.easing.decelerate;
+const DECELERATE = Easing.bezier(x1, y1, x2, y2);
 
 const TONES: Record<ToastTone, { icon: IconName; title: string }> = {
   success: { icon: "checkmark", title: "Pronto" },
@@ -47,9 +51,10 @@ function toneColor(tone: ToastTone, colors: Theme["colors"]): string {
 }
 
 // App-wide toast (design/componentes.md → Mensagens): a white floating
-// card above the tab bar — solid tone circle with a white glyph, the
-// message, an optional amount or action — with a thin bar that runs out
-// with its time. Slides up on a spring; drag down (or ×) to dismiss;
+// card at the bottom of the screen, over the tab bar — solid tone circle
+// with a white glyph, the message, an optional amount or action — with a
+// thin bar that runs out with its time. Rises from the bottom edge; drag
+// down (or ×) to dismiss;
 // pressing pauses it. Announced to screen readers without taking focus.
 export function AppToast() {
   const { message, tone = "danger", action, receipt, key, hide } = useToastStore();
@@ -62,6 +67,31 @@ export function AppToast() {
   const remaining = useSharedValue(1);
   const dragY = useSharedValue(0);
   const duration = action ? DURATION_WITH_ACTION_MS : DURATION_MS;
+  const bottomGap = insets.bottom + space.sm;
+
+  // Starts one card-height (plus the gap) below its spot — just past the
+  // bottom edge — and rises into place. A timed decelerate, not a spring,
+  // so it never overshoots and bobs.
+  const entering = useMemo(
+    () =>
+      (values: EntryAnimationsValues): LayoutAnimation => {
+        "worklet";
+        return {
+          initialValues: { transform: [{ translateY: values.targetHeight + bottomGap }] },
+          animations: {
+            transform: [
+              {
+                translateY: withTiming(0, {
+                  duration: motionTokens.duration.slow,
+                  easing: DECELERATE,
+                }),
+              },
+            ],
+          },
+        };
+      },
+    [bottomGap],
+  );
 
   useEffect(() => {
     if (!message) return;
@@ -113,14 +143,11 @@ export function AppToast() {
   // The layer always stays mounted, so the card's `exiting` animation can
   // play when the message clears (it can't if its parent unmounts too).
   return (
-    <View
-      pointerEvents="box-none"
-      style={[styles.layer, { bottom: insets.bottom + layout.tabBarHeight + space.lg }]}
-    >
+    <View pointerEvents="box-none" style={[styles.layer, { bottom: bottomGap }]}>
       {message ? (
         <Animated.View
           key={key}
-          entering={reduced ? undefined : SlideInDown.springify().damping(18).stiffness(220)}
+          entering={reduced ? undefined : entering}
           exiting={reduced ? undefined : FadeOutDown.duration(160)}
           testID="toast"
           accessibilityLiveRegion="polite"
