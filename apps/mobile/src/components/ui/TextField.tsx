@@ -1,5 +1,6 @@
 import { forwardRef, useState, type ReactNode } from "react";
 import {
+  Platform,
   StyleSheet,
   TextInput,
   View,
@@ -53,6 +54,13 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
   const [hidden, setHidden] = useState(true);
 
   const borderColor = error ? colors.danger : focused ? colors.primary : colors.border;
+  // The focus shadow's props stay on the field at rest, zeroed: if they
+  // only appeared on focus (`elevation`, `shadowColor`), Android (New
+  // Architecture) rebuilt the input's parent view and the input lost focus
+  // at once — the keyboard never opened.
+  const shadow = elevation("sm");
+  const restingShadow =
+    Platform.OS === "android" ? { ...shadow, elevation: 0 } : { ...shadow, shadowOpacity: 0 };
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -68,7 +76,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
             borderWidth: focused || error ? 1.5 : 1,
             backgroundColor: editable ? colors.surface : colors.surfaceMuted,
           },
-          focused && editable ? elevation("sm") : null,
+          focused && editable ? shadow : restingShadow,
         ]}
       >
         {leftIcon ? (
