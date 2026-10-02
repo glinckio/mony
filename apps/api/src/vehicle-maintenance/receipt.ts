@@ -1,5 +1,5 @@
 import type { MaintenanceReceiptKind } from "@mony/shared-types";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, Logger } from "@nestjs/common";
 
 import { detectImageType } from "../common/storage/image-type";
 import { normalizePhoto } from "../common/storage/normalize-photo";
@@ -14,6 +14,8 @@ export interface PreparedReceipt {
 // thermal receipt) must stay legible, so more than a vehicle photo's
 // 1600 px. The app uploads at this size too.
 export const MAX_RECEIPT_DIMENSION = 2560;
+
+const logger = new Logger("Receipt");
 
 const PDF_HEADER = "%PDF-";
 // A complete PDF ends with "%%EOF" (optionally followed by a line break
@@ -50,7 +52,11 @@ export async function prepareReceipt(buffer: Buffer): Promise<PreparedReceipt> {
         mozjpeg: false,
       });
       return { body: photo.body, contentType: photo.contentType, extension: photo.extension };
-    } catch {
+    } catch (error) {
+      // A 400 for the client, but the decoder's reason belongs in the log.
+      logger.warn(
+        `Receipt image couldn't be decoded: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw new BadRequestException("Receipt couldn't be read as an image.");
     }
   }

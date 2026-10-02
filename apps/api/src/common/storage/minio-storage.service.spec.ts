@@ -7,7 +7,7 @@ import {
 } from "@aws-sdk/client-s3";
 import type { ConfigService } from "@nestjs/config";
 
-import { MinioStorageService } from "./minio-storage.service";
+import { describeS3Error, MinioStorageService } from "./minio-storage.service";
 
 // Counts real presigning work (the signed-URL cache must skip it) while
 // still producing real URLs.
@@ -276,5 +276,27 @@ describe("MinioStorageService", () => {
     expect(
       () => new MinioStorageService(buildConfig({ ...baseConfig, MINIO_BUCKET: undefined })),
     ).toThrow("MINIO_BUCKET");
+  });
+});
+
+describe("describeS3Error", () => {
+  it("names an S3 rejection with its code and HTTP status", () => {
+    const error = Object.assign(new Error("The Access Key Id you provided does not exist."), {
+      name: "InvalidAccessKeyId",
+      Code: "InvalidAccessKeyId",
+      $metadata: { httpStatusCode: 403 },
+    });
+
+    expect(describeS3Error(error)).toBe(
+      "InvalidAccessKeyId · HTTP 403 · The Access Key Id you provided does not exist.",
+    );
+  });
+
+  it("keeps Node's network code when MinIO never answered", () => {
+    const error = Object.assign(new Error("getaddrinfo ENOTFOUND minio.invalid"), {
+      code: "ENOTFOUND",
+    });
+
+    expect(describeS3Error(error)).toBe("Error · ENOTFOUND · getaddrinfo ENOTFOUND minio.invalid");
   });
 });

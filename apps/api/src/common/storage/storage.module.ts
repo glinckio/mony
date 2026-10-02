@@ -35,7 +35,9 @@ import { StorageService } from "./storage.service";
             );
           }
         }
-        return new MinioStorageService(config);
+        const storage = new MinioStorageService(config);
+        void storage.checkConnection();
+        return storage;
       },
     },
   ],

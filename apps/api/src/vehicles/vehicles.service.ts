@@ -165,7 +165,11 @@ export class VehiclesService {
     let photo: NormalizedPhoto;
     try {
       photo = await normalizePhoto(file.buffer);
-    } catch {
+    } catch (error) {
+      // A 400 for the client, but the decoder's reason belongs in the log.
+      this.logger.warn(
+        `Vehicle photo couldn't be decoded: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw new BadRequestException("Photo couldn't be read as an image.");
     }
 

@@ -2,16 +2,42 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
+  HeadBucketCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Logger } from "@nestjs/common";
 import type { ConfigService } from "@nestjs/config";
 
 import { StorageService } from "./storage.service";
 
 const SIGNING_WINDOW_SECONDS = 30 * 60;
+
+// One line with everything that tells storage failures apart: the SDK's
+// error name/code, the HTTP status MinIO (or the proxy in front of it)
+// answered, and Node's network code (ECONNREFUSED, ENOTFOUND, a TLS
+// error…) when the request never got an answer.
+export function describeS3Error(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const details = error as Error & {
+    Code?: string;
+    code?: string;
+    $metadata?: { httpStatusCode?: number };
+    cause?: { code?: string };
+  };
+  const status = details.$metadata?.httpStatusCode;
+  return [
+    details.name,
+    details.Code !== details.name ? details.Code : undefined,
+    details.code ?? details.cause?.code,
+    status ? `HTTP ${status}` : undefined,
+    details.message,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
 
 // MinIO through its S3-compatible API. Two clients on purpose: uploads
 // and deletes go to MINIO_ENDPOINT (reachable from the API), while signed
@@ -20,9 +46,12 @@ const SIGNING_WINDOW_SECONDS = 30 * 60;
 // HMAC computation, so the second client never makes a network call, and
 // the host is part of the signature, so it must be the public one.
 export class MinioStorageService extends StorageService {
+  private readonly logger = new Logger("MinioStorage");
   private readonly client: S3Client;
   private readonly signingClient: S3Client;
   private readonly bucket: string;
+  // Host only, for logs — never the credentials.
+  private readonly endpointHost: string;
   private readonly signedUrlCache = new Map<string, string>();
   private cachedWindowStart = 0;
 
@@ -40,12 +69,41 @@ export class MinioStorageService extends StorageService {
     this.client = new S3Client({ ...common, endpoint });
     this.signingClient = new S3Client({ ...common, endpoint: publicEndpoint });
     this.bucket = config.getOrThrow<string>("MINIO_BUCKET");
+    this.endpointHost = URL.canParse(endpoint) ? new URL(endpoint).host : endpoint;
+  }
+
+  // Run once at boot: a wrong endpoint, bucket, key or policy shows up in
+  // the deploy log right away instead of on the first upload. Never
+  // throws — storage being down shouldn't keep the rest of the API from
+  // starting. HTTP 403 = credentials or policy, 404 = no such bucket.
+  async checkConnection(): Promise<void> {
+    try {
+      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+      this.logger.log(`Connected to ${this.endpointHost}, bucket "${this.bucket}"`);
+    } catch (error) {
+      this.logger.error(
+        `Can't reach bucket "${this.bucket}" at ${this.endpointHost}: ${describeS3Error(error)}`,
+      );
+    }
   }
 
   async put(key: string, body: Buffer, contentType: string): Promise<void> {
-    await this.client.send(
-      new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: body, ContentType: contentType }),
-    );
+    try {
+      await this.client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: body,
+          ContentType: contentType,
+        }),
+      );
+    } catch (error) {
+      // The request's 500 log has the stack; this says where it was going.
+      this.logger.error(
+        `Upload to bucket "${this.bucket}" at ${this.endpointHost} failed: ${describeS3Error(error)}`,
+      );
+      throw error;
+    }
   }
 
   // Signed as of the start of a fixed window, not "now": within a window
